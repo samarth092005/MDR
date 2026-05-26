@@ -1,0 +1,5 @@
+default-env.json
+node_modules/
+.env
+gen/
+*.env
