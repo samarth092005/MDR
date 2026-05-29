@@ -1,4 +1,4 @@
-using com.mdr as mdr from '../db/mdr-config';
+using zmdr from '../db/mdr-config';
 
 service BulkService @(
   path    : '/api/bulk',
@@ -7,17 +7,17 @@ service BulkService @(
 
   // Config tables via CAP ORM
   @readonly
-  entity BulkHdrConfig   as projection on mdr.BulkHdrConfig;
+  entity BulkHdrConfig   as projection on zmdr.BulkHdrConfig;
 
   @readonly
-  entity BulkItmConfig   as projection on mdr.BulkItmConfig;
+  entity BulkItmConfig   as projection on zmdr.BulkItmConfig;
 
-  entity BulkTemp        as projection on mdr.BulkTemp;
+  entity BulkTemp        as projection on zmdr.BulkTemp;
 
   @readonly
-  entity WFAudit         as projection on mdr.WFAudit;
+  entity WFAudit         as projection on zmdr.WFAudit;
 
-  entity MDRWorkflowLink as projection on mdr.MDRWorkflowLink;
+  entity MDRWorkflowLink as projection on zmdr.MDRWorkflowLink;
 
   // Actions — dynamic tables handled inside handlers via raw parameterised SQL
 

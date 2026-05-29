@@ -1,14 +1,14 @@
-using com.mdr as mdr from '../db/mdr-config';
+using zmdr from '../db/mdr-config';
 
 service WorkflowService @(
   path    : '/api/workflow',
   requires: 'authenticated-user'
 ) {
   @readonly
-  entity WFAudit         as projection on mdr.WFAudit;
+  entity WFAudit         as projection on zmdr.WFAudit;
 
   @readonly
-  entity MDRWorkflowLink as projection on mdr.MDRWorkflowLink;
+  entity MDRWorkflowLink as projection on zmdr.MDRWorkflowLink;
 
   action cancelWorkflow(bpaInstanceId: String)                      returns {
     message : String

@@ -1,5 +1,5 @@
 // db/src/config/mdr-config.cds
-namespace com.mdr;
+namespace zmdr;
 
 aspect Auditable {
   created_on : Timestamp;  
