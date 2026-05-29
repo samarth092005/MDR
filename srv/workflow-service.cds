@@ -1,4 +1,4 @@
-using com.mdr as mdr from '../db/src/config/mdr-config';
+using com.mdr as mdr from '../db/mdr-config';
 
 service WorkflowService @(
   path    : '/api/workflow',
