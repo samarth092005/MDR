@@ -9,12 +9,12 @@
     "@sap-cloud-sdk/http-client": "^4.7.0",
     "@sap/cds": "^7.9.5",
     "@sap/cds-dk": "^9.9.1",
-    "@sap/hana-client": "^2.28.20",
     "@sap/xssec": "^4.13.0",
     "axios": "^1.16.1",
     "express": "^4",
     "hdb": "^2.27.1",
-    "passport": "^0.7.0"
+    "passport": "^0.7.0",
+    "@sap/cds-hana": "^2"
   },
   "devDependencies": {
     "@cap-js/sqlite": "^1",

@@ -1,0 +1,16 @@
+-- db/src/data/ZMDR_MATERIAL.hdbtable  (Versioned table example)
+COLUMN TABLE "ZMDR_MATERIAL" (
+  "MATNR"               NVARCHAR(18) NOT NULL,
+  "VERSION_START_DATE"  TIMESTAMP NOT NULL,
+  "MAKTX"               NVARCHAR(40),
+  "MEINS"               NVARCHAR(3),
+  "MATKL"               NVARCHAR(9),
+  "VERSION_ACTIVE"     NVARCHAR(1),
+  "VERSION_END_DATE"   TIMESTAMP,
+  "WORKFLOW_ID"        NVARCHAR(10),
+  "CREATED_ON"          TIMESTAMP,
+  "CREATED_BY"          NVARCHAR(12),
+  "UPDATED_ON"          TIMESTAMP,
+  "UPDATED_BY"          NVARCHAR(12),
+  PRIMARY KEY ("MATNR", "VERSION_START_DATE")
+)
