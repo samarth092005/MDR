@@ -23,5 +23,30 @@
   },
   "scripts": {
     "start": "cds-serve"
+  },
+  "cds": {
+    "requires": {
+      "db": {
+        "kind": "hana-cloud",
+        "vcap": {
+          "label": "hana"
+        }
+      },
+      "xsuaa": {
+        "kind": "xsuaa",
+        "vcap": {
+          "label": "xsuaa"
+        }
+      },
+      "destinations": {
+        "kind": "destination",
+        "vcap": {
+          "label": "destination"
+        }
+      }
+    },
+    "hana": {
+      "deploy-format": "hdbtable"
+    }
   }
 }
