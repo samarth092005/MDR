@@ -1,0 +1,193 @@
+{
+  "_version": "1.85.0",
+  "sap.app": {
+    "id": "com.intapptics.zmdrbulkload",
+    "type": "application",
+    "i18n": "i18n/i18n.properties",
+    "applicationVersion": {
+      "version": "0.0.1"
+    },
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "resources": "resources.json",
+    "sourceTemplate": {
+      "id": "@sap/generator-fiori:basic",
+      "version": "1.25.0",
+      "toolsId": "e3d307ca-e06c-482f-a656-2a2ee2946412"
+    },
+    "dataSources": {
+      "mainService1": {
+        "uri": "/sap/opu/odata/sap/ZMDR_BULKDATA_SRV/",
+        "type": "OData",
+        "settings": {
+          "annotations": [],
+          "localUri": "localService/mainService/metadata.xml",
+          "odataVersion": "2.0"
+        }
+      },
+      "ZMDR_SB_BLKHDRCG": {
+        "uri": "/sap/opu/odata/sap/ZMDR_SB_BLKHDRCG/",
+        "type": "OData",
+        "settings": {
+          "annotations": [
+            "ZMDR_SB_BLKHDRCG_VAN"
+          ],
+          "localUri": "localService/ZMDR_SB_BLKHDRCG/metadata.xml",
+          "odataVersion": "2.0"
+        }
+      },
+      "ZMDR_SB_BLKITMCG": {
+        "uri": "/sap/opu/odata/sap/ZMDR_SB_BLKITMCG/",
+        "type": "OData",
+        "settings": {
+          "annotations": [
+            "ZMDR_SB_BLKITMCG_VAN"
+          ],
+          "localUri": "localService/ZMDR_SB_BLKITMCG/metadata.xml",
+          "odataVersion": "2.0"
+        }
+      },
+      "ZMDR_SB_BLKHDRCG_VAN": {
+        "uri": "/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Annotations(TechnicalName='ZMDR_SB_BLKHDRCG_VAN',Version='0001')/$value/",
+        "type": "ODataAnnotation",
+        "settings": {
+          "localUri": "localService/ZMDR_SB_BLKHDRCG/ZMDR_SB_BLKHDRCG_VAN.xml"
+        }
+      },
+      "ZMDR_SB_BLKITMCG_VAN": {
+        "uri": "/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Annotations(TechnicalName='ZMDR_SB_BLKITMCG_VAN',Version='0001')/$value/",
+        "type": "ODataAnnotation",
+        "settings": {
+          "localUri": "localService/ZMDR_SB_BLKITMCG/ZMDR_SB_BLKITMCG_VAN.xml"
+        }
+      },
+      "mainService": {
+        "uri": "/api/bulk/",
+        "type": "OData",
+        "settings": {
+          "annotations": [],
+          "odataVersion": "4.0"
+        }
+      }
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "icons": {
+      "icon": "",
+      "favIcon": "",
+      "phone": "",
+      "phone@2": "",
+      "tablet": "",
+      "tablet@2": ""
+    },
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "flexEnabled": true,
+    "dependencies": {
+      "minUI5Version": "1.148.1",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {}
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "com.intapptics.zmdrbulkload.i18n.i18n"
+        }
+      },
+      "": {
+        "dataSource": "mainService",
+        "preload": true,
+        "settings": {
+          "operationMode": "Server",
+          "autoExpandSelect": true,
+          "earlyRequests": true
+        }
+      },
+      "ZMDR_SB_BLKHDRCG": {
+        "dataSource": "ZMDR_SB_BLKHDRCG",
+        "preload": true,
+        "settings": {}
+      },
+      "ZMDR_SB_BLKITMCG": {
+        "dataSource": "ZMDR_SB_BLKITMCG",
+        "preload": true,
+        "settings": {}
+      }
+    },
+    "resources": {
+      "css": [
+        {
+          "uri": "css/style.css"
+        }
+      ]
+    },
+    "routing": {
+      "config": {
+        "routerClass": "sap.m.routing.Router",
+        "controlAggregation": "pages",
+        "controlId": "app",
+        "transition": "slide",
+        "type": "View",
+        "viewType": "XML",
+        "path": "com.intapptics.zmdrbulkload.view",
+        "async": true,
+        "viewPath": "com.intapptics.zmdrbulkload.view"
+      },
+      "routes": [
+        {
+          "name": "main",
+          "pattern": "",
+          "target": [
+            "main"
+          ]
+        },
+        {
+          "name": "approver",
+          "pattern": "WFID={WFID}",
+          "target": [
+            "approver"
+          ]
+        }
+      ],
+      "targets": {
+        "main": {
+          "viewType": "XML",
+          "transition": "slide",
+          "clearControlAggregation": false,
+          "viewId": "BulkLoad",
+          "viewName": "BulkLoad"
+        },
+        "approver": {
+          "viewType": "XML",
+          "transition": "slide",
+          "viewId": "BulkApprover",
+          "viewName": "BulkApprover"
+        },
+        "notFound": {
+          "viewId": "notFound",
+          "viewName": "NotFound",
+          "transition": "show"
+        }
+      }
+    },
+    "rootView": {
+      "viewName": "com.intapptics.zmdrbulkload.view.App",
+      "type": "XML",
+      "id": "App",
+      "async": true
+    }
+  }
+}

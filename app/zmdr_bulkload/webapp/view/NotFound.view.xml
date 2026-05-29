@@ -1,0 +1,19 @@
+<mvc:View
+    controllerName="com.intapptics.zmdrbulkload.controller.NotFound"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+>
+    <IllustratedMessage
+        id="msgid"
+        title="{i18n>notFoundPageTitle}"
+        description="{i18n>notFoundPageTitle}"
+        enableFormattedText="true"
+    >
+        <additionalContent>
+            <Button id="_IDGenLink"
+                text="{i18n>navToOverviewLinkText}"
+                press=".onNavToBulkUpload"
+            />
+        </additionalContent>
+    </IllustratedMessage>
+</mvc:View>

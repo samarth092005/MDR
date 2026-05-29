@@ -19,10 +19,12 @@
   "devDependencies": {
     "@cap-js/sqlite": "^1",
     "@sap/eslint-plugin-cds": "^3",
-    "eslint": "^9"
+    "eslint": "^9",
+    "cds-plugin-ui5": "^0.13.0"
   },
   "scripts": {
-    "start": "cds-serve"
+    "start": "cds-serve",
+    "watch-zmdr_bulkload": "cds watch --open com.intapptics.zmdrbulkload/index.html?sap-ui-xx-viewCache=false --livereload false"
   },
   "cds": {
     "requires": {
@@ -48,5 +50,8 @@
     "hana": {
       "deploy-format": "hdbtable"
     }
-  }
+  },
+  "workspaces": [
+    "app/*"
+  ]
 }
