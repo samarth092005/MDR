@@ -1,8 +1,8 @@
-using com.mdr as mdr from "../db/src/config/mdr-config";
+using com.mdr as mdr from '../db/src/config/mdr-config';
 
 service BulkService @(
-  path    : "/api/bulk",
-  requires: "authenticated-user"
+  path    : '/api/bulk',
+  requires: 'authenticated-user'
 ) {
 
   // Config tables via CAP ORM
