@@ -1,0 +1,55 @@
+{
+    "xsappname": "mdr-btp",
+    "tenant-mode": "dedicated",
+    "scopes": [
+        {
+            "name": "$XSAPPNAME.Requestor"
+        },
+        {
+            "name": "$XSAPPNAME.Approver"
+        },
+        {
+            "name": "$XSAPPNAME.Admin"
+        }
+    ],
+    "role-templates": [
+        {
+            "name": "Requestor",
+            "scope-references": [
+                "$XSAPPNAME.Requestor"
+            ]
+        },
+        {
+            "name": "Approver",
+            "scope-references": [
+                "$XSAPPNAME.Approver"
+            ]
+        },
+        {
+            "name": "Admin",
+            "scope-references": [
+                "$XSAPPNAME.Admin"
+            ]
+        }
+    ],
+    "role-collections": [
+        {
+            "name": "MDR_Requestor",
+            "role-template-references": [
+                "$XSAPPNAME.Requestor"
+            ]
+        },
+        {
+            "name": "MDR_Approver",
+            "role-template-references": [
+                "$XSAPPNAME.Approver"
+            ]
+        },
+        {
+            "name": "MDR_Admin",
+            "role-template-references": [
+                "$XSAPPNAME.Admin"
+            ]
+        }
+    ]
+}

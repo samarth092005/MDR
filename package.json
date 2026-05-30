@@ -14,19 +14,26 @@
     "express": "^4",
     "hdb": "^2.27.1",
     "passport": "^0.7.0",
-    "@sap/cds-hana": "^2"
+    "@sap/cds-hana": "^2",
+    "nodemailer": "^6"
   },
   "devDependencies": {
     "@cap-js/sqlite": "^1",
     "@sap/eslint-plugin-cds": "^3",
     "eslint": "^9",
-    "cds-plugin-ui5": "^0.13.0"
+    "cds-plugin-ui5": "^0.13.0",
+    "@sap/cds-dk": "^7"
   },
   "scripts": {
     "start": "cds-serve",
+    "dev": "cds watch",
+    "build": "cds build --production",
     "watch-zmdr_bulkload": "cds watch --open com.intapptics.zmdrbulkload/index.html?sap-ui-xx-viewCache=false --livereload false"
   },
   "cds": {
+    "odata": {
+      "version": "v4"
+    },
     "requires": {
       "db": {
         "kind": "hana-cloud",
