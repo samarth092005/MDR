@@ -5,7 +5,7 @@
 sap.ui.define([
         "sap/ui/core/UIComponent",
         "sap/ui/Device",
-        "com/intapptics/mdbulkload/model/models"
+        "com/intapptics/zmdrbulkload/model/models"
     ],
      (UIComponent, Device, models) => {
         "use strict";

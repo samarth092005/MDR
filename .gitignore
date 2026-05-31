@@ -3,3 +3,7 @@ node_modules/
 .env
 gen/
 *.env
+dist/
+mta_archives/
+.mdr-cap-btp_mta_build_tmp
+package-lock.json

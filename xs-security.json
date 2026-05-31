@@ -1,5 +1,5 @@
 {
-  "xsappname": "mdr-btp",
+  "xsappname": "mdr-cap-btp",
   "tenant-mode": "dedicated",
   "scopes": [
     {

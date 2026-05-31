@@ -1,5 +1,5 @@
 _schema-version: '3.1'
-ID: mdr-btp
+ID: mdr-cap-btp
 version: 1.0.0
 description: "A simple CAP project."
 parameters:
@@ -11,7 +11,7 @@ build-parameters:
         - npm ci
         - npx cds build --production
 modules:
-  - name: mdr-btp-srv
+  - name: mdr-cap-btp-srv
     type: nodejs
     path: gen/srv
     parameters:
@@ -25,35 +25,52 @@ modules:
         properties:
           srv-url: ${default-url}
     requires:
-      - name: mdr-btp-destination
-      - name: mdr-btp-db
-      - name: mdr-btp-auth
+      - name: mdr-cap-btp-destination
+      - name: mdr-cap-btp-db
+      - name: mdr-cap-btp-auth
 
-  - name: mdr-btp-db-deployer
+  - name: mdr-cap-btp-db-deployer
     type: hdb
     path: gen/db
     parameters:
       buildpack: nodejs_buildpack
     requires:
-      - name: mdr-btp-db
+      - name: mdr-cap-btp-db
+
+  - name: mdr-cap-btp-approuter
+    type: approuter.nodejs
+    path: app/
+    parameters:
+      keep-existing-routes: true
+      disk-quota: 256M
+      memory: 256M
+    build-parameters:
+      builder: custom
+      commands:
+        - npm install --prefix zmdr_bulkload --no-workspaces
+        - npm run build --prefix zmdr_bulkload
+        - rm -rf zmdr_bulkload/node_modules
+    # properties:
+    #   TENANT_HOST_PATTERN: "^(.*)\\.cfapps\\.eu30\\.hana\\.ondemand\\.com"
+    requires:
+      - name: srv-api
+        group: destinations
+        properties:
+          name: srv-api
+          url: ~{srv-url}
+          forwardAuthToken: true
+      - name: mdr-cap-btp-auth
 
 resources:
-  - name: mdr-btp-destination
-    type: org.cloudfoundry.managed-service
+  - name: mdr-cap-btp-destination
+    type: org.cloudfoundry.existing-service
     parameters:
-      service: destination
-      service-plan: lite
-  - name: mdr-btp-db
-    type: com.sap.xs.hdi-container
+      service-name: mdr-cap-manual-dest
+  - name: mdr-cap-btp-db
+    type: org.cloudfoundry.existing-service
     parameters:
-      service: hana
-      service-plan: hdi-shared
-  - name: mdr-btp-auth
-    type: org.cloudfoundry.managed-service
+      service-name: mdr-cap-manual-hdi
+  - name: mdr-cap-btp-auth
+    type: org.cloudfoundry.existing-service
     parameters:
-      service: xsuaa
-      service-plan: application
-      path: ./xs-security.json
-      config:
-        xsappname: mdr-btp-${org}-${space}
-        tenant-mode: dedicated
+      service-name: mdr-cap-manual-auth

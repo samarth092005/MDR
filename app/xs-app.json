@@ -1,0 +1,17 @@
+{
+    "welcomeFile": "/com.intapptics.zmdrbulkload/index.html",
+    "authenticationMethod": "route",
+    "routes": [
+        {
+            "source": "^/api/(.*)$",
+            "destination": "srv-api",
+            "authenticationType": "xsuaa"
+        },
+        {
+            "source": "^/com.intapptics.zmdrbulkload/(.*)$",
+            "target": "$1",
+            "localDir": "zmdr_bulkload/dist",
+            "authenticationType": "xsuaa"
+        }
+    ]
+}
