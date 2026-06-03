@@ -16,53 +16,16 @@
       "toolsId": "e3d307ca-e06c-482f-a656-2a2ee2946412"
     },
     "dataSources": {
-      "mainService1": {
-        "uri": "/sap/opu/odata/sap/ZMDR_BULKDATA_SRV/",
+      "mainService": {
+        "uri": "/api/bulk/",
         "type": "OData",
         "settings": {
           "annotations": [],
-          "localUri": "localService/mainService/metadata.xml",
-          "odataVersion": "2.0"
+          "odataVersion": "4.0"
         }
       },
-      "ZMDR_SB_BLKHDRCG": {
-        "uri": "/sap/opu/odata/sap/ZMDR_SB_BLKHDRCG/",
-        "type": "OData",
-        "settings": {
-          "annotations": [
-            "ZMDR_SB_BLKHDRCG_VAN"
-          ],
-          "localUri": "localService/ZMDR_SB_BLKHDRCG/metadata.xml",
-          "odataVersion": "2.0"
-        }
-      },
-      "ZMDR_SB_BLKITMCG": {
-        "uri": "/sap/opu/odata/sap/ZMDR_SB_BLKITMCG/",
-        "type": "OData",
-        "settings": {
-          "annotations": [
-            "ZMDR_SB_BLKITMCG_VAN"
-          ],
-          "localUri": "localService/ZMDR_SB_BLKITMCG/metadata.xml",
-          "odataVersion": "2.0"
-        }
-      },
-      "ZMDR_SB_BLKHDRCG_VAN": {
-        "uri": "/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Annotations(TechnicalName='ZMDR_SB_BLKHDRCG_VAN',Version='0001')/$value/",
-        "type": "ODataAnnotation",
-        "settings": {
-          "localUri": "localService/ZMDR_SB_BLKHDRCG/ZMDR_SB_BLKHDRCG_VAN.xml"
-        }
-      },
-      "ZMDR_SB_BLKITMCG_VAN": {
-        "uri": "/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Annotations(TechnicalName='ZMDR_SB_BLKITMCG_VAN',Version='0001')/$value/",
-        "type": "ODataAnnotation",
-        "settings": {
-          "localUri": "localService/ZMDR_SB_BLKITMCG/ZMDR_SB_BLKITMCG_VAN.xml"
-        }
-      },
-      "mainService": {
-        "uri": "/api/bulk/",
+      "adminService": {
+        "uri": "/api/admin/",
         "type": "OData",
         "settings": {
           "annotations": [],
@@ -116,15 +79,14 @@
           "earlyRequests": true
         }
       },
-      "ZMDR_SB_BLKHDRCG": {
-        "dataSource": "ZMDR_SB_BLKHDRCG",
+      "adminModel ": {
+        "dataSource": "adminService",
         "preload": true,
-        "settings": {}
-      },
-      "ZMDR_SB_BLKITMCG": {
-        "dataSource": "ZMDR_SB_BLKITMCG",
-        "preload": true,
-        "settings": {}
+        "settings": {
+          "operationMode": "Server",
+          "autoExpandSelect": true,
+          "earlyRequests": true
+        }
       }
     },
     "resources": {

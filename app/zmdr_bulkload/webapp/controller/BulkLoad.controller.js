@@ -79,49 +79,62 @@ sap.ui.define([
             self.getView().byId("btn_reload").setVisible(false);
             self.getView().byId("btn_downloadinvaliddata").setVisible(false);
 
-            var oDataModel_Header = self.getOwnerComponent().getModel("ZMDR_SB_BLKHDRCG");
+            // var oDataModel_Header = self.getOwnerComponent().getModel("ZMDR_SB_BLKHDRCG");
+            var oDataModel_Header = self.getOwnerComponent().getModel("adminModel");
+            var oBinding = oDataModel_Header.bindList("/BulkHdrConfig");
             // self.fn_showBusyIndicator(oDataModel_Header);
             var oGBusyArray = self.openBusyDialog();
-            oDataModel_Header.read("/zmdxcnblkhdrcg01", {
-                success: function (oData, oResponse) {
-                    self.closeBusyDialog(oGBusyArray);
-                    oModel.setData(oData.results);
-                    self.getOwnerComponent().setModel(oModel, "OModel");
-                    //Get the comleted config data in an array
-                    self.array = oModel.getData();
+            // oDataModel_Header.read("/zmdxcnblkhdrcg01", {
+            //     success: function (oData, oResponse) {
+            oBinding.requestContexts().then(function (aContexts) {
+                self.closeBusyDialog(oGBusyArray);
 
-                    //get all category
-                    for (var i = 0; i < self.array.length; i++) {
-                        temp.push(self.array[i].Category);
-                    }
-                    //push to array, unique category
-                    for (var j = 0; j < temp.length; j++) {
-                        if (uniqueCat.indexOf(temp[j]) === -1) {
-                            uniqueCat.push(temp[j]);
-                        } else {
-                            continue;
-                        }
-                    }
-                    //Setting objectName
-                    for (i = 0; i < uniqueCat.length; i++) {
-                        filteredCategory.push({
-                            categoryName: uniqueCat[i],
-                        });
-                    }
+                // Convert contexts to data objects (replaces oData.results)
+                var aResults = aContexts.map(function (oContext) {
+                    return oContext.getObject();
+                });
 
-                    var oUniqueCategoryModel = new JSONModel(filteredCategory);
+                oModel.setData(aResults);
+                //Get the comleted config data in an array
+                self.array = oModel.getData();
+                self.getOwnerComponent().setModel(oModel, "oModel");
 
-                    //set to the component
-                    self.getOwnerComponent().setModel(
-                        oUniqueCategoryModel,
-                        "oUniqueCategoryModel"
-                    );
-                    self.fn_closeBusyIndicator(oDataModel_Header);
-                },
-                error: function (oError) {
-                    self.fn_closeBusyIndicator(oDataModel_Header);
-                },
+                //get all category
+                for (var i = 0; i < self.array.length; i++) {
+                    temp.push(self.array[i].Category);
+                }
+                //push to array, unique category
+                for (var j = 0; j < temp.length; j++) {
+                    if (uniqueCat.indexOf(temp[j]) === -1) {
+                        uniqueCat.push(temp[j]);
+                    } else {
+                        continue;
+                    }
+                }
+                //Setting objectName
+                for (i = 0; i < uniqueCat.length; i++) {
+                    filteredCategory.push({
+                        categoryName: uniqueCat[i],
+                    });
+                }
+
+                var oUniqueCategoryModel = new JSONModel(filteredCategory);
+
+                //set to the component
+                self.getOwnerComponent().setModel(
+                    oUniqueCategoryModel,
+                    "oUniqueCategoryModel"
+                );
+                self.fn_closeBusyIndicator(oDataModel_Header);
+            }).catch(function (oError) {
+                self.closeBusyDialog(oGBusyArray);
+                console.error("Error loading BulkHdrConfig:", oError);
             });
+            //     },
+            //     error: function (oError) {
+            //         self.fn_closeBusyIndicator(oDataModel_Header);
+            //     }
+            // });
 
             self.getView().byId("cb_workflow").setVisible(false);
             self.getView().byId("inp_workflow").setVisible(false);
