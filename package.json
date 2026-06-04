@@ -7,9 +7,9 @@
   "private": true,
   "dependencies": {
     "@sap-cloud-sdk/http-client": "^4.7.0",
-    "@sap/cds": "^7.9.5",
+    "@sap/cds": "^9",
     "@sap/cds-dk": "^9.9.1",
-    "@sap/cds-hana": "^2",
+    "@cap-js/hana": "^2",
     "@sap/xssec": "^3",
     "axios": "^1.16.1",
     "express": "^4",
@@ -36,11 +36,19 @@
     },
     "requires": {
       "db": {
-        "kind": "hana-cloud",
-        "vcap": {
+				"kind": "sqlite",
+				"credentials": {
+					"url": "db.sqlite"
+				}
+			},
+      "[production]": {
+				"db": {
+					"kind": "hana",
+          "vcap": {
           "label": "hana"
         }
-      },
+				}
+			},
       "xsuaa": {
         "kind": "xsuaa",
         "vcap": {
@@ -53,7 +61,7 @@
           "label": "destination"
         }
       },
-      "auth": "xsuaa"
+      "auth": "mocked"
     },
     "hana": {
       "deploy-format": "hdbtable"

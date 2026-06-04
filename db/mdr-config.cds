@@ -45,11 +45,11 @@ entity MDRWorkflowLink {
 
 // Replaces ZMDR_BULKHDRCNFG
 entity BulkHdrConfig : Auditable {
-  key tablename           : String(30);
-  key requesterrole       : String(30);
-      description         : String(100);
+  key TableName           : String(30);
+  key RequesterRole       : String(30);
+      TableDescription         : String(100);
       apprclass           : String(60);  // 'system,hierarchy,subclass'
-      category            : String(20);
+      Category            : String(20);
       isversioned         : String(1);
       isfutureallowed     : String(1);
       istablelevappr      : String(1);
