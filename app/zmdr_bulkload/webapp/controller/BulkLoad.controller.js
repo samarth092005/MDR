@@ -80,7 +80,7 @@ sap.ui.define([
             self.getView().byId("btn_downloadinvaliddata").setVisible(false);
 
             // var oDataModel_Header = self.getOwnerComponent().getModel("ZMDR_SB_BLKHDRCG");
-            var oDataModel_Header = self.getOwnerComponent().getModel("adminModel");
+            var oDataModel_Header = self.getOwnerComponent().getModel();
             var oBinding = oDataModel_Header.bindList("/BulkHdrConfig");
             // self.fn_showBusyIndicator(oDataModel_Header);
             var oGBusyArray = self.openBusyDialog();
@@ -1044,31 +1044,31 @@ sap.ui.define([
                 result = oInput.replace(pattern, replacement);
             }
             return result;
-        },
+        } //,
 
-        //function to show Busy Indicator
-        fn_showBusyIndicator: function (oModelName) {
-            var oGlobalBusyDialog;
-            oModelName.attachRequestSent(
-                function () {
-                    oGlobalBusyDialog = this.openBusyDialog();
-                }.bind(this)
-            );
-            oModelName.attachRequestCompleted(
-                function () {
-                    this.closeBusyDialog(oGlobalBusyDialog);
-                }.bind(this)
-            );
-        },
-        //function to close Busy Indicator
-        fn_closeBusyIndicator: function (oModelName) {
-            var oGlobalBusyDialog;
-            oModelName.attachRequestCompleted(
-                function () {
-                    this.closeBusyDialog(oGlobalBusyDialog);
-                }.bind(this)
-            );
-        },
+        // //function to show Busy Indicator
+        // fn_showBusyIndicator: function (oModelName) {
+        //     var oGlobalBusyDialog;
+        //     oModelName.attachRequestSent(
+        //         function () {
+        //             oGlobalBusyDialog = this.openBusyDialog();
+        //         }.bind(this)
+        //     );
+        //     oModelName.attachRequestCompleted(
+        //         function () {
+        //             this.closeBusyDialog(oGlobalBusyDialog);
+        //         }.bind(this)
+        //     );
+        // },
+        // //function to close Busy Indicator
+        // fn_closeBusyIndicator: function (oModelName) {
+        //     var oGlobalBusyDialog;
+        //     oModelName.attachRequestCompleted(
+        //         function () {
+        //             this.closeBusyDialog(oGlobalBusyDialog);
+        //         }.bind(this)
+        //     );
+        // }
     }
     );
 }
