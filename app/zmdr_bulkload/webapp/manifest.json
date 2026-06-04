@@ -79,7 +79,7 @@
           "earlyRequests": true
         }
       },
-      "adminModel ": {
+      "adminModel": {
         "dataSource": "adminService",
         "preload": true,
         "settings": {

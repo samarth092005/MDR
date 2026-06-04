@@ -111,7 +111,8 @@ sap.ui.define([
                         continue;
                     }
                 }
-                //Setting objectName
+                
+                // Setting objectName
                 for (i = 0; i < uniqueCat.length; i++) {
                     filteredCategory.push({
                         categoryName: uniqueCat[i],
@@ -120,12 +121,9 @@ sap.ui.define([
 
                 var oUniqueCategoryModel = new JSONModel(filteredCategory);
 
-                //set to the component
-                self.getOwnerComponent().setModel(
-                    oUniqueCategoryModel,
-                    "oUniqueCategoryModel"
-                );
-                self.fn_closeBusyIndicator(oDataModel_Header);
+                // Set to the component
+                self.getOwnerComponent().setModel(oUniqueCategoryModel, "oUniqueCategoryModel");
+                // self.fn_closeBusyIndicator(oDataModel_Header);
             }).catch(function (oError) {
                 self.closeBusyDialog(oGBusyArray);
                 console.error("Error loading BulkHdrConfig:", oError);
