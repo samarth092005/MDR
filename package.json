@@ -35,13 +35,24 @@
       "version": "v4"
     },
     "requires": {
-      "db": {
-				"kind": "sqlite",
-				"credentials": {
-					"url": "db.sqlite"
-				}
-			},
+      "[development]": {
+        "auth": {
+          "kind": "mocked"
+        },
+        "db": {
+          "kind": "sqlite",
+          "credentials": {
+            "url": "db.sqlite"
+          }
+        }
+      },
       "[production]": {
+        "auth": {
+          "kind": "xsuaa",
+          "vcap": {
+            "label": "xsuaa"
+          }
+        },
 				"db": {
 					"kind": "hana",
           "vcap": {
@@ -49,19 +60,12 @@
         }
 				}
 			},
-      "xsuaa": {
-        "kind": "xsuaa",
-        "vcap": {
-          "label": "xsuaa"
-        }
-      },
       "destinations": {
         "kind": "destination",
         "vcap": {
           "label": "destination"
         }
-      },
-      "auth": "mocked"
+      }
     },
     "hana": {
       "deploy-format": "hdbtable"
