@@ -169,22 +169,22 @@ sap.ui.define([
             var wb = XLSX.utils.book_new();
 
             wb.Props = {
-                Title: self.tableName,
-                Subject: self.tableName,
+                Title: this.tableName,
+                Subject: this.tableName,
                 Author: "MDR",
                 CreatedDate: new Date()
             };
-            wb.SheetNames.push(self.tableName);
+            wb.SheetNames.push(this.tableName);
             var ws_data = [];
-            self.odataHead;
-            var length = self.odataHead.length;
+            this.odataHead;
+            var length = this.odataHead.length;
             var dataStr = [];
             var data = "";
             for (let i = 0; i < length; i++) {
                 if (i == length - 1) {
-                    data = data + self.odataHead[i];
+                    data = data + this.odataHead[i];
                 } else {
-                    data = data + self.odataHead[i] + ";";
+                    data = data + this.odataHead[i] + ";";
                 }
             }
 
@@ -193,7 +193,7 @@ sap.ui.define([
             ws_data.push(dataStr[0].split(";"));
 
             var wsData = XLSX.utils.aoa_to_sheet(ws_data);
-            wb.Sheets[self.tableName] = wsData;
+            wb.Sheets[this.tableName] = wsData;
             var wbout = XLSX.write(wb, {
                 bookType: 'xlsx',
                 type: 'binary'
@@ -207,7 +207,7 @@ sap.ui.define([
             }
             saveAs(new Blob([s2ab(wbout)], {
                 type: "application/octet-stream"
-            }), self.tableName + '.xlsx');
+            }), this.tableName + '.xlsx');
         },
 
         onFileUpload: function (oEvent) {
@@ -620,7 +620,7 @@ sap.ui.define([
                 oEvent.getSource().getValue()
             );
             var filterRole = new Filter(
-                "Requesterrole",
+                "RequesterRole",
                 FilterOperator.EQ,
                 oEvent.getSource().getSelectedItem().getKey().split("+")[1]
             );
@@ -635,8 +635,9 @@ sap.ui.define([
             aFilters.push(filterRole);
 
             var oModelConfig = new JSONModel();
+            var oGBusyArray = this.openBusyDialog();
 
-            oBinding = this.oBulkModel.bindList("/BulkItmConfig".null, null, aFilters);
+            oBinding = this.oBulkModel.bindList("/BulkItmConfig", null, null, aFilters);
             oBinding.requestContexts().then(function (aContexts) {
                 this.closeBusyDialog(oGBusyArray);
 

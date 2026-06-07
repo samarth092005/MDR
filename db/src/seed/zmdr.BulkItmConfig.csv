@@ -1,4 +1,4 @@
-tablename,columnname,requesterrole,colseqno,islookup,lookuptablename,lookupfield,ismatching,isdatefield,validationindex,created_on,created_by,updated_on,updated_by
+Tablename,Columnname,RequesterRole,Colseqno,islookup,lookuptablename,lookupfield,ismatching,isdatefield,validationindex,created_on,created_by,updated_on,updated_by
 ZMDR_BPMASTER,BLOCK_REASON,ZMDR_C_FIORI_ALL,34,N,,,N,N,,2026-04-30T19:27:25,AIS_BALRAM,2026-04-30T19:27:25,AIS_BALRAM
 ZMDR_BPMASTER,BP_CATEGORY,ZMDR_C_FIORI_ALL,8,N,,,N,N,,2026-04-30T19:27:25,AIS_BALRAM,2026-04-30T19:27:25,AIS_BALRAM
 ZMDR_BPMASTER,BP_ID,ZMDR_C_FIORI_ALL,1,N,,,N,N,,2026-04-30T19:27:25,AIS_BALRAM,2026-04-30T19:27:25,AIS_BALRAM
