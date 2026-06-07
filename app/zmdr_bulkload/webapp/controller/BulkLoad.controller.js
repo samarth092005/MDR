@@ -59,35 +59,27 @@ sap.ui.define([
         workflowidentered: undefined,
 
         onInit: function () {
-
-            var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
-            var oRoute = oRouter.getRoute("approver");
-
-            oRoute.attachPatternMatched(this._onPatternMatched, this);
             var temp = [],
                 filteredCategory = [],
-                uniqueCat = [];
+                uniqueCat = [],
+                oModel = new JSONModel(),
+                oBulkModel,
+                oBinding;
 
-            var oModel = new JSONModel();
-            self = this;
+            this.getView().byId("table_validresult").setVisible(false);
+            this.getView().byId("lbl_warning").setVisible(false);
+            this.getView().byId("btn_submit").setVisible(false);
+            this.getView().byId("btn_cancel").setVisible(false);
+            this.getView().byId("btn_validate").setVisible(false);
+            this.getView().byId("btn_reload").setVisible(false);
+            this.getView().byId("btn_downloadinvaliddata").setVisible(false);
 
-            self.getView().byId("table_validresult").setVisible(false);
-            self.getView().byId("lbl_warning").setVisible(false);
-            self.getView().byId("btn_submit").setVisible(false);
-            self.getView().byId("btn_cancel").setVisible(false);
-            self.getView().byId("btn_validate").setVisible(false);
-            self.getView().byId("btn_reload").setVisible(false);
-            self.getView().byId("btn_downloadinvaliddata").setVisible(false);
-
-            // var oDataModel_Header = self.getOwnerComponent().getModel("ZMDR_SB_BLKHDRCG");
-            var oDataModel_Header = self.getOwnerComponent().getModel();
-            var oBinding = oDataModel_Header.bindList("/BulkHdrConfig");
-            // self.fn_showBusyIndicator(oDataModel_Header);
-            var oGBusyArray = self.openBusyDialog();
-            // oDataModel_Header.read("/zmdxcnblkhdrcg01", {
-            //     success: function (oData, oResponse) {
+            oBulkModel = this.getOwnerComponent().getModel();
+            oBinding = oBulkModel.bindList("/BulkHdrConfig");
+            var oGBusyArray = this.openBusyDialog();
+            
             oBinding.requestContexts().then(function (aContexts) {
-                self.closeBusyDialog(oGBusyArray);
+                this.closeBusyDialog(oGBusyArray);
 
                 // Convert contexts to data objects (replaces oData.results)
                 var aResults = aContexts.map(function (oContext) {
@@ -96,12 +88,12 @@ sap.ui.define([
 
                 oModel.setData(aResults);
                 //Get the comleted config data in an array
-                self.array = oModel.getData();
-                self.getOwnerComponent().setModel(oModel, "oModel");
+                this.array = oModel.getData();
+                this.getOwnerComponent().setModel(oModel, "oModel");
 
                 //get all category
-                for (var i = 0; i < self.array.length; i++) {
-                    temp.push(self.array[i].Category);
+                for (var i = 0; i < this.array.length; i++) {
+                    temp.push(this.array[i].Category);
                 }
                 //push to array, unique category
                 for (var j = 0; j < temp.length; j++) {
@@ -122,30 +114,22 @@ sap.ui.define([
                 var oUniqueCategoryModel = new JSONModel(filteredCategory);
 
                 // Set to the component
-                self.getOwnerComponent().setModel(oUniqueCategoryModel, "oUniqueCategoryModel");
-                // self.fn_closeBusyIndicator(oDataModel_Header);
-            }).catch(function (oError) {
-                self.closeBusyDialog(oGBusyArray);
+                this.getOwnerComponent().setModel(oUniqueCategoryModel, "oUniqueCategoryModel");
+            }.bind(this)).catch(function (oError) {
+                this.closeBusyDialog(oGBusyArray);
                 console.error("Error loading BulkHdrConfig:", oError);
-            });
+            }.bind(this));
             //     },
             //     error: function (oError) {
             //         self.fn_closeBusyIndicator(oDataModel_Header);
             //     }
             // });
 
-            self.getView().byId("cb_workflow").setVisible(false);
-            self.getView().byId("inp_workflow").setVisible(false);
-            self.workflowidentered = "";
-            self.getView().byId("cb_overwritenull").setVisible(false);
-            self.getView().byId("cb_updatezonly").setVisible(false);
-        },
-
-        _onPatternMatched: function (oEvent) {
-            var oArgs = oEvent.getParameter("arguments");
-            var workflowId = oArgs.WFID;
-            console.log("Workflow ID:", workflowId);
-            // Use the WFID to load the relevant task or data
+            this.getView().byId("cb_workflow").setVisible(false);
+            this.getView().byId("inp_workflow").setVisible(false);
+            this.workflowidentered = "";
+            this.getView().byId("cb_overwritenull").setVisible(false);
+            this.getView().byId("cb_updatezonly").setVisible(false);
         },
 
         handleUploadComplete: function (oEvent) {
@@ -499,11 +483,11 @@ sap.ui.define([
         categoryChange: function (oEvent) {
             var filteredTable = [];
             var oUniquTableModel = "";
-            var tabEntry = self.array.filter(function (item) {
+            var tabEntry = this.array.filter(function (item) {
                 return item.Category === oEvent.getSource().getSelectedKey();
             });
 
-            self.categoryName = oEvent.getSource().getSelectedKey();
+            this.categoryName = oEvent.getSource().getSelectedKey();
 
             for (var i = 0; i < tabEntry.length; i++) {
                 filteredTable.push({
@@ -515,21 +499,21 @@ sap.ui.define([
 
             oUniquTableModel = new JSONModel(filteredTable);
 
-            self.getOwnerComponent().setModel(oUniquTableModel, "oUniqueTableModel");
-            self.getView().byId("combo_tablelist").setSelectedKey(null);
-            self.getView().byId("cb_workflow").setVisible(false);
-            self.getView().byId("cb_workflow").setSelected(false);
-            self.getView().byId("inp_workflow").setVisible(false);
-            self.getView().byId("inp_workflow").setEnabled(false);
-            self.getView().byId("inp_workflow").setValue("");
-            self.getView().byId("cb_overwritenull").setVisible(false);
-            self.getView().byId("cb_overwritenull").setSelected(false);
-            self.getView().byId("cb_updatezonly").setVisible(false);
-            self.getView().byId("cb_updatezonly").setSelected(false);
-            self.getView().byId("btn_Download").setVisible(false);
+            this.getOwnerComponent().setModel(oUniquTableModel, "oUniqueTableModel");
+            this.getView().byId("combo_tablelist").setSelectedKey(null);
+            this.getView().byId("cb_workflow").setVisible(false);
+            this.getView().byId("cb_workflow").setSelected(false);
+            this.getView().byId("inp_workflow").setVisible(false);
+            this.getView().byId("inp_workflow").setEnabled(false);
+            this.getView().byId("inp_workflow").setValue("");
+            this.getView().byId("cb_overwritenull").setVisible(false);
+            this.getView().byId("cb_overwritenull").setSelected(false);
+            this.getView().byId("cb_updatezonly").setVisible(false);
+            this.getView().byId("cb_updatezonly").setSelected(false);
+            this.getView().byId("btn_Download").setVisible(false);
 
-            self.updateztabonly = "N";
-            self.preserveNull = "N";
+            this.updateztabonly = "N";
+            this.preserveNull = "N";
         },
 
         checkOverwriteNull: function (oEvent) {
@@ -625,15 +609,14 @@ sap.ui.define([
         },
 
         selectedTable: function (oEvent) {
-            var tabEntry = self.array.filter(function (item) {
+            var tabEntry = this.array.filter(function (item) {
                 return (
                     item.TableName === oEvent.getSource().getValue() &&
-                    item.RequesterRole ===
-                    oEvent.getSource().getSelectedItem().getKey().split("+")[1]
+                    item.RequesterRole === oEvent.getSource().getSelectedItem().getKey().split("+")[1]
                 );
             });
 
-            self.tableName = oEvent.getSource().getValue();
+            this.tableName = oEvent.getSource().getValue();
             var aFilters = [];
             var filterTable = new Filter(
                 "Tablename",
@@ -646,7 +629,7 @@ sap.ui.define([
                 oEvent.getSource().getSelectedItem().getKey().split("+")[1]
             );
 
-            self.rolename = oEvent
+            this.rolename = oEvent
                 .getSource()
                 .getSelectedItem()
                 .getKey()

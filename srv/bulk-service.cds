@@ -14,11 +14,6 @@ service BulkService @(
 
   entity BulkTemp        as projection on zmdr.BulkTemp;
 
-  @readonly
-  entity WFAudit         as projection on zmdr.WFAudit;
-
-  entity MDRWorkflowLink as projection on zmdr.MDRWorkflowLink;
-
   // Actions — dynamic tables handled inside handlers via raw parameterised SQL
 
   // Replaces: ZMDR_FM_PROCESS_BULK_DATA with IM_DATALOAD = N

@@ -115,13 +115,6 @@
           "target": [
             "main"
           ]
-        },
-        {
-          "name": "approver",
-          "pattern": "WFID={WFID}",
-          "target": [
-            "approver"
-          ]
         }
       ],
       "targets": {
@@ -131,12 +124,6 @@
           "clearControlAggregation": false,
           "viewId": "BulkLoad",
           "viewName": "BulkLoad"
-        },
-        "approver": {
-          "viewType": "XML",
-          "transition": "slide",
-          "viewId": "BulkApprover",
-          "viewName": "BulkApprover"
         },
         "notFound": {
           "viewId": "notFound",

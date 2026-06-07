@@ -3,8 +3,7 @@
 const cds = require('@sap/cds');
 const { processBulkData } = require('./lib/process-bulk');
 const { insertWFAudit, saveMDRWorkflowLink, getApprovers } = require('./lib/wf-utilities');
-const { applyBulkTempApproved,
-    approveVersionedTable, rejectVersionedTable } = require('./lib/insert');
+const { applyBulkTempApproved, approveVersionedTable, rejectVersionedTable } = require('./lib/insert');
 const { generateWorkflowId } = require('./lib/wf-id');
 const { startBulkApprovalWorkflow, completeBPATask } = require('./lib/bpa-client');
 const { readRows } = require('./lib/db-dynamic');

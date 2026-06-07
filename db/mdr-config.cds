@@ -47,7 +47,7 @@ entity MDRWorkflowLink {
 entity BulkHdrConfig : Auditable {
   key TableName           : String(30);
   key RequesterRole       : String(30);
-      TableDescription         : String(100);
+      TableDescription    : String(100);
       apprclass           : String(60);  // 'system,hierarchy,subclass'
       Category            : String(20);
       isversioned         : String(1);
