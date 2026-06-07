@@ -63,7 +63,6 @@ sap.ui.define([
                 filteredCategory = [],
                 uniqueCat = [],
                 oModel = new JSONModel(),
-                oBulkModel,
                 oBinding;
 
             this.getView().byId("table_validresult").setVisible(false);
@@ -74,10 +73,10 @@ sap.ui.define([
             this.getView().byId("btn_reload").setVisible(false);
             this.getView().byId("btn_downloadinvaliddata").setVisible(false);
 
-            oBulkModel = this.getOwnerComponent().getModel();
-            oBinding = oBulkModel.bindList("/BulkHdrConfig");
+            this.oBulkModel = this.getOwnerComponent().getModel();
+            oBinding = this.oBulkModel.bindList("/BulkHdrConfig");
             var oGBusyArray = this.openBusyDialog();
-            
+
             oBinding.requestContexts().then(function (aContexts) {
                 this.closeBusyDialog(oGBusyArray);
 
@@ -103,7 +102,7 @@ sap.ui.define([
                         continue;
                     }
                 }
-                
+
                 // Setting objectName
                 for (i = 0; i < uniqueCat.length; i++) {
                     filteredCategory.push({
@@ -119,11 +118,6 @@ sap.ui.define([
                 this.closeBusyDialog(oGBusyArray);
                 console.error("Error loading BulkHdrConfig:", oError);
             }.bind(this));
-            //     },
-            //     error: function (oError) {
-            //         self.fn_closeBusyIndicator(oDataModel_Header);
-            //     }
-            // });
 
             this.getView().byId("cb_workflow").setVisible(false);
             this.getView().byId("inp_workflow").setVisible(false);
@@ -609,6 +603,8 @@ sap.ui.define([
         },
 
         selectedTable: function (oEvent) {
+            var oBinding;
+
             var tabEntry = this.array.filter(function (item) {
                 return (
                     item.TableName === oEvent.getSource().getValue() &&
@@ -639,73 +635,79 @@ sap.ui.define([
             aFilters.push(filterRole);
 
             var oModelConfig = new JSONModel();
-            var oDataModelConfig = self.getOwnerComponent().getModel("ZMDR_SB_BLKITMCG");
 
-            oDataModelConfig.read("/zmdxcnblkitmcg01", {
-                filters: aFilters,
-                success: function (oData, oResponse) {
-                    oModelConfig.setData(oData.results);
-                    self.getOwnerComponent().setModel(oModelConfig, "oModelConfig");
-                    self.configArray = oModelConfig.getData();
-                    self.noOfColumns = self.configArray.length;
-                    self.futureAllowed = tabEntry[0].IsFutureVersionAllowed;
-                    self.tableappr = tabEntry[0].IsTableLevelApproval;
+            oBinding = this.oBulkModel.bindList("/BulkItmConfig".null, null, aFilters);
+            oBinding.requestContexts().then(function (aContexts) {
+                this.closeBusyDialog(oGBusyArray);
 
-                    self.workflowReq = tabEntry[0].IsWorkflowVisible;
-                    self.preserveNull = tabEntry[0].IsOverwrireWithNull;
-                    self.versioned = tabEntry[0].Versioned;
-                    self.updatezonly = tabEntry[0].IsUpdateZTableOnly;
-                    self.updateztabonly = "N";
+                // Convert contexts to data objects (replaces oData.results)
+                var aResults = aContexts.map(function (oContext) {
+                    return oContext.getObject();
+                });
 
-                    if (self.workflowReq === "X") {
-                        self.getView().byId("cb_workflow").setVisible(true);
-                        self.getView().byId("inp_workflow").setVisible(false);
-                        self.getView().byId("inp_workflow").setEnabled(false);
-                        self.getView().byId("cb_workflow").setSelected(false);
-                        self.getView().byId("inp_workflow").setValue("");
-                    } else {
-                        self.getView().byId("cb_workflow").setVisible(false);
-                        self.getView().byId("inp_workflow").setVisible(false);
-                        self.getView().byId("inp_workflow").setEnabled(false);
-                        self.getView().byId("cb_workflow").setSelected(false);
-                        self.getView().byId("inp_workflow").setValue("");
-                    }
-                    if (self.preserveNull === "X") {
-                        self.getView().byId("cb_overwritenull").setVisible(true);
-                        self.getView().byId("cb_overwritenull").setSelected(false);
-                        self.preserveNull = "N";
-                    } else {
-                        self.getView().byId("cb_overwritenull").setVisible(true);
-                        self.getView().byId("cb_overwritenull").setSelected(false);
-                        self.preserveNull = "N";
-                    }
-                    if (self.updatezonly === "X") {
-                        self.getView().byId("cb_updatezonly").setVisible(true);
-                        self.getView().byId("cb_updatezonly").setSelected(false);
-                        self.updateztabonly = "N";
-                    } else {
-                        self.getView().byId("cb_updatezonly").setVisible(false);
-                        self.getView().byId("cb_updatezonly").setSelected(false);
-                        self.updateztabonly = "N";
-                    }
+                oModelConfig.setData(aResults);
+                this.getOwnerComponent().setModel(oModelConfig, "oModelConfig");
+                this.configArray = oModelConfig.getData();
+                this.noOfColumns = this.configArray.length;
+                this.futureAllowed = tabEntry[0].IsFutureVersionAllowed;
+                this.tableappr = tabEntry[0].IsTableLevelApproval;
 
-                    self.odataHead = [];
-                    for (var i = 1; i < self.configArray.length + 1; i++) {
-                        for (var j = 0; j < self.configArray.length; j++) {
-                            if (self.configArray[j].Colseqno === i) {
-                                self.odataHead.push(self.configArray[j].Columnname);
-                            }
+                this.workflowReq = tabEntry[0].IsWorkflowVisible;
+                this.preserveNull = tabEntry[0].IsOverwrireWithNull;
+                this.versioned = tabEntry[0].Versioned;
+                this.updatezonly = tabEntry[0].IsUpdateZTableOnly;
+                this.updateztabonly = "N";
+
+                if (this.workflowReq === "X") {
+                    this.getView().byId("cb_workflow").setVisible(true);
+                    this.getView().byId("inp_workflow").setVisible(false);
+                    this.getView().byId("inp_workflow").setEnabled(false);
+                    this.getView().byId("cb_workflow").setSelected(false);
+                    this.getView().byId("inp_workflow").setValue("");
+                } else {
+                    this.getView().byId("cb_workflow").setVisible(false);
+                    this.getView().byId("inp_workflow").setVisible(false);
+                    this.getView().byId("inp_workflow").setEnabled(false);
+                    this.getView().byId("cb_workflow").setSelected(false);
+                    this.getView().byId("inp_workflow").setValue("");
+                }
+                if (this.preserveNull === "X") {
+                    this.getView().byId("cb_overwritenull").setVisible(true);
+                    this.getView().byId("cb_overwritenull").setSelected(false);
+                    this.preserveNull = "N";
+                } else {
+                    this.getView().byId("cb_overwritenull").setVisible(true);
+                    this.getView().byId("cb_overwritenull").setSelected(false);
+                    this.preserveNull = "N";
+                }
+                if (this.updatezonly === "X") {
+                    this.getView().byId("cb_updatezonly").setVisible(true);
+                    this.getView().byId("cb_updatezonly").setSelected(false);
+                    this.updateztabonly = "N";
+                } else {
+                    this.getView().byId("cb_updatezonly").setVisible(false);
+                    this.getView().byId("cb_updatezonly").setSelected(false);
+                    this.updateztabonly = "N";
+                }
+
+                this.odataHead = [];
+                for (var i = 1; i < this.configArray.length + 1; i++) {
+                    for (var j = 0; j < this.configArray.length; j++) {
+                        if (this.configArray[j].Colseqno === i) {
+                            this.odataHead.push(this.configArray[j].Columnname);
                         }
                     }
+                }
 
-                    if (self.odataHead.length > 0) {
-                        self.getView().byId("btn_Download").setVisible(true);
-                    } else {
-                        self.getView().byId("btn_Download").setVisible(false);
-                    }
-                },
-                error: function (oError) { },
-            });
+                if (this.odataHead.length > 0) {
+                    this.getView().byId("btn_Download").setVisible(true);
+                } else {
+                    this.getView().byId("btn_Download").setVisible(false);
+                }
+            }.bind(this)).catch(function (oError) {
+                this.closeBusyDialog(oGBusyArray);
+                console.error("Error loading BulkItmConfig:", oError);
+            }.bind(this));
         },
 
         onInvalidDataExport: function (oEvent) {

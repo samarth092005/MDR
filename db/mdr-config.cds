@@ -45,25 +45,25 @@ entity MDRWorkflowLink {
 
 // Replaces ZMDR_BULKHDRCNFG
 entity BulkHdrConfig : Auditable {
-  key TableName           : String(30);
-  key RequesterRole       : String(30);
-      TableDescription    : String(100);
-      apprclass           : String(60);  // 'system,hierarchy,subclass'
-      Category            : String(20);
-      isversioned         : String(1);
-      isfutureallowed     : String(1);
-      istablelevappr      : String(1);
-      isoverwritewithnull : String(1);
-      isworkflowidvisible : String(1);
-      isupdateztableonly  : String(1);
+  key TableName               : String(30);
+  key RequesterRole           : String(30);
+      TableDescription        : String(100);
+      apprclass               : String(60);  // 'system,hierarchy,subclass'
+      Category                : String(20);
+      Versioned               : String(1);
+      IsFutureVersionAllowed  : String(1);
+      IsTableLevelApproval    : String(1);
+      IsOverwrireWithNull     : String(1);
+      IsWorkflowVisible       : String(1);
+      IsUpdateZTableOnly      : String(1);
 }
 
 // Replaces ZMDR_BULKITMCNFG
 entity BulkItmConfig : Auditable {
-  key tablename       : String(30);
-  key columnname      : String(30);  // MUST be UPPERCASE matching .hdbtable column
-  key requesterrole   : String(30);
-      colseqno        : Integer;
+  key Tablename       : String(30);
+  key Columnname      : String(30);  // MUST be UPPERCASE matching .hdbtable column
+  key RequesterRole   : String(30);
+      Colseqno        : Integer;
       islookup        : String(1);
       lookuptablename : String(30);
       lookupfield     : String(100);  // 'FIELD1' or 'F1|:|F2' for composite
