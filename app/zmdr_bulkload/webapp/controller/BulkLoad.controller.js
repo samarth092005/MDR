@@ -33,7 +33,7 @@ sap.ui.define([
 
     return BaseController.extend("com.intapptics.zmdrbulkload.controller.BulkLoad", {
         //Define Global Variables
-        self: undefined,
+        this: undefined,
         array: [],
         configArray: [],
         noOfColumns: undefined,
@@ -127,42 +127,42 @@ sap.ui.define([
         },
 
         handleUploadComplete: function (oEvent) {
-            if (self.rowDataArr.length > 0) {
-                if (self.noOfColumns === self.columnCount) {
+            if (this.rowDataArr.length > 0) {
+                if (this.noOfColumns === this.columnCount) {
                     var errors = [];
-                    for (var i = 0; i < self.odataHead.length; i++) {
-                        if (self.temphead[i] !== self.odataHead[i]) {
-                            errors.push(self.temphead[i]);
-                            self.getView().byId("btn_validate").setEnabled(false);
-                            self.getView().byId("cb_overwritenull").setEnabled(false);
+                    for (var i = 0; i < this.odataHead.length; i++) {
+                        if (this.temphead[i] !== this.odataHead[i]) {
+                            errors.push(this.temphead[i]);
+                            this.getView().byId("btn_validate").setEnabled(false);
+                            this.getView().byId("cb_overwritenull").setEnabled(false);
                         }
                     }
                     if (errors.length > 0) {
                         MessageBox.error(
                             "Excel has following invalid column(s) " + errors
                         );
-                        self.getView().byId("btn_reload").setVisible(true);
+                        this.getView().byId("btn_reload").setVisible(true);
                     } else {
-                        self.getView().byId("btn_validate").setVisible(true);
-                        self.getView().byId("btn_reload").setVisible(true);
+                        this.getView().byId("btn_validate").setVisible(true);
+                        this.getView().byId("btn_reload").setVisible(true);
                     }
                 } else {
                     MessageBox.error(
                         "Invalid excel, Please download and use the correct template without any modification in the format."
                     );
-                    self.getView().byId("btn_validate").setVisible(false);
-                    self.getView().byId("btn_reload").setVisible(true);
+                    this.getView().byId("btn_validate").setVisible(false);
+                    this.getView().byId("btn_reload").setVisible(true);
                 }
             } else {
-                MessageBox.error("Uploaded excel contains no daat, please check.");
-                self.getView().byId("btn_validate").setVisible(false);
-                self.getView().byId("btn_reload").setVisible(true);
+                MessageBox.error("Uploaded excel contains no data, please check.");
+                this.getView().byId("btn_validate").setVisible(false);
+                this.getView().byId("btn_reload").setVisible(true);
             }
             //Disable the file uploader
-            self.getView().byId("fu_upload").setEnabled(false);
-            self.getView().byId("combo_category").setEnabled(false);
-            self.getView().byId("combo_tablelist").setEnabled(false);
-            this.closeBusyDialog(self.oGlobalBusyDialog);
+            this.getView().byId("fu_upload").setEnabled(false);
+            this.getView().byId("combo_category").setEnabled(false);
+            this.getView().byId("combo_tablelist").setEnabled(false);
+            this.closeBusyDialog(this.oGlobalBusyDialog);
         },
 
         onTemplateDownload: function (oEvent) {
@@ -215,18 +215,17 @@ sap.ui.define([
                 oEvent.getParameter("files") && oEvent.getParameter("files")[0]
             );
 
-            self.filename = oEvent.getParameter("files")[0].name;
+            this.filename = oEvent.getParameter("files")[0].name;
 
-            self.oGlobalBusyDialog = this.openBusyDialog();
+            this.oGlobalBusyDialog = this.openBusyDialog();
         },
 
         _import: function (file) {
-            var self = this;
             if (file && window.FileReader) {
                 var reader = new FileReader();
                 reader.onload = function (e) {
                     data = e.target.result;
-                    var arr = self.arrayBufferToBase64(data);
+                    var arr = this.arrayBufferToBase64(data);
 
                     var wb = XLSX.read(arr, {
                         type: "base64",
@@ -235,17 +234,17 @@ sap.ui.define([
                     var tableName = wb.SheetNames;
                     var data = wb.Sheets[tableName[0]];
 
-                    self.format_excel_data(wb.Sheets[wb.SheetNames[0]], data);
-                };
+                    this.format_excel_data(wb.Sheets[wb.SheetNames[0]], data);
+                }.bind(this);
                 reader.readAsArrayBuffer(file);
             }
         },
 
         format_excel_data: function (sheet, data) {
-            self.temphead = [];
-            self.rowDataArr = [];
+            this.temphead = [];
+            this.rowDataArr = [];
             var range = XLSX.utils.decode_range(sheet['!ref']);
-            self.columnCount = XLSX.utils.decode_range(data['!ref']).e.c + 1;
+            this.columnCount = XLSX.utils.decode_range(data['!ref']).e.c + 1;
             var rowData = "";
             var cellDataVal = "";
             for (var rowNum = range.s.r + 1; rowNum <= range.e.r; rowNum++) {
@@ -269,208 +268,195 @@ sap.ui.define([
                     rowData = rowData + "«" + (cellData ? cellDataVal : '');
                 }
 
-                if (self.rowDataArr === undefined) {
-                    self.rowDataArr = [];
+                if (this.rowDataArr === undefined) {
+                    this.rowDataArr = [];
                 }
                 var newData = rowData.replaceAll("«", "");
                 if (newData !== "") {
-                    self.rowDataArr.push(rowData.substring(1));
+                    this.rowDataArr.push(rowData.substring(1));
                 }
             }
 
-            var result = self.rowDataArr.filter(
+            var result = this.rowDataArr.filter(
                 (o) => !Object.keys(o).every(k => !o[k]));
-            self.rowDataArr = result;
+            this.rowDataArr = result;
 
             //get excel headers
             for (var colNum = range.s.c; colNum <= range.e.c; colNum++) {
                 var headData = sheet[XLSX.utils.encode_cell({ r: 0, c: colNum })];
-                self.temphead.push(headData.v);
+                this.temphead.push(headData.v);
             }
         },
 
         handleValidateData: function (oEvent) {
-            if (self.validateWorkflowId()) {
+            var oBinding,
+                oBindingHeader;
+            if (this.validateWorkflowId()) {
                 MessageBox.error(
                     "Please enter upto 10 digit number for Workflow Number!"
                 );
             } else {
-                self.workflowidentered = self.byId("inp_workflow").getValue();
+                this.workflowidentered = this.byId("inp_workflow").getValue();
 
                 var aFilters = [];
-
-                var oDataModel1 = self.getOwnerComponent().getModel();
+                var oGlobalBusyDialog = this.openBusyDialog();
 
                 var oModel1 = new JSONModel();
                 var filter = new Filter(
                     "Tablename",
                     FilterOperator.EQ,
-                    self.tableName
+                    this.tableName
                 );
                 var filterStatus = new Filter(
-                    "Requeststatus",
+                    "RequestStatus",
                     FilterOperator.EQ,
                     "INPROGRESS"
                 );
                 aFilters.push(filter);
                 aFilters.push(filterStatus);
 
-                oDataModel1.read("/BulkTempSet", {
-                    // This call is for non-version table, if any inprogress records for the requested table
-                    filters: aFilters,
-                    success: function (oData, oResponse) {
-                        oModel1.setData(oData.results);
-                        if (!oModel1.oData.length > 0) {
-                            var oDataModel = self
-                                .getOwnerComponent()
-                                .getModel();
-                            self.dataload = "N";
-                            var oEntry = {};
-                            var oInData = {};
-                            oEntry.Tablename = self.tableName;
-                            oEntry.Source = "UI";
-                            oEntry.Isdataload = self.dataload;// === 'Y' ? true : false;
-                            oEntry.Isoverwritewithnull = self.Preservenull;// === 'Y' ? true : false;
-                            oEntry.Isfutureversion = self.futurever;// === 'Y' ? true : false;
-                            oEntry.Workflowid = self.workflowidentered;
-                            var itemData = [];
-                            oEntry.NAVOUTINVALIDDATA = [];
-                            var lv_res = {};
-                            lv_res.Code = "";
-                            lv_res.Message = "";
-                            oEntry.NAVOUTINVALIDDATA[0] = lv_res;
+                oBinding = this.oBulkModel.bindList("/BulkTemp", null, null, aFilters);
+                oBinding.requestContexts().then(function (aContexts) {
+                    // Convert contexts to data objects (replaces oData.results)
+                    var aResults = aContexts.map(function (oContext) {
+                        return oContext.getObject();
+                    });
 
-                            oEntry.NAVOUTVALIDDATA = [];
-                            var lv_res1 = {};
-                            lv_res1.Data = "";
+                    oModel1.setData(aResults);
+                    if (!oModel1.oData.length > 0) {
+                        var oDataModel = this.getOwnerComponent().getModel();
+                        this.dataload = "N";
+                        var oEntry = {};
+                        var oInData = {};
+                        oEntry.Tablename = this.tableName;
+                        oEntry.Source = "UI";
+                        oEntry.Isdataload = this.dataload;// === 'Y' ? true : false;
+                        oEntry.Isoverwritewithnull = this.Preservenull;// === 'Y' ? true : false;
+                        oEntry.Isfutureversion = this.futurever;// === 'Y' ? true : false;
+                        oEntry.Workflowid = this.workflowidentered;
+                        var itemData = [];
+                        oEntry.NAVOUTINVALIDDATA = [];
+                        var lv_res = {};
+                        lv_res.Code = "";
+                        lv_res.Message = "";
+                        oEntry.NAVOUTINVALIDDATA[0] = lv_res;
 
-                            oEntry.NAVOUTVALIDDATA[0] = lv_res1;
+                        oEntry.NAVOUTVALIDDATA = [];
+                        var lv_res1 = {};
+                        lv_res1.Data = "";
 
-                            oEntry.NAVOUTUPDATEDATA = [];
-                            var lv_res2 = {};
-                            lv_res2.Data = "";
+                        oEntry.NAVOUTVALIDDATA[0] = lv_res1;
 
-                            oEntry.NAVOUTUPDATEDATA[0] = lv_res2;
+                        oEntry.NAVOUTUPDATEDATA = [];
+                        var lv_res2 = {};
+                        lv_res2.Data = "";
 
-                            oEntry.NAVOUTCREATEDATA = [];
-                            var lv_res3 = {};
-                            lv_res3.Data = "";
+                        oEntry.NAVOUTUPDATEDATA[0] = lv_res2;
 
-                            oEntry.NAVOUTCREATEDATA[0] = lv_res3;
+                        oEntry.NAVOUTCREATEDATA = [];
+                        var lv_res3 = {};
+                        lv_res3.Data = "";
 
-                            oEntry.NAVOUTHEADER = [];
-                            var lv_res4 = {};
-                            lv_res4.Createcount = 0;
-                            lv_res4.Updatecount = 0;
-                            lv_res4.Validcount = 0;
-                            lv_res4.Invalidcount = 0;
-                            lv_res4.Workflowid = "";
-                            lv_res4.Tablename = self.tableName;
+                        oEntry.NAVOUTCREATEDATA[0] = lv_res3;
 
-                            oEntry.NAVOUTHEADER[0] = lv_res4;
+                        oEntry.NAVOUTHEADER = [];
+                        var lv_res4 = {};
+                        lv_res4.Createcount = 0;
+                        lv_res4.Updatecount = 0;
+                        lv_res4.Validcount = 0;
+                        lv_res4.Invalidcount = 0;
+                        lv_res4.Workflowid = "";
+                        lv_res4.Tablename = this.tableName;
 
-                            for (var i = 0; i < self.rowDataArr.length; i++) {
-                                itemData.push({
-                                    Data: self.rowDataArr[i],
-                                });
+                        oEntry.NAVOUTHEADER[0] = lv_res4;
+
+                        for (var i = 0; i < this.rowDataArr.length; i++) {
+                            itemData.push({
+                                Data: this.rowDataArr[i],
+                            });
+                        }
+
+                        oEntry.NAVINDATA = itemData;
+                        oEntry.Requestorsaprole = this.rolename;
+
+                        var oGBusyArray = this.openBusyDialog();
+
+                        // Get the bound action
+                        var oModel = this.getOwnerComponent().getModel();
+                        var oAction = oModel.bindContext("/validateBulkData(...)");
+
+                        // Set action parameters
+                        var oContext = oModel.bindContext("/validateBulkData(...)");
+                        oContext.setParameter("tablename", oEntry.tablename);
+                        oContext.setParameter("requesterrole", oEntry.requesterrole);
+                        oContext.setParameter("rowData", oEntry.rowData);
+                        oContext.setParameter("overwriteWithNull", oEntry.overwriteWithNull);
+                        oContext.setParameter("futureVersion", oEntry.futureVersion);
+                        oContext.setParameter("workflowid", oEntry.workflowid);
+
+                        oContext.execute().then(function () {
+                            this.closeBusyDialog(oGBusyArray);
+
+                            var oResult = oContext.getBoundContext().getObject();
+
+                            this.getView().byId("table_validresult").setVisible(true);
+
+                            // Build header summary (replaces NAVOUTHEADER)
+                            var headerData = [{
+                                Validcount: oResult.validCount,
+                                Invalidcount: oResult.invalidCount,
+                                TotalCount: oResult.validCount + oResult.invalidCount
+                            }];
+                            var oHeaderDataModel = new JSONModel(headerData);
+                            this.getOwnerComponent().setModel(oHeaderDataModel, "oHeaderDataModel");
+
+                            // Handle invalid data (replaces NAVOUTINVALIDDATA)
+                            if (oResult.invalidData && oResult.invalidData.length > 0) {
+                                this.getView().byId("btn_downloadinvaliddata").setVisible(true);
+                                var oInvalidDataModel = new JSONModel(oResult.invalidData);
+                                this.InvalidDataModel = oInvalidDataModel;
+                                this.getOwnerComponent().setModel(oInvalidDataModel, "oInvalidDataModel");
+                            } else {
+                                this.getView().byId("btn_downloadinvaliddata").setVisible(false);
                             }
 
-                            oEntry.NAVINDATA = itemData;
-                            oEntry.Requestorsaprole = self.rolename;
+                            // Handle valid data (replaces NAVOUTVALIDDATA)
+                            if (oResult.validData && oResult.validData.length > 0) {
+                                this.finalData = oResult.validData;
+                                this.validData = oResult.validData;
+                                this.validRecordCount = oResult.validCount;
 
-                            oDataModel.create("/InHeaderSet", oEntry, {
-                                method: "POST",
-                                success: function (oData, oResponse) {
-                                    self.closeBusyDialog();
-                                    self.getView().byId("table_validresult").setVisible(true);
+                                if (this.validRecordCount > 0) {
+                                    this.getView().byId("lbl_warning").setVisible(true);
+                                    this.getView().byId("btn_submit").setVisible(true);
+                                    this.getView().byId("btn_cancel").setVisible(true);
+                                }
+                            } else if (!oResult.invalidData || oResult.invalidData.length === 0) {
+                                MessageBox.error("No valid records, please upload valid records");
+                            }
 
-                                    var headerData = [];
-                                    headerData = oResponse.data.NAVOUTHEADER.results;
-                                    var totalCount =
-                                        headerData[0].Invalidcount + headerData[0].Validcount;
-                                    headerData[0].TotalCount = totalCount;
-                                    var oHeaderDataModel = new JSONModel(headerData);
-                                    self
-                                        .getOwnerComponent()
-                                        .setModel(oHeaderDataModel, "oHeaderDataModel");
+                            if (oResult.workflowid) {
+                                this.workflowId = oResult.workflowid;
+                            }
 
-                                    if (
-                                        oResponse.data.NAVOUTINVALIDDATA.results.length !== 0
-                                    ) {
-                                        self
-                                            .getView()
-                                            .byId("btn_downloadinvaliddata")
-                                            .setVisible(true);
-                                        var invalidData = [];
-
-                                        invalidData = oResponse.data.NAVOUTINVALIDDATA.results;
-                                        var oInvalidDataModel = new JSONModel(invalidData);
-                                        self.InvalidDataModel = oInvalidDataModel;
-
-                                        self
-                                            .getOwnerComponent()
-                                            .setModel(oInvalidDataModel, "oInvalidDataModel");
-
-                                        if (oResponse.data.NAVOUTVALIDDATA !== null) {
-                                            self.finalData =
-                                                oResponse.data.NAVOUTVALIDDATA.results;
-                                            self.validData =
-                                                oResponse.data.NAVOUTVALIDDATA.results;
-
-                                            self.validRecordCount =
-                                                oResponse.data.NAVOUTHEADER.results[0].Validcount;
-
-                                            if (self.validRecordCount > 0) {
-                                                self.getView().byId("lbl_warning").setVisible(true);
-                                                self.getView().byId("btn_submit").setVisible(true);
-                                                self.getView().byId("btn_cancel").setVisible(true);
-                                            }
-                                        } else {
-                                            alert(
-                                                "No valid records, please upload valid records"
-                                            );
-
-                                            //self.getView().byId("").setVisible(true);
-                                            //self.getView().byId("").setVisible(true);
-                                        }
-                                    } else if (
-                                        oResponse.data.NAVOUTVALIDDATA.results.length !== 0
-                                    ) {
-                                        self.getView().byId("lbl_warning").setVisible(true);
-                                        self.getView().byId("btn_submit").setVisible(true);
-                                        self.getView().byId("btn_cancel").setVisible(true);
-                                        self.finalData = oResponse.data.NAVOUTVALIDDATA.results;
-                                        self.validData = oResponse.data.NAVOUTVALIDDATA.results;
-                                        self
-                                            .getView()
-                                            .byId("btn_downloadinvaliddata")
-                                            .setVisible(false);
-                                    } else {
-                                        MessageBox.error(
-                                            oResponse.data.NAVOUTHEADER.results[0].Msg
-                                        );
-                                    }
-                                },
-                                error: function (oError) {
-                                    self.closeBusyDialog();
-                                    alert("Error occured while validating excel data");
-                                },
-                            });
-                            self.getView().byId("cb_overwritenull").setEnabled(false);
-                            self.getView().byId("btn_validate").setEnabled(false);
-                        } else {
-                            self.closeBusyDialog();
-                            MessageBox.error(
-                                "A request is in-progress for this table, please continue once it is approved"
-                            );
-                            self.getView().byId("btn_validate").setEnabled(false);
-                        }
-                    },
-                    error: function (oError) {
-                        self.closeBusyDialog();
-                        MessageBox.error("An error occurred while validation data");
-                    },
-                });
+                        }).catch(function (oError) {
+                            this.closeBusyDialog(oGBusyArray);
+                            MessageBox.error("Error occurred while validating excel data");
+                            console.error(oError);
+                        });
+                        this.getView().byId("cb_overwritenull").setEnabled(false);
+                        this.getView().byId("btn_validate").setEnabled(false);
+                    } else {
+                        this.closeBusyDialog();
+                        MessageBox.error(
+                            "A request is in-progress for this table, please continue once it is approved"
+                        );
+                        this.getView().byId("btn_validate").setEnabled(false);
+                    }
+                }.bind(this)).catch(function (oError) {
+                    this.closeBusyDialog(oGlobalBusyDialog);
+                    console.error("Error loading BulkTempConfig:", oError);
+                }.bind(this));
             }
         },
 
@@ -512,15 +498,15 @@ sap.ui.define([
 
         checkOverwriteNull: function (oEvent) {
             if (oEvent.getSource().getSelected() === true) {
-                self.preserveNull = "Y";
+                this.preserveNull = "Y";
                 //open confirmation box
                 //This option will overwrite all blank fields in the uploaded template with Null - do you wish to proceed?
             }
 
             var bSelected = oEvent.getSource().getSelected();
             if (bSelected) {
-                if (!self.oApproveDialog) {
-                    self.oApproveDialog = new Dialog({
+                if (!this.oApproveDialog) {
+                    this.oApproveDialog = new Dialog({
                         type: DialogType.Message,
                         title: "Confirm",
                         content: new Text({
@@ -531,34 +517,34 @@ sap.ui.define([
                             text: "Yes",
                             press: function (oEvent) {
                                 if (bSelected) {
-                                    self.preserveNull = "Y";
+                                    this.preserveNull = "Y";
                                 } else {
-                                    self.preserveNull = "N";
+                                    this.preserveNull = "N";
                                 }
-                                self.oApproveDialog.close();
+                                this.oApproveDialog.close();
                             },
                         }),
                         endButton: new Button({
                             text: "No",
                             press: function (oEvent) {
-                                self.getView().byId("cb_overwritenull").setSelected(false);
-                                self.preserveNull = "N";
-                                self.oApproveDialog.close();
+                                this.getView().byId("cb_overwritenull").setSelected(false);
+                                this.preserveNull = "N";
+                                this.oApproveDialog.close();
                             },
                         }),
                     });
                 }
                 this.oApproveDialog.open();
             } else {
-                self.preserveNull = "N";
+                this.preserveNull = "N";
             }
         },
 
         checkUpdateZOnly: function (oEvent) {
             var bSelected = oEvent.getSource().getSelected();
             if (bSelected) {
-                if (!self.oApproveDialog) {
-                    self.oApproveDialog = new Dialog({
+                if (!this.oApproveDialog) {
+                    this.oApproveDialog = new Dialog({
                         type: DialogType.Message,
                         title: "Confirm",
                         content: new Text({
@@ -569,36 +555,36 @@ sap.ui.define([
                             text: "Yes",
                             press: function (oEvent) {
                                 if (bSelected) {
-                                    self.updateztabonly = "Y";
+                                    this.updateztabonly = "Y";
                                 } else {
-                                    self.updateztabonly = "N";
+                                    this.updateztabonly = "N";
                                 }
-                                self.oApproveDialog.close();
+                                this.oApproveDialog.close();
                             },
                         }),
                         endButton: new Button({
                             text: "No",
                             press: function (oEvent) {
-                                self.getView().byId("cb_updatezonly").setSelected(false);
-                                self.updateztabonly = "N";
-                                self.oApproveDialog.close();
+                                this.getView().byId("cb_updatezonly").setSelected(false);
+                                this.updateztabonly = "N";
+                                this.oApproveDialog.close();
                             },
                         }),
                     });
                 }
                 this.oApproveDialog.open();
             } else {
-                self.updateztabonly = "N";
+                this.updateztabonly = "N";
             }
         },
 
         checkWorkflow: function (oEvent) {
             if (oEvent.getSource().getSelected() === true) {
-                self.getView().byId("inp_workflow").setEnabled(true);
-                self.getView().byId("inp_workflow").setVisible(true);
+                this.getView().byId("inp_workflow").setEnabled(true);
+                this.getView().byId("inp_workflow").setVisible(true);
             } else {
-                self.getView().byId("inp_workflow").setEnabled(false);
-                self.getView().byId("inp_workflow").setVisible(false);
+                this.getView().byId("inp_workflow").setEnabled(false);
+                this.getView().byId("inp_workflow").setVisible(false);
             }
         },
 
@@ -728,21 +714,21 @@ sap.ui.define([
 
             var wb = XLSX.utils.book_new();
             wb.Props = {
-                Title: self.tableName,
-                Subject: self.tableName,
+                Title: this.tableName,
+                Subject: this.tableName,
                 Author: "MDR",
                 CreationDate: currentdate,
             };
             wb.SheetNames.push("Invalid Data");
             var ws_data = [];
-            var length = self
+            var length = this
                 .getOwnerComponent()
                 .getModel("oInvalidDataModel")
                 .getProperty("/").length;
             var dataStr = [];
             dataStr.push("Code«Message«Rownumber");
 
-            var data = self
+            var data = this
                 .getOwnerComponent()
                 .getModel("oInvalidDataModel")
                 .getProperty("/");
@@ -774,39 +760,39 @@ sap.ui.define([
                 new Blob([s2ab(wbout)], {
                     type: "application/octet-stream",
                 }),
-                self.tableName + "_InvalidRecords_" + datetime + ".xlsx"
+                this.tableName + "_InvalidRecords_" + datetime + ".xlsx"
             );
         },
 
         onSubmit: function (oEvent) {
-            if (self.validateWorkflowId()) {
+            if (this.validateWorkflowId()) {
                 MessageBox.error(
                     "Please enter upto 10 digits number for workflow number!"
                 );
             } else {
-                self.workflowidentered = self.byId("inp_workflow").getValue();
+                this.workflowidentered = this.byId("inp_workflow").getValue();
 
-                self.getView().byId("btn_submit").setEnabled(false);
-                self.getView().byId("btn_cancel").setEnabled(false);
+                this.getView().byId("btn_submit").setEnabled(false);
+                this.getView().byId("btn_cancel").setEnabled(false);
 
-                self.openBusyDialog();
+                this.openBusyDialog();
 
-                var oDataModel = self.getOwnerComponent().getModel();
-                self.dataload = "Y";
+                var oDataModel = this.getOwnerComponent().getModel();
+                this.dataload = "Y";
 
                 var oEntry = {};
-                oEntry.Tablename = self.tableName;
+                oEntry.Tablename = this.tableName;
                 oEntry.Source = "UI";
-                oEntry.Isdataload = self.dataload;// === 'Y' ? true : false;
-                oEntry.Isoverwritewithnull = self.preserveNull;// === 'Y' ? true : false;
-                oEntry.Isfutureversion = self.futureAllowed;// === 'Y' ? true : false;
-                oEntry.Workflowid = self.workflowidentered;
+                oEntry.Isdataload = this.dataload;// === 'Y' ? true : false;
+                oEntry.Isoverwritewithnull = this.preserveNull;// === 'Y' ? true : false;
+                oEntry.Isfutureversion = this.futureAllowed;// === 'Y' ? true : false;
+                oEntry.Workflowid = this.workflowidentered;
 
                 var itemData = [];
 
-                for (var i = 0; i < self.finalData.length; i++) {
+                for (var i = 0; i < this.finalData.length; i++) {
                     itemData.push({
-                        Data: self.finalData[i].Data,
+                        Data: this.finalData[i].Data,
                     });
                 }
 
@@ -828,24 +814,24 @@ sap.ui.define([
                 lv_res5.Tablename = "";
                 oEntry.NAVOUTHEADER[0] = lv_res5;
 
-                oEntry.Requestorsaprole = self.rolename;
-                oEntry.Requestorremarks = self.sValue;
+                oEntry.Requestorsaprole = this.rolename;
+                oEntry.Requestorremarks = this.sValue;
 
                 oDataModel.create("/InHeaderSet", oEntry, {
                     method: "POST",
                     success: function (oData, oResponse) {
-                        self.closeBusyDialog();
-                        self.WorkflowId =
+                        this.closeBusyDialog();
+                        this.WorkflowId =
                             oResponse.data.NAVOUTHEADER.results[0].Workflowid;
 
-                        /*var oUserData = self
+                        /*var oUserData = this
                           .getOwnerComponent()
                           .getModel("usermodel")
                           .getData();
-                        self.oUserId = oUserData.id;
-                        self.ReqEmailId = oUserData.email; */
+                        this.oUserId = oUserData.id;
+                        this.ReqEmailId = oUserData.email; */
 
-                        //self.onTriggerWF();
+                        //this.onTriggerWF();
 
                         MessageBox.information(
                             "Request submitted successfully with workflow Id " +
@@ -857,12 +843,12 @@ sap.ui.define([
                             }
                         );
 
-                        self.getView().byId("btn_submit").setVisible(false);
-                        self.getView().byId("btn_cancel").setVisible(false);
-                        self.getView().byId("lbl_warning").setVisible(false);
+                        this.getView().byId("btn_submit").setVisible(false);
+                        this.getView().byId("btn_cancel").setVisible(false);
+                        this.getView().byId("lbl_warning").setVisible(false);
                     },
                     error: function (oError) {
-                        self.closeBusyDialog();
+                        this.closeBusyDialog();
                         alert("Error Occurred while processing data load");
                     },
                 });
@@ -874,31 +860,31 @@ sap.ui.define([
         },
 
         onTriggerWF: function () {
-            var oDataModel = self.getOwnerComponent().getModel();
+            var oDataModel = this.getOwnerComponent().getModel();
 
             var oEntry = {};
-            oEntry.Isfutureallowed = self.futureVer;
-            oEntry.Isversioned = self.versioned;
-            oEntry.Category = self.categoryName;
-            oEntry.Tablename = self.tableName;
-            oEntry.Workflowid = self.WorkflowId.toString();
-            oEntry.Requestorid = self.oUserId;
-            oEntry.Requestoremailid = self.ReqEmailId;
-            oEntry.ValidRecordsCount = self.ValidRecordsCount;
-            oEntry.Requestorremarks = self.sValue;
+            oEntry.Isfutureallowed = this.futureVer;
+            oEntry.Isversioned = this.versioned;
+            oEntry.Category = this.categoryName;
+            oEntry.Tablename = this.tableName;
+            oEntry.Workflowid = this.WorkflowId.toString();
+            oEntry.Requestorid = this.oUserId;
+            oEntry.Requestoremailid = this.ReqEmailId;
+            oEntry.ValidRecordsCount = this.ValidRecordsCount;
+            oEntry.Requestorremarks = this.sValue;
             oEntry.DeleteFlag = "N";
-            oEntry.Isoverwritewithnull = self.Preservenull;
+            oEntry.Isoverwritewithnull = this.Preservenull;
             oEntry.Operationtype = "BULK UPDATE";
-            oEntry.Requestorrole = self.rolename;
-            oEntry.Updateztabonly = self.updateztabonly;
+            oEntry.Requestorrole = this.rolename;
+            oEntry.Updateztabonly = this.updateztabonly;
 
             oEntry.Approverstage = "APPROVER";
             oEntry.Systemname = "MDR";
             oEntry.Hierarchy = "ZMDR_ACCOUNT";
-            if (self.tableappr == "Y") {
-                self.Subclass = self.tableName;
+            if (this.tableappr == "Y") {
+                this.Subclass = this.tableName;
             } else {
-                self.Subclass = "ZMDR_ACCOUNTApprover";
+                this.Subclass = "ZMDR_ACCOUNTApprover";
             }
 
             oDataModel.create("/TrigBulkUploadWFSet", oEntry, {
@@ -917,8 +903,8 @@ sap.ui.define([
         },
 
         validateWorkflowId: function (oEvent) {
-            if (self.byId("inp_workflow").getVisible()) {
-                var iWorkflowId = self.byId("inp_workflow").getValue();
+            if (this.byId("inp_workflow").getVisible()) {
+                var iWorkflowId = this.byId("inp_workflow").getValue();
 
                 if (iWorkflowId === "" || iWorkflowId === null) {
                     return true;
@@ -928,8 +914,8 @@ sap.ui.define([
                         if (iWorkflowId.length > 10) {
                             return true;
                         } else {
-                            self.getView().byId("cb_workflow").setEnabled(false);
-                            self.getView().byId("inp_workflow").setEnabled(false);
+                            this.getView().byId("cb_workflow").setEnabled(false);
+                            this.getView().byId("inp_workflow").setEnabled(false);
                             return false;
                         }
                     } else {
@@ -942,7 +928,7 @@ sap.ui.define([
         },
 
         onSubmitDialog: function () {
-            if (self.validateWorkflowId()) {
+            if (this.validateWorkflowId()) {
                 MessageBox.error(
                     "Please enter upto 10 digits number for Workflow Number!"
                 );
@@ -983,8 +969,8 @@ sap.ui.define([
                                 .getCore()
                                 .byId("submitDialogTextArea")
                                 .getValue();
-                            self.sValue = sText;
-                            self.onSubmit();
+                            this.sValue = sText;
+                            this.onSubmit();
                             oDialog.close();
                         },
                     }),

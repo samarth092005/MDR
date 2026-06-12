@@ -1,4 +1,4 @@
-TableName,RequesterRole,TableDescription,apprclass,Category,Versioned,IsFutureVersionAllowed,IsTableLevelApproval,IsOverwrireWithNull,IsWorkflowVisible,IsUpdateZTableOnly,created_on,created_by,updated_on,updated_by
+TableName,RequesterRole,TableDescription,ApprClass,Category,Versioned,IsFutureVersionAllowed,IsTableLevelApproval,IsOverwrireWithNull,IsWorkflowVisible,IsUpdateZTableOnly,created_on,created_by,updated_on,updated_by
 ZMDR_BPMASTER,ZMDR_C_FIORI_ALL,Business Partner,"MDR,CUSTOMER,CUSTOMERAPPROVER",Customer,Y,N,N,Y,Y,N,2026-04-30T19:10:26,AIS_BALRAM,2026-04-30T19:10:26,AIS_BALRAM
 ZMDR_BPMASTER,ZMDR_C_FIORI_SAP,Business Partner,"MDR,CUSTOMER,CUSTOMERAPPROVER",Customer,Y,N,N,Y,Y,N,2026-04-30T19:10:26,AIS_BALRAM,2026-04-30T19:10:26,AIS_BALRAM
 ZMDR_CONTRACT,ZMDR_C_FIORI_ALL,Contract,"MDR,SERVICES,SERVICESBUSAPPROVER",Services,Y,N,N,Y,Y,N,2025-11-15T09:54:39,AIS_BALRAM,2025-11-15T09:54:59,AIS_BALRAM

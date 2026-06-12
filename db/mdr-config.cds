@@ -48,7 +48,7 @@ entity BulkHdrConfig : Auditable {
   key TableName               : String(30);
   key RequesterRole           : String(30);
       TableDescription        : String(100);
-      apprclass               : String(60);  // 'system,hierarchy,subclass'
+      ApprClass               : String(60);  // 'system,hierarchy,subclass'
       Category                : String(20);
       Versioned               : String(1);
       IsFutureVersionAllowed  : String(1);
@@ -64,35 +64,35 @@ entity BulkItmConfig : Auditable {
   key Columnname      : String(30);  // MUST be UPPERCASE matching .hdbtable column
   key RequesterRole   : String(30);
       Colseqno        : Integer;
-      islookup        : String(1);
-      lookuptablename : String(30);
-      lookupfield     : String(100);  // 'FIELD1' or 'F1|:|F2' for composite
-      ismatching      : String(1);    // Y = key matching field
-      isdatefield     : String(1);
-      validationindex : String(50);   // comma-separated rule indices
+      IsLookup        : String(1);
+      LookupTablename : String(30);
+      LookupField     : String(100);  // 'FIELD1' or 'F1|:|F2' for composite
+      IsMatching      : String(1);    // Y = key matching field
+      IsDateField     : String(1);
+      ValidationIndex : String(50);   // comma-separated rule indices
 }
 
 // Non-versioned in-flight data (replaces ZMDR_BULKTEMP)
 entity BulkTemp {
-  key bulknumber     : UUID;
-      tablename      : String(30);
-      bulkdata       : LargeString;  // «-delimited row string
-      workflowid     : String(10);
-      actiontype     : String(20);   // Create | Amend
-      initiationdate : Timestamp;
-      requeststatus  : String(20);   // INPROGRESS | APPROVED | REJECTED
+  key BulkNumber     : UUID;
+      Tablename      : String(30);
+      BulkData       : LargeString;  // «-delimited row string
+      WorkflowId     : String(10);
+      ActionType     : String(20);   // Create | Amend
+      InitiationDate : Timestamp;
+      RequestStatus  : String(20);   // INPROGRESS | APPROVED | REJECTED
 }
 
 // Validation rules (replaces ZMDXCNBLKDTVAL01)
 entity BulkDataValidation : Auditable {
-  key tablename      : String(30);
-  key sourcecolname  : String(30);
-  key valindex       : Integer;
-      operation      : String(20);   // REGEX | LOOKUP
-      sourcecolvalue : String(200);
-      destcolname    : String(30);
-      destcolvalue   : String(100);
-      errormessage   : String(200);
+  key Tablename      : String(30);
+  key SourceColName  : String(30);
+  key ValIndex       : Integer;
+      Operation      : String(20);   // REGEX | LOOKUP
+      SourceColValue : String(200);
+      DestColName    : String(30);
+      DestColValue   : String(100);
+      ErrorMessage   : String(200);
 }
 
 // Replaces ZMDR_APPROVERCLS
