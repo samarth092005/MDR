@@ -6,10 +6,10 @@
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
+    "@cap-js/hana": "^1",
     "@sap-cloud-sdk/http-client": "^4.7.0",
-    "@sap/cds": "^9",
-    "@sap/cds-dk": "^9.9.1",
-    "@cap-js/hana": "^2",
+    "@sap/cds": "^8.2",
+    "@sap/cds-dk": "^8.2",
     "@sap/xssec": "^3",
     "axios": "^1.16.1",
     "express": "^4",
@@ -53,13 +53,15 @@
             "label": "xsuaa"
           }
         },
-				"db": {
-					"kind": "hana",
-          "vcap": {
-          "label": "hana"
+        "db": {
+          "kind": "hana",
+          "pool": {
+            "acquireTimeoutMillis": 2000,
+            "max": 1400,
+            "min": 100
+          }
         }
-				}
-			},
+      },
       "destinations": {
         "kind": "destination",
         "vcap": {

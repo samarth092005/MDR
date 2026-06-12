@@ -10,3 +10,5 @@ package-lock.json
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal
+# added by cds
+.cdsrc-private.json

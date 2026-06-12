@@ -28,6 +28,7 @@ modules:
       - name: mdr-cap-btp-destination
       - name: mdr-cap-btp-db
       - name: mdr-cap-btp-auth
+      - name: mdr-btp-db
 
   - name: mdr-cap-btp-db-deployer
     type: hdb
@@ -36,6 +37,7 @@ modules:
       buildpack: nodejs_buildpack
     requires:
       - name: mdr-cap-btp-db
+      - name: mdr-btp-db
 
   - name: mdr-cap-btp-approuter
     type: approuter.nodejs
@@ -74,3 +76,8 @@ resources:
     type: org.cloudfoundry.existing-service
     parameters:
       service-name: mdr-cap-manual-auth
+  - name: mdr-btp-db
+    type: com.sap.xs.hdi-container
+    parameters:
+      service: hana
+      service-plan: hdi-shared
