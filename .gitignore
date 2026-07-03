@@ -12,3 +12,5 @@ package-lock.json
 *.sqlite-wal
 # added by cds
 .cdsrc-private.json
+# developer notes (local only)
+docs/

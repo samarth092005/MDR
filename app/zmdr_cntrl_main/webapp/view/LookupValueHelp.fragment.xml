@@ -1,0 +1,30 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+    <Dialog id="dlgHierParentLkp" title="Select New Parent Node" draggable="true" resizable="true" contentHeight="50rem" contentWidth="50rem">
+        <subHeader>
+            <Toolbar id="tlbDlgHierParentLkp">
+                <SearchField id="srchDlgHierParentLkp" search="onSearch_dlgHierParentLkp"></SearchField>
+            </Toolbar>
+        </subHeader>
+        <content>
+            <VBox id="vbxDlgHierParentLkp">
+                <Table id="tblDlgHierParentLkp" sticky="ColumnHeaders,HeaderToolbar,InfoToolbar" mode="SingleSelectMaster" fixedLayout="false" contextualWidth="Auto" noDataText="{i18n>tableNoDataText}">
+                </Table>
+                <OverflowToolbar id="oftDlgHierParentLkpPaging">
+                    <ToolbarSpacer id="tbspcr"></ToolbarSpacer>
+                    <OverflowToolbarButton id="btnDlgHierParentLkpFirstPage" icon="sap=icon://sys-first-page" type="Transparent" enabled="false" press="onPressPagination" tooltip="{i18n>firstPage}"></OverflowToolbarButton>
+                    <OverflowToolbarButton id="btnDlgHierParentLkpPrevPage" icon="sap=icon://sys-prev-page" type="Transparent" enabled="false" press="onPressPagination" tooltip="{i18n>prevPage}"></OverflowToolbarButton>
+                    <Input id="inpDlgHierParentLkpPageNum" width="50px" value="1" submit="onPressPagination" tooltip="{i18n>curPageNum}"></Input>
+                    <Label id="lblDlgHierParentLkpMaxPageNum" tooltip="{i18n>ttlPageNum}"></Label>
+                    <OverflowToolbarButton id="btnDlgHierParentLkpNextPage" icon="sap=icon://sys-next-page" type="Transparent" enabled="false" press="onPressPagination" tooltip="{i18n>nextPage}"></OverflowToolbarButton>
+                    <OverflowToolbarButton id="btnDlgHierParentLkpLastPage" icon="sap=icon://sys-last-page" type="Transparent" enabled="false" press="onPressPagination" tooltip="{i18n>lastPage}"></OverflowToolbarButton>
+                </OverflowToolbar>
+            </VBox>
+        </content>
+        <beginButton>
+            <Button id="btnOkDlgHierParentLkp" text="{i18n>btnOkDlg}" tooltip="{i18n>btnOkDlg}" type="Emphasized" press="onPress_btnOkDlgHierParentLkp"></Button>
+        </beginButton>
+        <endButton>
+            <Button id="btnCancelDlgHierParentLkp" text="{i18n>btnCancelDlg}" tooltip="{i18n>btnCancelDlg}" type="Ghost" press="onPress_btnCancelDlgHierParentLkp"></Button>
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>
