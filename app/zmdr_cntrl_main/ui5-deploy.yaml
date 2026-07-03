@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=https://sap.github.io/ui5-tooling/schema/ui5.yaml.json
+
+specVersion: "3.1"
+metadata:
+  name: com.intapptics.zmdrcntrlmain
+type: application
+builder:
+  resources:
+    excludes:
+      - /test/**
+      - /localService/**
+  customTasks:
+    - name: deploy-to-abap
+      afterTask: generateCachebusterInfo
+      configuration:
+        target:
+          url: http://aissapsrv.abhiyantatech.com:8000
+          client: '200'
+        credentials:
+          username: env:ABAP_USER
+          password: env:ABAP_PASSWORD
+        app:
+          name: ZMDR_CNTRL_MAIN
+          description: Main Central App
+          package: ZMDR_CENTRAL
+          transport: S21K900640
+        exclude:
+          - /test/

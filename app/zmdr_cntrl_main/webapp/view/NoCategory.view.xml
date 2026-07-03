@@ -1,0 +1,7 @@
+<mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" controllerName="com.intapptics.zmdrcntrlmain.controller.NoCategory">
+    <MessagePage id="mpgNoCategory" title="{i18n>noCategoryPageTitle}" text="{i18n>noCategoryText}" enableFormattedText="true" icon="sap-icon://message-warning" description="Possible reasons:&lt;ul&gt;&lt;li&gt;&lt;strong&gt;Authorization Issue - &lt;/strong&gt;If this is the first time you are accessing this application, you may not have the required roles assigned to your SAP ID.&lt;/li&gt;&lt;/ul&gt;If you are unaware of what access is required then&lt;br&gt;&lt;br&gt;&lt;strong&gt;Please contact intapptics team for more information.&lt;/strong&gt;">
+        <buttons>
+            <Button id="btnContactSupport" text="{i18n>btnContactSupport}" tooltip="{i18n>btnContactSupport}" press="onPress_btnContactSupport"></Button>
+        </buttons>
+    </MessagePage>
+</mvc:View>

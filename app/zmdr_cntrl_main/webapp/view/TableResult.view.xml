@@ -1,0 +1,84 @@
+<mvc:View controllerName="com.intapptics.zmdrcntrlmain.controller.TableResult" displayBlock="true" xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m" xmlns:f="sap.f" xmlns:form="sap.ui.layout.form" xmlns:core="sap.ui.core" xmlns:table="sap.ui.table">
+    <f:DynamicPage id="dpTableResult" stickySubheaderProvider="fbxTableResult" showFooter="true" toggleHeaderOnTitleClick="false">
+        <!-- Dynamic Page Title -->
+        <f:title>
+            <f:DynamicPageTitle id="dptTableResult">
+                <f:heading>
+                    <Title id="ttlTableResult" text="{tableResultViewModel>/pageTitle}" tooltip="{tableResultViewModel>/pageTitle}"></Title>
+                </f:heading>
+                <f:navigationActions>
+                    <OverflowToolbarButton id="btnEnterFullScreenTabRslt" type="Transparent" icon="sap-icon://full-screen"
+                        visible="true" tooltip="{i18n>enterFullScreen}" press="onPressNavActionBtns"></OverflowToolbarButton>
+                        <OverflowToolbarButton id="btnExitFullScreenTabRslt" type="Transparent" icon="sap-icon://exit-full-screen"
+                        visible="true" tooltip="{i18n>exitFullScreen}" press="onPressNavActionBtns"></OverflowToolbarButton>
+                        <OverflowToolbarButton id="btnClosePageTabRslt" type="Transparent" icon="sap-icon://decline"
+                        visible="true" tooltip="{i18n>closePage}" press="onPressNavActionBtns"></OverflowToolbarButton>
+                </f:navigationActions>
+            </f:DynamicPageTitle>
+        </f:title>
+
+        <!-- Dynamic Page Header -->
+        <f:header>
+            <f:DynamicPageHeader id="dphTableResult" pinnable="false">
+                <!-- Content of this section (filterbar) will be added from code dynamically -->
+            </f:DynamicPageHeader>
+        </f:header>
+        
+        <!-- Dynamic Page Content -->
+        <f:content>
+            <FlexBox id="fbxTableResult" height="36rem" direction="Column" alignItems="Stretch" justifyContent="Start">
+                <MessageStrip id="msgStripTableResult" showIcon="true" showCloseButton="false" class="sapUiMediumMarginTopBottom" enableFormattedText="true" tooltip="{i18n>msgStripTableResult}">
+                    <link>
+                        <Link id="lnkWorkflowId" text="{i18n>lnkWorkflowId}" emphasized="true" press="onPress_lnkWorkflowId" visible="false"></Link>
+                    </link>
+                </MessageStrip>
+                <OverflowToolbar id="oftTblRslt">
+                    <Title id="ttlTblResultSet" text="{tableResultViewModel>/tableHeaderText}" level="H2"></Title>
+                    <ToolbarSpacer id="tlbspcTitleLabel"></ToolbarSpacer>
+                    <Label id="lblHierarchyView" text="{i18n>lblHierarchyView}" tooltip="{i18n>lblHierarchyView}" visible="false"></Label>
+                    <Switch id="swtHierarchyView" state="true" customTextOn="{i18n>swtCustomTextOn}" customTextOff="{i18n>swtCustomTextOff}" change="onChange_swtHierarchyView" visible="false"></Switch>
+                    <ToolbarSeparator id="tlbsepSwitch"></ToolbarSeparator>
+                    <Button id="btnCreate" text="{i18n>createBtn}" type="Emphasized" press="onPress_actionButtons" tooltip="{i18n>createBtn}" icon="sap-icon://create"></Button>
+                    <!-- <Button id="btnAddChild" text="{i18n>addChildBtn}" type="Emphasized" press="onPress_actionButtons" tooltip="{i18n>addChildBtn}" icon="sap-icon://add"></Button> -->
+                    <Button id="btnAmend" text="{i18n>amendBtn}" type="Emphasized" press="onPress_actionButtons" tooltip="{i18n>amendBtn}" icon="sap-icon://request"></Button>
+                    <!-- <Button id="btnMoveNode" text="{i18n>moveNodeBtn}" type="Emphasized" press="onPress_actionButtons" tooltip="{i18n>moveNodeBtn}" icon="sap-icon://move"></Button> -->
+                    <Button id="btnReopen" text="{i18n>reopenBtn}" type="Emphasized" press="onPress_actionButtons" tooltip="{i18n>reopenBtn}" icon="sap-icon://permission"></Button>
+                    <Button id="btnClose" text="{i18n>closeBtn}" type="Emphasized" press="onPress_actionButtons" tooltip="{i18n>closeBtn}" icon="sap-icon://permission"></Button>
+                    <ToolbarSeparator id="tlbsepButtons"></ToolbarSeparator>
+                    <Button id="btnSort" press="onPress_btnSort" tooltip="{i18n>sortBtn}" icon="sap-icon://sort"></Button>
+                    <Button id="btnExport" press="onPress_btnExport" tooltip="{i18n>exportBtn}" icon="sap-icon://excel-attachment"></Button>
+                </OverflowToolbar>
+                <ScrollContainer id="sconTable" height="30rem" width="100%" vertical="true" focusable="true">
+                    <Table id="tblResultSet" selectionChange="onSelectionchange_tblResultSet" sticky="ColumnHeaders,HeaderToolbar,InfoToolbar" noDataText="{tableResultViewModel>/noDataText}" updateFinished="onUpdateFinished_tblResultSet" contextualWidth="Auto" tooltip="{tableResultViewModel>/tableTooltip}" mode="SingleSelectMaster" fixedLayout="false" visible="false">
+                        <headerToolbar></headerToolbar>
+                    </Table>
+                    <table:TreeTable id="tblTreeResultSet" selectionMode="Single" visible="false" enableColumnReordering="false" selectionBehavior="Row" rowSelectionChange="onRowSelectionChange_tblTreeResultSet"></table:TreeTable>
+                </ScrollContainer>
+                <OverflowToolbar id="oftPaging">
+                    <ToolbarSpacer id="tlbspcPagingBefore"></ToolbarSpacer>
+                    <OverflowToolbarButton id="btnFirstPage" icon="sap-icon://sys-first-page" type="Transparent" enabled="false" press="onPaginationAction" tooltip="{i18n>firstPage}"></OverflowToolbarButton>
+                    <OverflowToolbarButton id="btnPrevPage" icon="sap-icon://sys-prev-page" type="Transparent" enabled="false" press="onPaginationAction" tooltip="{i18n>prevPage}"></OverflowToolbarButton>
+                    <Input id="inpPageNum" width="50px" value="1" submit="onPaginationAction" tooltip="{i18n>curPageNum}"></Input>
+                    <Label id="lblMaxPageNum" tooltip="{i18n>ttlPageNum}"></Label>
+                    <OverflowToolbarButton id="btnNextPage" icon="sap-icon://sys-next-page" type="Transparent" enabled="false" press="onPaginationAction" tooltip="{i18n>nextPage}"></OverflowToolbarButton>
+                    <OverflowToolbarButton id="btnLastPage" icon="sap-icon://sys-last-page" type="Transparent" enabled="false" press="onPaginationAction" tooltip="{i18n>lastPage}"></OverflowToolbarButton>
+                    <ToolbarSpacer id="tlbspcPagingAfter"></ToolbarSpacer>
+                    <Label id="lblPageSize" text="{i18n>lblPageSize}" tooltip="{i18n>lblPageSize}"></Label>
+                    <ComboBox id="cbxPageSize" selectedKey="{i18n>cbxPageSize_10}" selectionChange="onPaginationAction"  width="100px" tooltip="{i18n>selPageSize}">
+                        <core:ListItem id="cbxPageSize_10" key="{i18n>cbxPageSize_10}" text="{i18n>cbxPageSize_10}" tooltip="{i18n>cbxPageSize_10}"></core:ListItem>
+                        <core:ListItem id="cbxPageSize_25" key="{i18n>cbxPageSize_25}" text="{i18n>cbxPageSize_25}" tooltip="{i18n>cbxPageSize_25}"></core:ListItem>
+                        <core:ListItem id="cbxPageSize_50" key="{i18n>cbxPageSize_50}" text="{i18n>cbxPageSize_50}" tooltip="{i18n>cbxPageSize_50}"></core:ListItem>
+                        <core:ListItem id="cbxPageSize_100" key="{i18n>cbxPageSize_100}" text="{i18n>cbxPageSize_100}" tooltip="{i18n>cbxPageSize_100}"></core:ListItem>
+                    </ComboBox>
+                </OverflowToolbar>
+                <ScrollContainer id="sconForm">
+                    <form:SimpleForm id="sfrmItemDetails" title="{i18n>formTitle}" tooltip="{i18n>formTitle}" editable="false" layout="ColumnLayout" columnsM="2" columnsL="3" columnsXL="4"></form:SimpleForm>
+                </ScrollContainer>
+            </FlexBox>
+        </f:content>
+
+        <!-- Dynamic Page Footer-->
+        <f:footer></f:footer>
+    </f:DynamicPage>
+</mvc:View>
