@@ -17,26 +17,27 @@ service BulkService @(
   // Actions — dynamic tables handled inside handlers via raw parameterised SQL
 
   // Replaces: ZMDR_FM_PROCESS_BULK_DATA with IM_DATALOAD = N
-  action validateBulkData(tablename: String,
-                          requesterrole: String,
+  action validateBulkData(tableName: String,
+                          requesterRole: String,
                           rowData: array of {
                             Data : String
                           },
                           overwriteWithNull: String,
                           futureVersion: String,
-                          workflowid: String)       returns {
+                          workflowId: String)   
+  returns {
     validCount   : Integer;
     invalidCount : Integer;
     createCount  : Integer;
     updateCount  : Integer;
-    workflowid   : String;
+    workflowId   : String;
     validData    : array of {
       data : String
     };
     invalidData  : array of {
       code      : String;
       message   : String;
-      rownumber : Integer
+      rowNumber : Integer
     };
   };
 
@@ -44,12 +45,13 @@ service BulkService @(
   action submitBulkData(tablename: String,
                         requesterrole: String,
                         validData: array of {
-    data       : String
-  },
+                          data       : String
+                        },
                         overwriteWithNull: String,
                         futureVersion: String,
                         workflowid: String,
-                        remarks: String)            returns {
+                        remarks: String)            
+  returns {
     workflowid : String;
     message    : String;
     type       : String
@@ -59,8 +61,8 @@ service BulkService @(
   action triggerBulkWorkflow(workflowid: String,
                              tablename: String,
                              entityname: String,
-                             requestorid: String,
-                             requestoremail: String,
+                             requesterid: String,
+                             requesteremail: String,
                              operationtype: String,
                              approverstage: String,
                              apprclass: String,

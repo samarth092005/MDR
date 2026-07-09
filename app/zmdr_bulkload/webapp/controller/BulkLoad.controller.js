@@ -378,7 +378,7 @@ sap.ui.define([
                         }
 
                         oEntry.NAVINDATA = itemData;
-                        oEntry.requestorRole = this.rolename;
+                        oEntry.requesterRole = this.rolename;
 
                         var oGBusyArray = this.openBusyDialog();
 
@@ -389,7 +389,7 @@ sap.ui.define([
                         // Set action parameters
                         var oContext = oModel.bindContext("/validateBulkData(...)");
                         oContext.setParameter("tableName", oEntry.tableName);
-                        oContext.setParameter("requesterrole", oEntry.requestorRole);
+                        oContext.setParameter("requesterRole", oEntry.requesterRole);
                         oContext.setParameter("rowData", oEntry.NAVINDATA);
                         oContext.setParameter("overwriteWithNull", oEntry.isOverwriteWithNull);
                         oContext.setParameter("futureVersion", oEntry.isFutureVersion);
@@ -814,8 +814,8 @@ sap.ui.define([
                 lv_res5.Tablename = "";
                 oEntry.NAVOUTHEADER[0] = lv_res5;
 
-                oEntry.Requestorsaprole = this.rolename;
-                oEntry.Requestorremarks = this.sValue;
+                oEntry.requesterSapRole = this.rolename;
+                oEntry.requesterRemarks = this.sValue;
 
                 oDataModel.create("/InHeaderSet", oEntry, {
                     method: "POST",
@@ -863,24 +863,24 @@ sap.ui.define([
             var oDataModel = this.getOwnerComponent().getModel();
 
             var oEntry = {};
-            oEntry.Isfutureallowed = this.futureVer;
-            oEntry.Isversioned = this.versioned;
-            oEntry.Category = this.categoryName;
-            oEntry.Tablename = this.tableName;
-            oEntry.Workflowid = this.WorkflowId.toString();
-            oEntry.Requestorid = this.oUserId;
-            oEntry.Requestoremailid = this.ReqEmailId;
-            oEntry.ValidRecordsCount = this.ValidRecordsCount;
-            oEntry.Requestorremarks = this.sValue;
-            oEntry.DeleteFlag = "N";
-            oEntry.Isoverwritewithnull = this.Preservenull;
-            oEntry.Operationtype = "BULK UPDATE";
-            oEntry.Requestorrole = this.rolename;
-            oEntry.Updateztabonly = this.updateztabonly;
+            oEntry.isFutureAllowed = this.futureVer;
+            oEntry.isVersioned = this.versioned;
+            oEntry.category = this.categoryName;
+            oEntry.tableName = this.tableName;
+            oEntry.workflowId = this.WorkflowId.toString();
+            oEntry.requesterId = this.oUserId;
+            oEntry.requesterEmailId = this.ReqEmailId;
+            oEntry.validRecordsCount = this.ValidRecordsCount;
+            oEntry.requesterRemarks = this.sValue;
+            oEntry.deleteFlag = "N";
+            oEntry.isOverwriteWithNull = this.Preservenull;
+            oEntry.operationType = "BULK UPDATE";
+            oEntry.requesterRole = this.rolename;
+            oEntry.updateZtabOnly = this.updateztabonly;
 
-            oEntry.Approverstage = "APPROVER";
-            oEntry.Systemname = "MDR";
-            oEntry.Hierarchy = "ZMDR_ACCOUNT";
+            oEntry.approverstage = "APPROVER";
+            oEntry.systemname = "MDR";
+            oEntry.hierarchy = "ZMDR_ACCOUNT";
             if (this.tableappr == "Y") {
                 this.Subclass = this.tableName;
             } else {

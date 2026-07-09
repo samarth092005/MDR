@@ -11,10 +11,10 @@ const { readRows } = require('./lib/db-dynamic');
 module.exports = cds.service.impl(async function (srv) {
 
     srv.on('validateBulkData', async req => {
-        const { tablename, requesterrole, rowData, overwriteWithNull, futureVersion, workflowid } = req.data;
+        const { tableName, requesterRole, rowData, overwriteWithNull, futureVersion, workflowId } = req.data;
         return processBulkData({
-            tablename, requesterrole, dataload: 'N',
-            overwriteWithNull, futureVersion, workflowid, rowData, userId: req.user.id
+            tableName, requesterRole, dataload: 'N',
+            overwriteWithNull, futureVersion, workflowId, rowData, userId: req.user.id
         });
     });
 
@@ -27,11 +27,11 @@ module.exports = cds.service.impl(async function (srv) {
             rowData: validData.map(r => r.data), userId: req.user.id,
         });
         await insertWFAudit({  // CAP ORM — WFAudit is config
-            workflowid: result.workflowid, entityname: tablename, entityid: '',
+            workflowid: result.workflowId, entityname: tablename, entityid: '',
             operationtype: 'BULK UPDATE', wfstage: 'INITIATOR',
             action: 'INITIATED', userremarks: remarks, actioninguser: req.user.id,
         });
-        return { workflowid: result.workflowid, message: 'Submitted successfully', type: 'S' };
+        return { workflowid: result.workflowId, message: 'Submitted successfully', type: 'S' };
     });
 
     srv.on('triggerBulkWorkflow', async req => {
