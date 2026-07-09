@@ -2,17 +2,18 @@
 namespace zmdr;
 
 aspect Auditable {
-  created_on : Timestamp;  
-  created_by : String(12);
-  updated_on : Timestamp;  
-  updated_by : String(12);
+  createdOn : Timestamp;  
+  createdBy : String(12);
+  updatedOn : Timestamp;  
+  updatedBy : String(12);
 }
 
 aspect Versionable {
-  version_start_date : Timestamp;
-  version_end_date   : Timestamp;
-  version_active     : String(1);  // Y=Active N=Inactive G=BulkUpdate I=SingleUpdate F=Future
-  workflow_id        : String(10);
+  versionStartDate : Timestamp;
+  versionEndDate   : Timestamp;
+  versionActive    : String(1);  // Y=Active N=Inactive G=BulkUpdate I=SingleUpdate F=Future
+  status           : String(3);  // 510=Approved, 590=Closed, 520=Under Review
+  workflowId       : String(10);
 }
 
 // Replaces ZMDR_NR_WF number range object
@@ -45,42 +46,42 @@ entity MDRWorkflowLink {
 
 // Replaces ZMDR_BULKHDRCNFG
 entity BulkHdrConfig : Auditable {
-  key TableName               : String(30);
-  key RequesterRole           : String(30);
-      TableDescription        : String(100);
-      ApprClass               : String(60);  // 'system,hierarchy,subclass'
-      Category                : String(20);
-      Versioned               : String(1);
-      IsFutureVersionAllowed  : String(1);
-      IsTableLevelApproval    : String(1);
-      IsOverwrireWithNull     : String(1);
-      IsWorkflowVisible       : String(1);
-      IsUpdateZTableOnly      : String(1);
+  key tableName               : String(30);
+  key requesterRole           : String(30);
+      tableDescription        : String(100);
+      apprClass               : String(60);  // 'system,hierarchy,subclass'
+      category                : String(20);
+      isVersioned               : String(1);
+      isFutureVersionAllowed  : String(1);
+      isTableLevelApproval    : String(1);
+      isOverwrireWithNull     : String(1);
+      isWorkflowVisible       : String(1);
+      isUpdateZTableOnly      : String(1);
 }
 
 // Replaces ZMDR_BULKITMCNFG
 entity BulkItmConfig : Auditable {
-  key Tablename       : String(30);
-  key Columnname      : String(30);  // MUST be UPPERCASE matching .hdbtable column
-  key RequesterRole   : String(30);
-      Colseqno        : Integer;
-      IsLookup        : String(1);
-      LookupTablename : String(30);
-      LookupField     : String(100);  // 'FIELD1' or 'F1|:|F2' for composite
-      IsMatching      : String(1);    // Y = key matching field
-      IsDateField     : String(1);
-      ValidationIndex : String(50);   // comma-separated rule indices
+  key tableName       : String(30);
+  key columnName      : String(30);  // MUST be UPPERCASE matching .hdbtable column
+  key requesterRole   : String(30);
+      colSeqNo        : Integer;
+      isLookup        : String(1);
+      lookupTablename : String(30);
+      lookupField     : String(100);  // 'FIELD1' or 'F1|:|F2' for composite
+      isMatching      : String(1);    // Y = key matching field
+      isDateField     : String(1);
+      validationIndex : String(50);   // comma-separated rule indices
 }
 
 // Non-versioned in-flight data (replaces ZMDR_BULKTEMP)
 entity BulkTemp {
-  key BulkNumber     : UUID;
-      Tablename      : String(30);
-      BulkData       : LargeString;  // «-delimited row string
-      WorkflowId     : String(10);
-      ActionType     : String(20);   // Create | Amend
-      InitiationDate : Timestamp;
-      RequestStatus  : String(20);   // INPROGRESS | APPROVED | REJECTED
+  key bulkNumber     : UUID;
+      tableName      : String(30);
+      bulkData       : LargeString;  // «-delimited row string
+      workflowId     : String(10);
+      actionType     : String(20);   // Create | Amend
+      initiationDate : Timestamp;
+      requestStatus  : String(20);   // INPROGRESS | APPROVED | REJECTED
 }
 
 // Validation rules (replaces ZMDXCNBLKDTVAL01)

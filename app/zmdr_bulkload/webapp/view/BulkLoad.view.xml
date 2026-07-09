@@ -9,10 +9,7 @@
     displayBlock="true"
     xmlns="sap.m"
 >
-    <Page
-        id="page"
-        title="{i18n>title}"
-    >
+    <Page id="page" title="{i18n>title}">
         <content>
             <f:Form
                 id="formUpload"

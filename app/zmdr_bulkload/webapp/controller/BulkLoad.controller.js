@@ -92,7 +92,7 @@ sap.ui.define([
 
                 //get all category
                 for (var i = 0; i < this.array.length; i++) {
-                    temp.push(this.array[i].Category);
+                    temp.push(this.array[i].category);
                 }
                 //push to array, unique category
                 for (var j = 0; j < temp.length; j++) {
@@ -111,6 +111,7 @@ sap.ui.define([
                 }
 
                 var oUniqueCategoryModel = new JSONModel(filteredCategory);
+
 
                 // Set to the component
                 this.getOwnerComponent().setModel(oUniqueCategoryModel, "oUniqueCategoryModel");
@@ -181,7 +182,7 @@ sap.ui.define([
             var dataStr = [];
             var data = "";
             for (let i = 0; i < length; i++) {
-                if (i == length - 1) {
+                if (i === length - 1) {
                     data = data + this.odataHead[i];
                 } else {
                     data = data + this.odataHead[i] + ";";
@@ -255,7 +256,7 @@ sap.ui.define([
                         sheet[
                         XLSX.utils.encode_cell({
                             r: rowNum,
-                            c: colNum,
+                            c: colNum
                         })
                         ];
                     if (cellData !== undefined) {
@@ -298,42 +299,42 @@ sap.ui.define([
             } else {
                 this.workflowidentered = this.byId("inp_workflow").getValue();
 
-                var aFilters = [];
+                // var aFilters = [];
                 var oGlobalBusyDialog = this.openBusyDialog();
 
-                var oModel1 = new JSONModel();
-                var filter = new Filter(
-                    "Tablename",
-                    FilterOperator.EQ,
-                    this.tableName
-                );
-                var filterStatus = new Filter(
-                    "RequestStatus",
-                    FilterOperator.EQ,
-                    "INPROGRESS"
-                );
-                aFilters.push(filter);
-                aFilters.push(filterStatus);
+                // var oModel1 = new JSONModel();
+                // var filter = new Filter(
+                //     "tableName",
+                //     FilterOperator.EQ,
+                //     this.tableName
+                // );
+                // var filterStatus = new Filter(
+                //     "requestStatus",
+                //     FilterOperator.EQ,
+                //     "INPROGRESS"
+                // );
+                // aFilters.push(filter);
+                // aFilters.push(filterStatus);
 
-                oBinding = this.oBulkModel.bindList("/BulkTemp", null, null, aFilters);
-                oBinding.requestContexts().then(function (aContexts) {
-                    // Convert contexts to data objects (replaces oData.results)
-                    var aResults = aContexts.map(function (oContext) {
-                        return oContext.getObject();
-                    });
+                // oBinding = this.oBulkModel.bindList("/BulkTemp", null, null, aFilters);
+                // oBinding.requestContexts().then(function (aContexts) {
+                //     // Convert contexts to data objects (replaces oData.results)
+                //     var aResults = aContexts.map(function (oContext) {
+                //         return oContext.getObject();
+                //     });
 
-                    oModel1.setData(aResults);
-                    if (!oModel1.oData.length > 0) {
+                //     oModel1.setData(aResults);
+                    // if (!oModel1.oData.length > 0) {
                         var oDataModel = this.getOwnerComponent().getModel();
                         this.dataload = "N";
                         var oEntry = {};
                         var oInData = {};
-                        oEntry.Tablename = this.tableName;
-                        oEntry.Source = "UI";
-                        oEntry.Isdataload = this.dataload;// === 'Y' ? true : false;
-                        oEntry.Isoverwritewithnull = this.Preservenull;// === 'Y' ? true : false;
-                        oEntry.Isfutureversion = this.futurever;// === 'Y' ? true : false;
-                        oEntry.Workflowid = this.workflowidentered;
+                        oEntry.tableName = this.tableName;
+                        oEntry.source = "UI";
+                        oEntry.isDataLoad = this.dataload === 'Y' ? 'Y' : 'N';
+                        oEntry.isOverwriteWithNull = this.preserveNull === 'Y' ? 'Y' : 'N';
+                        oEntry.isFutureVersion = this.futurever === 'Y' ? 'Y' : 'N';
+                        oEntry.workflowId = this.workflowidentered;
                         var itemData = [];
                         oEntry.NAVOUTINVALIDDATA = [];
                         var lv_res = {};
@@ -361,12 +362,12 @@ sap.ui.define([
 
                         oEntry.NAVOUTHEADER = [];
                         var lv_res4 = {};
-                        lv_res4.Createcount = 0;
-                        lv_res4.Updatecount = 0;
-                        lv_res4.Validcount = 0;
-                        lv_res4.Invalidcount = 0;
-                        lv_res4.Workflowid = "";
-                        lv_res4.Tablename = this.tableName;
+                        lv_res4.createCount = 0;
+                        lv_res4.updateCount = 0;
+                        lv_res4.validCount = 0;
+                        lv_res4.invalidCount = 0;
+                        lv_res4.workflowId = "";
+                        lv_res4.tableName = this.tableName;
 
                         oEntry.NAVOUTHEADER[0] = lv_res4;
 
@@ -377,22 +378,22 @@ sap.ui.define([
                         }
 
                         oEntry.NAVINDATA = itemData;
-                        oEntry.Requestorsaprole = this.rolename;
+                        oEntry.requestorRole = this.rolename;
 
                         var oGBusyArray = this.openBusyDialog();
 
                         // Get the bound action
                         var oModel = this.getOwnerComponent().getModel();
-                        var oAction = oModel.bindContext("/validateBulkData(...)");
+                        // var oAction = oModel.bindContext("/validateBulkData(...)");
 
                         // Set action parameters
                         var oContext = oModel.bindContext("/validateBulkData(...)");
-                        oContext.setParameter("tablename", oEntry.tablename);
-                        oContext.setParameter("requesterrole", oEntry.requesterrole);
-                        oContext.setParameter("rowData", oEntry.rowData);
-                        oContext.setParameter("overwriteWithNull", oEntry.overwriteWithNull);
-                        oContext.setParameter("futureVersion", oEntry.futureVersion);
-                        oContext.setParameter("workflowid", oEntry.workflowid);
+                        oContext.setParameter("tableName", oEntry.tableName);
+                        oContext.setParameter("requesterrole", oEntry.requestorRole);
+                        oContext.setParameter("rowData", oEntry.NAVINDATA);
+                        oContext.setParameter("overwriteWithNull", oEntry.isOverwriteWithNull);
+                        oContext.setParameter("futureVersion", oEntry.isFutureVersion);
+                        oContext.setParameter("workflowId", oEntry.workflowId);
 
                         oContext.execute().then(function () {
                             this.closeBusyDialog(oGBusyArray);
@@ -439,24 +440,24 @@ sap.ui.define([
                                 this.workflowId = oResult.workflowid;
                             }
 
-                        }).catch(function (oError) {
+                        }.bind(this)).catch(function (oError) {
                             this.closeBusyDialog(oGBusyArray);
                             MessageBox.error("Error occurred while validating excel data");
                             console.error(oError);
-                        });
+                        }.bind(this));
                         this.getView().byId("cb_overwritenull").setEnabled(false);
                         this.getView().byId("btn_validate").setEnabled(false);
-                    } else {
-                        this.closeBusyDialog();
-                        MessageBox.error(
-                            "A request is in-progress for this table, please continue once it is approved"
-                        );
-                        this.getView().byId("btn_validate").setEnabled(false);
-                    }
-                }.bind(this)).catch(function (oError) {
-                    this.closeBusyDialog(oGlobalBusyDialog);
-                    console.error("Error loading BulkTempConfig:", oError);
-                }.bind(this));
+                //     } else {
+                //         this.closeBusyDialog();
+                //         MessageBox.error(
+                //             "A request is in-progress for this table, please continue once it is approved"
+                //         );
+                //         this.getView().byId("btn_validate").setEnabled(false);
+                //     }
+                // }.bind(this)).catch(function (oError) {
+                //     this.closeBusyDialog(oGlobalBusyDialog);
+                //     console.error("Error loading BulkTempConfig:", oError);
+                // }.bind(this));
             }
         },
 
@@ -464,16 +465,16 @@ sap.ui.define([
             var filteredTable = [];
             var oUniquTableModel = "";
             var tabEntry = this.array.filter(function (item) {
-                return item.Category === oEvent.getSource().getSelectedKey();
+                return item.category === oEvent.getSource().getSelectedKey();
             });
 
             this.categoryName = oEvent.getSource().getSelectedKey();
 
             for (var i = 0; i < tabEntry.length; i++) {
                 filteredTable.push({
-                    TableName: tabEntry[i].TableName,
-                    Description: tabEntry[i].TableDescription,
-                    Key: tabEntry[i].TableName + "+" + tabEntry[i].RequesterRole,
+                    TableName: tabEntry[i].tableName,
+                    Description: tabEntry[i].tableDescription,
+                    Key: tabEntry[i].tableName + "+" + tabEntry[i].requesterRole
                 });
             }
 
@@ -590,23 +591,22 @@ sap.ui.define([
 
         selectedTable: function (oEvent) {
             var oBinding;
-
             var tabEntry = this.array.filter(function (item) {
                 return (
-                    item.TableName === oEvent.getSource().getValue() &&
-                    item.RequesterRole === oEvent.getSource().getSelectedItem().getKey().split("+")[1]
+                    item.tableName === oEvent.getSource().getValue() &&
+                    item.requesterRole === oEvent.getSource().getSelectedItem().getKey().split("+")[1]
                 );
             });
 
             this.tableName = oEvent.getSource().getValue();
             var aFilters = [];
             var filterTable = new Filter(
-                "Tablename",
+                "tableName",
                 FilterOperator.EQ,
                 oEvent.getSource().getValue()
             );
             var filterRole = new Filter(
-                "RequesterRole",
+                "requesterRole",
                 FilterOperator.EQ,
                 oEvent.getSource().getSelectedItem().getKey().split("+")[1]
             );
@@ -636,13 +636,13 @@ sap.ui.define([
                 this.getOwnerComponent().setModel(oModelConfig, "oModelConfig");
                 this.configArray = oModelConfig.getData();
                 this.noOfColumns = this.configArray.length;
-                this.futureAllowed = tabEntry[0].IsFutureVersionAllowed;
-                this.tableappr = tabEntry[0].IsTableLevelApproval;
+                this.futureAllowed = tabEntry[0].isFutureVersionAllowed;
+                this.tableappr = tabEntry[0].isTableLevelApproval;
 
-                this.workflowReq = tabEntry[0].IsWorkflowVisible;
-                this.preserveNull = tabEntry[0].IsOverwrireWithNull;
-                this.versioned = tabEntry[0].Versioned;
-                this.updatezonly = tabEntry[0].IsUpdateZTableOnly;
+                this.workflowReq = tabEntry[0].isWorkflowVisible;
+                this.preserveNull = tabEntry[0].isOverwrireWithNull;
+                this.versioned = tabEntry[0].isVersioned;
+                this.updatezonly = tabEntry[0].isUpdateZTableOnly;
                 this.updateztabonly = "N";
 
                 if (this.workflowReq === "X") {
@@ -680,8 +680,8 @@ sap.ui.define([
                 this.odataHead = [];
                 for (var i = 1; i < this.configArray.length + 1; i++) {
                     for (var j = 0; j < this.configArray.length; j++) {
-                        if (this.configArray[j].Colseqno === i) {
-                            this.odataHead.push(this.configArray[j].Columnname);
+                        if (this.configArray[j].colSeqNo === i) {
+                            this.odataHead.push(this.configArray[j].columnName);
                         }
                     }
                 }

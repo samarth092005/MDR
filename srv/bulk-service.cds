@@ -19,7 +19,9 @@ service BulkService @(
   // Replaces: ZMDR_FM_PROCESS_BULK_DATA with IM_DATALOAD = N
   action validateBulkData(tablename: String,
                           requesterrole: String,
-                          rowData: array of String,
+                          rowData: array of {
+                            Data : String
+                          },
                           overwriteWithNull: String,
                           futureVersion: String,
                           workflowid: String)       returns {
