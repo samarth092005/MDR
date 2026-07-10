@@ -1,0 +1,5 @@
+<core:FragmentDefinition xmlns:core="sap.ui.core" xmlns="sap.m">
+    <MessagePopover id="pvrMessages" tooltip="{i18n>msgPopoverTooltip}" items="{messageModel>/}" activeTitlePress="onPress_pvrMessages">
+        <MessageItem id="pvrMessageItem" type="{messageModel>type}" title="{messageModel>message}" subtitle="{messageModel>additionalText}" description="{messageModel>description}" tooltip="{messageModel>message}"></MessageItem>
+    </MessagePopover>
+</core:FragmentDefinition>

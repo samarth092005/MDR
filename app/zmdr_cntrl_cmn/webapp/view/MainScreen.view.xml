@@ -1,0 +1,117 @@
+<mvc:View controllerName="com.intapptics.zmdrcntrlcmn.controller.MainScreen" xmlns:f="sap.f" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:form="sap.ui.layout.form" xmlns:core="sap.ui.core" xmlns:uxap="sap.uxap">
+    <f:DynamicPage id="dpMainScreen" showFooter="true" fitContent="true" toggleHeaderOnTitleClick="false">
+        <!-- Dynamic Page Title -->
+        <f:title>
+            <f:DynamicPageTitle id="dptMainScreen">
+                <f:heading>
+                    <Title id="ttlMainScreen" text="{mainScreenViewModel>/pageTitle}" tooltip="{mainScreenViewModel>/pageTitle}"></Title>
+                </f:heading>
+                <f:navigationActions>
+                    <OverflowToolbarButton id="btnRelease" type="Emphasized" icon="sap-icon://cause" press="onPress_btnRelease" tooltip="{i18n>btnRelease}" visible="true"></OverflowToolbarButton>
+                </f:navigationActions>
+            </f:DynamicPageTitle>
+        </f:title>
+
+        <!-- Dynamic Page Header -->
+        <f:header>
+            <f:DynamicPageHeader id="dphMainScreen" pinnable="false">
+                <f:content>
+                    <ObjectAttribute id="obatHdr1" title="{i18n>hdrObjAtrTitle1}" visible="false"></ObjectAttribute>
+                    <ObjectAttribute id="obatHdr2" title="{i18n>hdrObjAtrTitle2}" visible="false"></ObjectAttribute>
+                </f:content>
+            </f:DynamicPageHeader>
+        </f:header>
+
+        <!-- Dynamic Page Content -->
+        <f:content>
+            <FlexBox id="flxbxMainScreen" direction="Column" alignContent="Stretch" alignItems="Stretch" justifyContent="Start">
+                <items>
+                    <MessageStrip id="msgStripMainScreen" visible="false" showIcon="true" showCloseButton="true" class="sapUiSmallMarginTop" enableFormattedText="true">
+                        <link>
+                            <Link id="lnkMsgStrip" text="{i18n>linkText}" emphasized="true" press="onPress_lnkMsgStrip"></Link>
+                        </link>
+                    </MessageStrip>
+                    <VBox id="vbxSections" height="50%">
+                        <uxap:ObjectPageLayout>
+                            <uxap:sections>
+                                <uxap:ObjectPageSection id="objPgSecItmDtls" showTitle="false" titleUppercase="false"></uxap:ObjectPageSection>
+                            </uxap:sections>
+                        </uxap:ObjectPageLayout>
+                    </VBox>
+                    <!-- <form:SimpleForm id="sfrmItemDetails" title="{mainScreenViewModel>/formTitle}" editable="true" layout="ColumnLayout" columnsM="2" columnsL="3" columnsXL="4"></form:SimpleForm> -->
+                    <form:Form id="frmRemarks" editable="false" visible="false">
+                        <form:title>
+                            <core:Title text="{i18n>remarks}"></core:Title>
+                        </form:title>
+                        <form:layout>
+                            <form:ResponsiveGridLayout labelSpanXL="2" labelSpanL="2" labelSpanM="4" labelSpanS="12" adjustLabelSpan="false" emptySpanXL="0" emptySpanL="0" emptySpanM="0" emptySpanS="0" columnsXL="2" columnsL="2" columnsM="1" singleContainerFullSize="false"></form:ResponsiveGridLayout>
+                        </form:layout>
+                        <form:formContainers>
+                            <form:FormContainer id="fcntReqHeader" title="{i18n>reqHeader}">
+                                <form:formElements>
+                                    <form:FormElement label="{i18n>lblReqId}" tooltip="{i18n>lblReqId}">
+                                        <form:fields>
+                                            <TextArea id="txtReqId"></TextArea>
+                                        </form:fields>
+                                    </form:FormElement>
+                                    <form:FormElement label="{i18n>lblReqName}" tooltip="{i18n>lblReqName}">
+                                        <form:fields>
+                                            <TextArea id="txtReqName"></TextArea>
+                                        </form:fields>
+                                    </form:FormElement>
+                                    <form:FormElement label="{i18n>lblReqEmail}" tooltip="{i18n>lblReqEmail}">
+                                        <form:fields>
+                                            <TextArea id="txtReqEmail"></TextArea>
+                                        </form:fields>
+                                    </form:FormElement>
+                                    <form:FormElement label="{i18n>lblReqRemarks}" tooltip="{i18n>lblReqRemarks}">
+                                        <form:fields>
+                                            <TextArea id="txtReqRemarks"></TextArea>
+                                        </form:fields>
+                                    </form:FormElement>
+                                </form:formElements>
+                            </form:FormContainer>
+                            <form:FormContainer id="fcntApprHeader" title="{i18n>apprHeader}" visible="false">
+                                <form:formElements>
+                                    <form:FormElement label="{i18n>lblApprId}" tooltip="{i18n>lblApprId}">
+                                        <form:fields>
+                                            <TextArea id="txtApprId"></TextArea>
+                                        </form:fields>
+                                    </form:FormElement>
+                                    <form:FormElement label="{i18n>lblApprName}" tooltip="{i18n>lblApprName}">
+                                        <form:fields>
+                                            <TextArea id="txtApprName"></TextArea>
+                                        </form:fields>
+                                    </form:FormElement>
+                                    <form:FormElement label="{i18n>lblApprEmail}" tooltip="{i18n>lblApprEmail}">
+                                        <form:fields>
+                                            <TextArea id="txtApprEmail"></TextArea>
+                                        </form:fields>
+                                    </form:FormElement>
+                                    <form:FormElement label="{i18n>lblApprRemarks}" tooltip="{i18n>lblApprRemarks}">
+                                        <form:fields>
+                                            <TextArea id="txtApprRemarks"></TextArea>
+                                        </form:fields>
+                                    </form:FormElement>
+                                </form:formElements>
+                            </form:FormContainer>
+                        </form:formContainers>
+                    </form:Form>
+                </items>
+            </FlexBox>
+        </f:content>
+
+        <!-- Dynamic Page Footer -->
+        <f:footer>
+            <OverflowToolbar id="ovrToolbar">
+                <Button id="btnMsgPopOver" text="{=${messageModel>/}.length}" tooltip="{i18n>btnMsgPopOver}" visible="{=${messageModel>/}.length>0}" type="Emphasized" icon="sap-icon://alert" press="onPress_btnMsgPopOver"></Button>
+                <Button id="btnSeeChanges" text="{i18n>btnSeeChanges}" tooltip="{i18n>btnSeeChanges}" visible="false" type="Emphasized" icon="sap-icon://show-edit" press="onPress_btnSeeChanges"></Button>
+                <ToolbarSpacer id="tlbspc"></ToolbarSpacer>
+                <Button id="btnSubmit" text="{i18n>btnSubmit}" tooltip="{i18n>btnSubmit}" visible="false" type="Emphasized" icon="sap-icon://Validate" press="onPress_btnSubmit"></Button>
+                <Button id="btnCreate" text="{i18n>btnCreate}" tooltip="{i18n>btnCreate}" visible="false" type="Emphasized" icon="sap-icon://create" press="onPress_btnCreate"></Button>
+                <Button id="btnReject" text="{i18n>btnReject}" tooltip="{i18n>btnReject}" visible="false" type="Ghost" icon="sap-icon://decline" press="onPress_approverAction"></Button>
+                <Button id="btnApprove" text="{i18n>btnApprove}" tooltip="{i18n>btnApprove}" visible="false" type="Emphasized" icon="sap-icon://accept" press="onPress_approverAction"></Button>
+            </OverflowToolbar>
+        </f:footer>
+    </f:DynamicPage>
+</mvc:View>

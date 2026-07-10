@@ -1,0 +1,31 @@
+<core:FragmentDefinition xmlns:core="sap.ui.core" xmlns="sap.m" xmlns:f="sap.f" xmlns:l="sap.ui.layout" xmlns:cards="sap.f.cards">
+    <Dialog id="dlgLookup" title="{mainScreenViewModel>/valueHelpDialogTitle}" draggable="true" resizable="true" contentHeight="50rem" contentWidth="50rem">
+        <subHeader>
+            <Toolbar id="tlbrDlgLookup">
+                <SearchField id="srchDlgLookupTable" search="onSearch_dlgLookup"></SearchField>
+            </Toolbar>
+        </subHeader>
+        <content>
+            <VBox id="vbxDlgLookup">
+                <Table id="tblDlgLookup" sticky="ColumnHeaders,HeaderToolbar,InfoToolbar" noDataText="{i18n>tableNoDataText}" contextualWidth="Auto" mode="SingleSelectMaster" fixedLayout="false">
+                </Table>
+                <OverflowToolbar id="oftDlgLookupPaging">
+                    <ToolbarSpacer id="tlbspcDlgLookupPagingBefore"></ToolbarSpacer>
+                    <OverflowToolbarButton id="btnDlgLookupFirstPage" icon="sap-icon://sys-first-page" type="Transparent" enabled="false" press="onPaginationAction" tooltip="{i18n>firstPage}"></OverflowToolbarButton>
+                    <OverflowToolbarButton id="btnDlgLookupPrevPage" icon="sap-icon://sys-prev-page" type="Transparent" enabled="false" press="onPaginationAction" tooltip="{i18n>prevPage}"></OverflowToolbarButton>
+                    <Input id="inpDlgLookupPageNum" width="50px" value="1" submit="onPaginationAction" tooltip="{i18n>curPageNum}"></Input>
+                    <Label id="lblDlgLookupMaxPageNum" tooltip="{i18n>ttlPageNum}"></Label>
+                    <OverflowToolbarButton id="btnDlgLookupNextPage" icon="sap-icon://sys-next-page" type="Transparent" enabled="false" press="onPaginationAction" tooltip="{i18n>nextPage}"></OverflowToolbarButton>
+                    <OverflowToolbarButton id="btnDlgLookupLastPage" icon="sap-icon://sys-last-page" type="Transparent" enabled="false" press="onPaginationAction" tooltip="{i18n>lastPage}"></OverflowToolbarButton>
+                    <ToolbarSpacer id="tlbspcDlgLookupPagingAfter"></ToolbarSpacer>
+                </OverflowToolbar>
+            </VBox>
+        </content>
+        <beginButton>
+            <Button id="btnOkDlgLookup" text="{i18n>btnOkDlg}" tooltip="{i18n>btnOkDlg}" type="Emphasized" press="onPress_btnOkDlgLookup"></Button>
+        </beginButton>
+        <endButton>
+            <Button id="btnCancelDlgLookup" text="{i18n>btnCancelDlg}" tooltip="{i18n>btnCancelDlg}" type="Ghost" press="onPress_btnCancelDlgLookup"></Button>
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

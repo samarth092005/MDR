@@ -1,0 +1,31 @@
+<core:FragmentDefinition xmlns:core="sap.ui.core" xmlns="sap.m" xmlns:f="sap.f" xmlns:l="sap.ui.layout" xmlns:cards="sap.f.cards">
+    <Dialog id="dlgCompare" title="{i18n>comparisonTitle}" draggable="true" resizable="true" contentHeight="48rem" contentWidth="75rem">
+        <content>
+            <VBox id="vbxDlgCompare">
+                <MessageStrip id="msgStripCompare" showIcon="true" showCloseButton="false" class="sapUiMediumMarginTopBottom" enableFormattedText="true" type="Information"></MessageStrip>
+                <Carousel id="carCompare" height="auto" pages="{ path: 'carouselModel>/' }">
+                    <customLayout>
+                        <CarouselLayout id="carlayout" visiblePagesCount="2"></CarouselLayout>
+                    </customLayout>
+                    <f:Card id="carCards">
+                        <f:header>
+                            <cards:Header id="carHeader" title="{carouselModel>carouselCardsHeader}"></cards:Header>
+                        </f:header>
+                        <f:content>
+                            <l:VerticalLayout id="vl" class="sapUiContentPadding" width="100%">
+                                <l:BlockLayout id="bl">
+                                    <l:BlockLayoutRow id="blr">
+                                        <l:BlockLayoutCell id="blcDisplay" width="1"></l:BlockLayoutCell>
+                                    </l:BlockLayoutRow>
+                                </l:BlockLayout>
+                            </l:VerticalLayout>
+                        </f:content>
+                    </f:Card>
+                </Carousel>
+            </VBox>
+        </content>
+        <endButton>
+            <Button id="btnComparisonClose" text="{i18n>btnComparisonClose}" tooltip="{i18n>btnComparisonClose}" press="onPress_btnCancelDlg"></Button>
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>
