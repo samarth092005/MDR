@@ -134,7 +134,7 @@ modules:
       commands:
         - npm install --no-workspaces
         - npm run build
-        - cd dist && powershell -Command "Compress-Archive -Path * -DestinationPath zmdr_cntrl_main.zip -Force"
+        - cd dist && zip -r zmdr_cntrl_main.zip *
       supported-platforms: []
 
   - name: zmdr_cntrl_cmn
@@ -146,7 +146,7 @@ modules:
       commands:
         - npm install --no-workspaces
         - npm run build
-        - cd dist && powershell -Command "Compress-Archive -Path * -DestinationPath zmdr_cntrl_cmn.zip -Force"
+        - cd dist && zip -r zmdr_cntrl_cmn.zip *
       supported-platforms: []
 
   - name: zmdr_bulkload
@@ -158,7 +158,7 @@ modules:
       commands:
         - npm install --no-workspaces
         - npm run build
-        - cd dist && powershell -Command "Compress-Archive -Path * -DestinationPath zmdr_bulkload.zip -Force"
+        - cd dist && zip -r zmdr_bulkload.zip *
       supported-platforms: []
 
 resources:
