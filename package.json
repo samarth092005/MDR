@@ -2,10 +2,14 @@
   "name": "mdr-btp",
   "version": "1.0.0",
   "description": "A simple CAP project.",
+  "engines": {
+    "node": ">=18"
+  },
   "repository": "<Add your repository here>",
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
+    "@cap-js-community/odata-v2-adapter": "^1.16.0",
     "@cap-js/hana": "^1",
     "@sap-cloud-sdk/http-client": "^4.7.0",
     "@sap/cds": "^8.2",
@@ -19,7 +23,6 @@
   },
   "devDependencies": {
     "@cap-js/sqlite": "^1",
-    "@sap/cds-dk": "^7",
     "@sap/eslint-plugin-cds": "^3",
     "cds-plugin-ui5": "^0.13.0",
     "eslint": "^9"
@@ -69,8 +72,11 @@
         }
       }
     },
-    "hana": {
-      "deploy-format": "hdbtable"
+    "sql": {
+      "mapping": "upper"
+    },
+    "cov2ap": {
+      "path": "odata/v2"
     }
   },
   "workspaces": [

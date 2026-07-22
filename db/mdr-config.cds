@@ -6,6 +6,7 @@ aspect Auditable {
   created_by : String(12);
   updated_on : Timestamp;  
   updated_by : String(12);
+  virtual OPERATIONTYPE : String(40);
 }
 
 aspect Versionable {

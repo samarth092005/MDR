@@ -28,7 +28,7 @@ async function insertVersionedRow(params) {
     const active = await readRows(db, tablename, `${clause} AND "VERSION_ACTIVE" = ?`, [...values, 'Y']);
     if (active.length > 0) {
       for (const cfg of lineitemConfig) {
-        const key = cfg.columnname.toUpperCase();
+        const key = cfg.Columnname.toUpperCase();
         if (row[key] === null || row[key] === '') row[key] = active[0][key] ?? null;
       }
     }
@@ -43,8 +43,8 @@ async function storeBulkTemp(params) {
   const db = await cds.connect.to('db');
   const { BulkTemp } = db.entities;  // config table — CAP ORM
   await db.run(INSERT.into(BulkTemp).entries({
-    tablename, bulkdata: rowString, workflowid, actiontype,
-    initiationdate: new Date().toISOString(), requeststatus: 'INPROGRESS',
+    Tablename: tablename, BulkData: rowString, WorkflowId: workflowid, ActionType: actiontype,
+    InitiationDate: new Date().toISOString(), RequestStatus: 'INPROGRESS',
   }));
 }
 
@@ -57,10 +57,10 @@ async function applyBulkTempApproved(params) {
   const now = new Date().toISOString();
 
   const tempRows = await db.run(  // CAP ORM — BulkTemp is config table
-    SELECT.from(BulkTemp).where({ workflowid, tablename, requeststatus: 'INPROGRESS' })
+    SELECT.from(BulkTemp).where({ WorkflowId: workflowid, Tablename: tablename, RequestStatus: 'INPROGRESS' })
   );
   for (const tr of tempRows) {
-    const splitData = tr.bulkdata.split('«');
+    const splitData = tr.BulkData.split('«');
     const { clause, values: kv } = buildKeyWhere(splitData, lineitemConfig, keyFields);
     const existing = await readRows(db, tablename, clause, kv);  // dynamic raw SQL
     const rowToWrite = buildRowFromSplit(splitData, lineitemConfig, { UPDATED_ON: now, UPDATED_BY: userId });
@@ -68,7 +68,7 @@ async function applyBulkTempApproved(params) {
     if (existing.length > 0) {
       if (isOverwriteNull === 'N') {
         for (const cfg of lineitemConfig) {
-          const k = cfg.columnname.toUpperCase();
+          const k = cfg.Columnname.toUpperCase();
           if (rowToWrite[k] === null || rowToWrite[k] === '') rowToWrite[k] = existing[0][k] ?? null;
         }
       }
@@ -81,7 +81,7 @@ async function applyBulkTempApproved(params) {
     }
   }
   // Mark APPROVED — CAP ORM
-  await db.run(UPDATE(BulkTemp).set({ requeststatus: 'APPROVED' }).where({ workflowid, tablename }));
+  await db.run(UPDATE(BulkTemp).set({ RequestStatus: 'APPROVED' }).where({ WorkflowId: workflowid, Tablename: tablename }));
 }
 
 // approveVersionedTable: on APPROVE of versioned table, promote G->Y and deactivate old Y

@@ -14,3 +14,12 @@ package-lock.json
 .cdsrc-private.json
 # developer notes (local only)
 docs/
+
+# Unused / Garbage Files
+garbage/
+*.xlsx
+*.bat
+*.sh
+node22/
+node22.zip
+*.zip

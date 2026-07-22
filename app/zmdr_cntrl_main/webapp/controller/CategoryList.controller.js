@@ -47,21 +47,29 @@ sap.ui.define([
                 this.fn_getLogReference().info("Category List Controller: Local model 'categoryViewModel' is set to view");
 
                 // Get All Category and Table list
-                oCntrlUiConfigOdataModel.read("/UIConfigSet", {
+                oCntrlUiConfigOdataModel.read("/CntrlUIUrl", {
                     async: true,
                     success: function (oData) {
                         // Update the data to the model if it exists or set the model globally if does not exists
+                        // [ORIGINAL CODE - oData.results was changed to support both OData V4 (oData.value) and V2 (oData.results)]
+                        // if (!this.fn_getGlobalModel("oCntrlUiConfigLocalModel")) {
+                        //     oCntrlUiConfigDataModel.setData(oData.results);
+                        //     this.fn_setGlobalModel(oCntrlUiConfigDataModel, "oCntrlUiConfigDataModel");
+                        // } else {
+                        //     this.fn_getGlobalModel("oCntrlUiConfigDataModel").setData(oData.results);
+                        // }
                         if (!this.fn_getGlobalModel("oCntrlUiConfigLocalModel")) {
-                            oCntrlUiConfigDataModel.setData(oData.results);
+                            oCntrlUiConfigDataModel.setData(oData.value || oData.results || []);
                             this.fn_setGlobalModel(oCntrlUiConfigDataModel, "oCntrlUiConfigDataModel");
                         } else {
-                            this.fn_getGlobalModel("oCntrlUiConfigDataModel").setData(oData.results);
+                            this.fn_getGlobalModel("oCntrlUiConfigDataModel").setData(oData.value || oData.results || []);
                         }
 
                         // Process data received from backend
                         this._fn_cntrlUiVisModelLoaded(oCntrlUiConfigDataModel);
                     }.bind(this),
                     error: function (oError) {
+                        this.fn_closeBusyDialog();
                         this.fn_showServiceError(oError);
 
                         // Log Error
@@ -159,16 +167,18 @@ sap.ui.define([
                 sHash = sap.ui.core.routing.HashChanger.getInstance().getHash();
                 // If hash tag is empty then proceed as hash tag will only be empty when the app is 
                 // instantiated from tile and not from anywhere else
-                if (sHash !== "undefined" & sHash != "") {
+                if (sHash !== "undefined" && sHash != "") {
                     // Log information
                     this.fn_getLogReference().info("Category List Controller: Current hash tag is - " + sHash);
                 } else if (this.bFirstTime) {
                     // Set the flag to false
-                    this.bFirstFlag = false;
+                    this.bFirstTime = false;
 
                     // Select the first item and fire select change event
-                    oList.setSelectedItem(oList.getItems()[0]);
-                    oList.fireSelectionChange();
+                    if (oList.getItems().length > 0) {
+                        oList.setSelectedItem(oList.getItems()[0]);
+                        oList.fireSelectionChange();
+                    }
 
                     // Log information
                     this.fn_getLogReference().info("Category List Controller: First item is preselected and fired the select change event");
@@ -284,8 +294,8 @@ sap.ui.define([
                 if (aCntrlConfigData.length !== 0) {
                     // Sort the array based on category
                     aCntrlConfigData.sort(function (oVal1, oVal2) {
-                        sTemp1 = oVal1.Repository.toLowerCase();
-                        sTemp2 = oVal2.Repository.toLowerCase();
+                        sTemp1 = oVal1.repository.toLowerCase();
+                        sTemp2 = oVal2.repository.toLowerCase();
 
                         if (sTemp1 !== undefined && sTemp2 !== undefined) {
                             if (sTemp1 < sTemp2) {
@@ -304,11 +314,11 @@ sap.ui.define([
                     aCntrlConfigData.forEach(function (oCntrlConfigData) {
                         // Check if already added into the array
                         if (aUniqueRepositories.filter(function (oUniqueRepositories) {
-                            return oUniqueRepositories.repositoryName === oCntrlConfigData.Repository
+                            return oUniqueRepositories.repositoryName === oCntrlConfigData.repository
                         }).length === 0) {
                             aUniqueRepositories.push({
-                                "repositoryName": oCntrlConfigData.Repository,
-                                "repositoryLabel": oCntrlConfigData.Repositorylabel
+                                "repositoryName": oCntrlConfigData.repository,
+                                "repositoryLabel": oCntrlConfigData.repository // Fallback to repository id since label is not present in new model
                             });
                         }
                     });

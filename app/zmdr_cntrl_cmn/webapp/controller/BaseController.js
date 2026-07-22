@@ -85,7 +85,18 @@ sap.ui.define([
              * 
              */
             fn_getLogReference: function () {
-                return this.getOwnerComponent()._oLog;
+                var oComponent = this.getOwnerComponent();
+                if (oComponent && oComponent._oLog) {
+                    return oComponent._oLog;
+                }
+                return {
+                    info: function () {},
+                    error: function () {},
+                    warning: function () {},
+                    debug: function () {},
+                    trace: function () {},
+                    fatal: function () {}
+                };
             },
 
             /**
@@ -95,7 +106,10 @@ sap.ui.define([
              * 
              */
             fn_openBusyDialog: function () {
-                this.getOwnerComponent()._oGlobalBusyDialog.open();
+                var oComponent = this.getOwnerComponent();
+                if (oComponent && oComponent._oGlobalBusyDialog) {
+                    oComponent._oGlobalBusyDialog.open();
+                }
             },
 
             /**
@@ -105,7 +119,10 @@ sap.ui.define([
              * 
              */
             fn_closeBusyDialog: function () {
-                this.getOwnerComponent()._oGlobalBusyDialog.close();
+                var oComponent = this.getOwnerComponent();
+                if (oComponent && oComponent._oGlobalBusyDialog) {
+                    oComponent._oGlobalBusyDialog.close();
+                }
             },
 
             /**

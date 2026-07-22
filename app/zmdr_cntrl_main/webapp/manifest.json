@@ -15,32 +15,36 @@
       "version": "1.16.5",
       "toolsId": "d875c47f-6388-40b7-97a8-c4835db4af83"
     },
+    "crossNavigation": {
+      "inbounds": {
+        "zmdr_cntrl_main-display": {
+          "semanticObject": "zmdr_cntrl_main",
+          "action": "display",
+          "title": "Central Master Data",
+          "signature": {
+            "parameters": {},
+            "additionalParameters": "allowed"
+          }
+        },
+        "zmdr_central_main-manage": {
+          "semanticObject": "zmdr_central_main",
+          "action": "manage",
+          "title": "Central Master Data",
+          "signature": {
+            "parameters": {},
+            "additionalParameters": "allowed"
+          }
+        }
+      }
+    },
     "dataSources": {
       "mainService": {
-        "uri": "/sap/opu/odata/sap/ZMDR_CNTRL_UICONFIG_SRV/",
+        "uri": "/api/central/",
         "type": "OData",
         "settings": {
           "annotations": [],
           "localUri": "localService/mainService/metadata.xml",
-          "odataVersion": "2.0"
-        }
-      },
-      "ZMDGCPCNTRLURL01_CDS_VAN": {
-        "uri": "/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Annotations(TechnicalName='ZMDGCPCNTRLURL01_CDS_VAN',Version='0001')/$value/",
-        "type": "ODataAnnotation",
-        "settings": {
-          "localUri": "localService/ZMDGCPCNTRLURL01_CDS/ZMDGCPCNTRLURL01_CDS_VAN.xml"
-        }
-      },
-      "ZMDGCPCNTRLURL01_CDS": {
-        "uri": "/sap/opu/odata/sap/ZMDGCPCNTRLURL01_CDS/",
-        "type": "OData",
-        "settings": {
-          "annotations": [
-            "ZMDGCPCNTRLURL01_CDS_VAN"
-          ],
-          "localUri": "localService/ZMDGCPCNTRLURL01_CDS/metadata.xml",
-          "odataVersion": "2.0"
+          "odataVersion": "4.0"
         }
       }
     }
@@ -82,18 +86,23 @@
       "i18n": {
         "type": "sap.ui.model.resource.ResourceModel",
         "settings": {
-          "bundleName": "com.intapptics.zmdrcntrlmain.i18n.i18n"
+          "bundleName": "com.intapptics.zmdrcntrlmain.i18n.i18n",
+          "supportedLocales": [
+            ""
+          ],
+          "fallbackLocale": ""
         }
       },
       "": {
         "dataSource": "mainService",
         "preload": true,
-        "settings": {}
-      },
-      "ZMDGCPCNTRLURL01_CDS": {
-        "dataSource": "ZMDGCPCNTRLURL01_CDS",
-        "preload": true,
-        "settings": {}
+        "type": "sap.ui.model.odata.v4.ODataModel",
+        "settings": {
+          "autoExpandSelect": true,
+          "operationMode": "Server",
+          "synchronizationMode": "None",
+          "groupId": "$direct"
+        }
       }
     },
     "resources": {
@@ -197,5 +206,9 @@
       "async": true,
       "id": "fcl"
     }
+  },
+  "sap.cloud": {
+    "public": true,
+    "service": "mdr.cap.btp"
   }
 }

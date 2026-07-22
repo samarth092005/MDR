@@ -30,39 +30,39 @@
     },
     "dataSources": {
       "mainService": {
-        "uri": "/odata/v2/api/central/",
+        "uri": "/api/central/",
         "type": "OData",
         "settings": {
           "annotations": [],
           "localUri": "localService/mainService/metadata.xml",
-          "odataVersion": "2.0"
+          "odataVersion": "4.0"
         }
       },
       "ZMDGCPCNTRLVAL01_CDS": {
-        "uri": "/odata/v2/api/central/",
+        "uri": "/api/central/",
         "type": "OData",
         "settings": {
           "annotations": [],
           "localUri": "localService/ZMDGCPCNTRLVAL01_CDS/metadata.xml",
-          "odataVersion": "2.0"
+          "odataVersion": "4.0"
         }
       },
       "ZMDR_UTILITY_WORKFLOW_SRV": {
-        "uri": "/odata/v2/api/workflow/",
+        "uri": "/api/workflow/",
         "type": "OData",
         "settings": {
           "annotations": [],
           "localUri": "localService/ZMDR_UTILITY_WORKFLOW_SRV/metadata.xml",
-          "odataVersion": "2.0"
+          "odataVersion": "4.0"
         }
       },
       "ZMDGCPCNTRLURL01_CDS": {
-        "uri": "/odata/v2/api/central/",
+        "uri": "/api/central/",
         "type": "OData",
         "settings": {
           "annotations": [],
           "localUri": "localService/ZMDGCPCNTRLURL01_CDS/metadata.xml",
-          "odataVersion": "2.0"
+          "odataVersion": "4.0"
         }
       }
     }
@@ -110,29 +110,44 @@
       "": {
         "dataSource": "mainService",
         "preload": true,
+        "type": "sap.ui.model.odata.v4.ODataModel",
         "settings": {
-          "defaultBindingMode": "TwoWay",
-          "defaultCountMode": "Inline",
-          "refreshAfterChange": false,
-          "metadataUrlParams": {
-            "sap-value-list": "none"
-          }
+          "autoExpandSelect": true,
+          "operationMode": "Server",
+          "synchronizationMode": "None",
+          "groupId": "$direct"
         }
       },
       "ZMDGCPCNTRLVAL01_CDS": {
         "dataSource": "ZMDGCPCNTRLVAL01_CDS",
         "preload": true,
-        "settings": {}
+        "type": "sap.ui.model.odata.v4.ODataModel",
+        "settings": {
+          "autoExpandSelect": true,
+          "operationMode": "Server",
+          "synchronizationMode": "None",
+          "groupId": "$direct"
+        }
       },
       "ZMDR_UTILITY_WORKFLOW_SRV": {
         "dataSource": "ZMDR_UTILITY_WORKFLOW_SRV",
         "preload": true,
-        "settings": {}
+        "type": "sap.ui.model.odata.v4.ODataModel",
+        "settings": {
+          "autoExpandSelect": true,
+          "operationMode": "Server",
+          "synchronizationMode": "None"
+        }
       },
       "ZMDGCPCNTRLURL01_CDS": {
         "dataSource": "ZMDGCPCNTRLURL01_CDS",
         "preload": true,
-        "settings": {}
+        "type": "sap.ui.model.odata.v4.ODataModel",
+        "settings": {
+          "autoExpandSelect": true,
+          "operationMode": "Server",
+          "synchronizationMode": "None"
+        }
       }
     },
     "resources": {
@@ -181,5 +196,9 @@
       "async": true,
       "id": "app"
     }
+  },
+  "sap.cloud": {
+    "public": true,
+    "service": "mdr.cap.btp"
   }
 }

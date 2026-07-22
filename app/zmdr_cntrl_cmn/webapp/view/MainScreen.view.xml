@@ -31,12 +31,8 @@
                             <Link id="lnkMsgStrip" text="{i18n>linkText}" emphasized="true" press="onPress_lnkMsgStrip"></Link>
                         </link>
                     </MessageStrip>
-                    <VBox id="vbxSections" height="50%">
-                        <uxap:ObjectPageLayout>
-                            <uxap:sections>
-                                <uxap:ObjectPageSection id="objPgSecItmDtls" showTitle="false" titleUppercase="false"></uxap:ObjectPageSection>
-                            </uxap:sections>
-                        </uxap:ObjectPageLayout>
+                    <VBox id="vbxSections" width="100%">
+                        <!-- Dynamically added Panels will go here -->
                     </VBox>
                     <!-- <form:SimpleForm id="sfrmItemDetails" title="{mainScreenViewModel>/formTitle}" editable="true" layout="ColumnLayout" columnsM="2" columnsL="3" columnsXL="4"></form:SimpleForm> -->
                     <form:Form id="frmRemarks" editable="false" visible="false">
@@ -107,7 +103,7 @@
                 <Button id="btnMsgPopOver" text="{=${messageModel>/}.length}" tooltip="{i18n>btnMsgPopOver}" visible="{=${messageModel>/}.length>0}" type="Emphasized" icon="sap-icon://alert" press="onPress_btnMsgPopOver"></Button>
                 <Button id="btnSeeChanges" text="{i18n>btnSeeChanges}" tooltip="{i18n>btnSeeChanges}" visible="false" type="Emphasized" icon="sap-icon://show-edit" press="onPress_btnSeeChanges"></Button>
                 <ToolbarSpacer id="tlbspc"></ToolbarSpacer>
-                <Button id="btnSubmit" text="{i18n>btnSubmit}" tooltip="{i18n>btnSubmit}" visible="false" type="Emphasized" icon="sap-icon://Validate" press="onPress_btnSubmit"></Button>
+                <Button id="btnSubmit" text="{i18n>btnSubmit}" tooltip="{i18n>btnSubmit}" visible="false" type="Emphasized" icon="sap-icon://validate" press="onPress_btnSubmit"></Button>
                 <Button id="btnCreate" text="{i18n>btnCreate}" tooltip="{i18n>btnCreate}" visible="false" type="Emphasized" icon="sap-icon://create" press="onPress_btnCreate"></Button>
                 <Button id="btnReject" text="{i18n>btnReject}" tooltip="{i18n>btnReject}" visible="false" type="Ghost" icon="sap-icon://decline" press="onPress_approverAction"></Button>
                 <Button id="btnApprove" text="{i18n>btnApprove}" tooltip="{i18n>btnApprove}" visible="false" type="Emphasized" icon="sap-icon://accept" press="onPress_approverAction"></Button>

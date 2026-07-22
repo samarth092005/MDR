@@ -1,0 +1,11 @@
+validationindex,tablename,sourcecolname,sourcecolvalue,destcolname,destcolvalue,operation,errormessage
+1,ZMDR_BP_MASTER,BP_ID,,BP_ID,,MANDATORY,Business Partner ID is mandatory.
+2,ZMDR_BP_MASTER,LEGAL_NAME,,LEGAL_NAME,,MANDATORY,Legal Name is mandatory for all Business Partners.
+3,ZMDR_BP_MASTER,COUNTRY,,COUNTRY,,MANDATORY,Country is mandatory.
+4,ZMDR_BP_MASTER,LANGUAGE,,LANGUAGE,,MANDATORY,Language Key is mandatory.
+5,ZMDR_BP_MASTER,STATUS,,STATUS,,MANDATORY,"Status is mandatory (A=Active, I=Inactive, B=Blocked, C=Closed)."
+6,ZMDR_BP_MASTER,STATUS,B,BLOCK_REASON,,MANDATORY,Block Reason is mandatory when Status = Blocked (B).
+7,ZMDR_BP_MASTER,BP_TYPE,NAT,CREDIT_LIMIT,5000.0,ATOB,"Credit Limit for Natural Person (NAT) must not exceed 5,000."
+8,ZMDR_BP_MASTER,COUNTRY,,COUNTRY,,LOOKUP,Country must be a valid country code. Check country reference table.
+9,ZMDR_BP_MASTER,CURRENCY,,CURRENCY,,LOOKUP,Currency must be a valid ISO currency code.
+10,ZMDR_BP_MASTER,INCOTERMS,,INCOTERMS,,LOOKUP,"Incoterms must be a valid Incoterms code (e.g. EXW, FOB, CIF, DDP)."

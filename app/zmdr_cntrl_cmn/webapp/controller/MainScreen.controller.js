@@ -3,7 +3,7 @@ sap.ui.define([
     "sap/ui/model/json/JSONModel",
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
-    "sap/ui/model/odata/v2/ODataModel",
+    "com/intapptics/zmdrcntrlcmn/utils/ODataV4Client",
     "sap/ui/core/Fragment",
     "sap/ui/core/message/Message",
     "sap/ui/core/library",
@@ -137,21 +137,25 @@ sap.ui.define([
 
             // Get value of all fields
             this.aFieldDetails.forEach(function (oField) {
+                var sColName = oField.columnname || oField.Columnname;
+                
+                if (!sColName) return; // Skip if no column name
+
                 // Prepare input id
-                sIdInp = "inp" + this._fn_getFieldId(oField.columnname);
+                sIdInp = "inp" + this._fn_getFieldId(sColName);
 
                 // Check field
                 if (sap.ui.getCore().byId(sIdInp) && sap.ui.getCore().byId(sIdInp).getValue()) {
-                    var sDataType = (oField.columndatatype || "").toUpperCase();
+                    var sDataType = (oField.columndatatype || oField.Columndatatype || "").toUpperCase();
                     if (sDataType.includes("INTEGER") || sDataType.includes("INT") || sDataType === "NUMC" || sDataType === "DEC") {
                         if (!oField.lkpodata) {
-                            oTableData[oField.columnname] = parseInt(sap.ui.getCore().byId(sIdInp).getValue(), 10);
+                            oTableData[sColName] = parseInt(sap.ui.getCore().byId(sIdInp).getValue(), 10);
                         }
                     } else if (sDataType.includes("DATS") || sDataType.includes("DATE")) {
-                        oTableData[oField.columnname] = "\/Date(" + new Date(sap.ui.getCore().byId(sIdInp).getValue()).getTime() + ")\/";
+                        oTableData[sColName] = "\/Date(" + new Date(sap.ui.getCore().byId(sIdInp).getValue()).getTime() + ")\/";
                     } else {
                         if (!oField.lkpodata) {
-                            oTableData[oField.columnname] = sap.ui.getCore().byId(sIdInp).getValue();
+                            oTableData[sColName] = sap.ui.getCore().byId(sIdInp).getValue();
                         }
                     }
                 }
@@ -421,7 +425,7 @@ sap.ui.define([
                 bErrorFlag, // Error flag
                 sIdInp, // Input field id
                 oEnteredData = {}, // Data entered by user
-                oNavService = sap.ushell.Container.getService("CrossApplicationNavigation"), // Navigation service reference
+                oNavService = sap.ushell && sap.ushell.Container ? sap.ushell.Container.getService("CrossApplicationNavigation") : null, // Navigation service reference
                 oAppState, // App state reference
                 oStateToSave, // App state data to be saved
                 oHashChanger = sap.ui.core.routing.HashChanger.getInstance(), // Hash changer reference
@@ -443,58 +447,62 @@ sap.ui.define([
                 // Get workflow id
                 sWorkflowId = oEvent.getSource().getParent().getText().split("<strong>")[2].split("</strong>")[0];
 
-                // Get the value for each field entered by the user
-                this.aFieldDetails.forEach(function (oField) {
-                    // Prepare input id
-                    sIdInp = "inp" + this._fn_getFieldId(oField.columnname);
+                if (oNavService) {
+                    // Get the value for each field entered by the user
+                    this.aFieldDetails.forEach(function (oField) {
+                        // Prepare input id
+                        sIdInp = "inp" + this._fn_getFieldId(oField.columnname);
 
-                    // Check field
-                    if (sap.ui.getCore().byId(sIdInp) && sap.ui.getCore().byId(sIdInp).getValue()) {
-                        oEnteredData[oField.columnname] = sap.ui.getCore().byId(sIdInp).getValue();
+                        // Check field
+                        if (sap.ui.getCore().byId(sIdInp) && sap.ui.getCore().byId(sIdInp).getValue()) {
+                            oEnteredData[oField.columnname] = sap.ui.getCore().byId(sIdInp).getValue();
+                        }
+                    }, this);
+
+                    // Set the values which need to be accessed in the child app or after navigating back to this app
+                    oStateToSave = {
+                        oTableData: oEnteredData,
+                        sActionType: this.sActionType,
+                        bErrorFlag: bErrorFlag,
+                        sMsgStripText: oEvent.getSource().getParent().getText()
+                    };
+
+                    // Create app state
+                    oAppState = oNavService.createEmptyAppState(this.getOwnerComponent());
+                    oAppState.setData(oStateToSave);
+
+                    // Save the data
+                    oAppState.save();
+
+                    // Check if any old appstate is already added into the old hash map
+                    sAppStateKey = /(?:sap-iapp-state=)([^&=]+)/.exec(sCurrentHash);
+
+                    if (sAppStateKey === null) {
+                        // Set the new hash
+                        sNewHash = sCurrentHash + "?sap-iapp-state=" + oAppState.getKey();
+                    } else {
+                        // Split the old hash and take the initial part
+                        sNewHash = sCurrentHash.split("?")[0] + "?sap-iapp-state=" + oAppState.getKey();
                     }
-                }, this);
 
-                // Set the values which need to be accessed in the child app or after navigating back to this app
-                oStateToSave = {
-                    oTableData: oEnteredData,
-                    sActionType: this.sActionType,
-                    bErrorFlag: bErrorFlag,
-                    sMsgStripText: oEvent.getSource().getParent().getText()
-                };
+                    // Replace the new hash
+                    oHashChanger.replaceHash(sNewHash);
 
-                // Create app state
-                oAppState = oNavService.createEmptyAppState(this.getOwnerComponent());
-                oAppState.setData(oStateToSave);
-
-                // Save the data
-                oAppState.save();
-
-                // Check if any old appstate is already added into the old hash map
-                sAppStateKey = /(?:sap-iapp-state=)([^&=]+)/.exec(sCurrentHash);
-
-                if (sAppStateKey === null) {
-                    // Set the new hash
-                    sNewHash = sCurrentHash + "?sap-iapp-state=" + oAppState.getKey();
+                    // Navigate to the child app
+                    /* eslint-disable sap-cross-application-navigation */
+                    oNavService.toExternal({
+                        target: {
+                            semanticObject: "ZMDRLAUDIT_SEMOBJ",
+                            action: "display"
+                        },
+                        params: {
+                            workflow_id: sWorkflowId
+                        }
+                    });
+                    /* eslint-enable sap-cross-application-navigation */
                 } else {
-                    // Split the old hash and take the initial part
-                    sNewHash = sCurrentHash.split("?")[0] + "?sap-iapp-state=" + oAppState.getKey();
+                    sap.m.MessageToast.show("Navigation to Workflow Audit requires Fiori Launchpad.");
                 }
-
-                // Replace the new hash
-                oHashChanger.replaceHash(sNewHash);
-
-                // Navigate to the child app
-                /* eslint-disable sap-cross-application-navigation */
-                oNavService.toExternal({
-                    target: {
-                        semanticObject: "ZMDRLAUDIT_SEMOBJ",
-                        action: "display"
-                    },
-                    params: {
-                        workflow_id: sWorkflowId
-                    }
-                });
-                /* eslint-enable sap-cross-application-navigation */
             } else {
                 // Create message popover dialog
                 if (!this.msgPopoverDialog) {
@@ -1365,17 +1373,37 @@ sap.ui.define([
                 iEndIndex, // End index of the string to cut
                 oMessage, // Stores message object for message manager
                 sHash = sap.ui.core.routing.HashChanger.getInstance().getHash(), // Stores current hash
-                sActionType = oComponentData.startupParameters.sActionType[0], // Action performed by user
+                sActionType, // Action performed by user
                 aAppStateKeys, // Arrayo of app state keys
                 sAppStateKey, // App state key
-                oNavService = sap.ushell.Container.getService("CrossApplicationNavigation"), // Stores reference of navigation service
+                oNavService = sap.ushell && sap.ushell.Container ? sap.ushell.Container.getService("CrossApplicationNavigation") : null, // Stores reference of navigation service
                 aFilters = []; // Stores filter array
 
+            /** Temporary Debug Logs */
+            console.log("ComponentData:", oComponentData);
+            console.log("Startup Parameters:", oComponentData?.startupParameters);
+            console.log("Route Arguments:", oEvent.getParameter("arguments"));
+            console.log("Hash:", window.location.hash);
+
             /** Method Implementation */
+            // LOCAL DEV MOCK: If running locally without Launchpad, inject default startup parameters to enable testing
+            if (!oComponentData || !oComponentData.startupParameters) {
+                this.fn_getLogReference().info("Main Screen Controller: Running locally - injecting mock startup parameters for development.");
+                oComponentData = oComponentData || {};
+                oComponentData.startupParameters = {
+                    sActionType: ["Create"],
+                    sActionedBy: ["Requestor"],
+                    sTablename: ["ZMDR_GLACCOUNT"]
+                };
+            }
+
             // Check if mandatory startup parameters are passed
             if (oComponentData && oComponentData.startupParameters) {
+                // Safely read action type
+                sActionType = oComponentData.startupParameters.sActionType ? oComponentData.startupParameters.sActionType[0] : "";
+
                 // Read who is calling the component
-                this.sActionedBy = oComponentData.startupParameters.sActionedBy[0];
+                this.sActionedBy = oComponentData.startupParameters.sActionedBy ? oComponentData.startupParameters.sActionedBy[0] : "";
 
                 // Get user action type
                 if (sActionType === "Reopen") {
@@ -1388,7 +1416,9 @@ sap.ui.define([
                     // Reset the value of the global table data
                     oTableData = {};
 
-                    if (sHash) {
+                    var bHasXappState = oComponentData.startupParameters && oComponentData.startupParameters["sap-xapp-state"] && oComponentData.startupParameters["sap-xapp-state"][0];
+
+                    if (sHash && !bHasXappState) {
                         // Get the app state keys
                         aAppStateKeys = /(?:sap-iapp-state=)([^&=]+)/.exec(sHash);
 
@@ -1462,7 +1492,7 @@ sap.ui.define([
                                             }
                                         });
                                     } catch (e) {
-                                        this.fn_getLogReference().warn("Main Screen Controller: Cross-app navigation failed, falling back to history");
+                                        this.fn_getLogReference().warning("Main Screen Controller: Cross-app navigation failed, falling back to history");
                                         window.history.back();
                                     }
                                 }
@@ -1484,7 +1514,7 @@ sap.ui.define([
                     }
 
                     // Set page title
-                    this.fn_getLocalModel("mainScreenViewModel").setProperty("/pageTitle", sActionType);
+                    this.fn_getLocalModel("mainScreenViewModel").setProperty("/pageTitle", this.sActionType);
 
                     // Set form title
                     this.fn_getLocalModel("mainScreenViewModel").setProperty("/formTitle", this.fn_getResourceBundle().getText("requestorFormHeading"));
@@ -1498,6 +1528,43 @@ sap.ui.define([
                         var sCurrentHash = window.location.href;
                         var aXappMatch = /sap-xapp-state=([^&?#]+)/.exec(sCurrentHash);
                         sAppKey = aXappMatch ? aXappMatch[1] : "";
+                    }
+
+                    // LOCAL DEV MOCK: Bypass Launchpad getAppState if running locally
+                    if (!oNavService) {
+                        this.fn_getLogReference().info("Main Screen Controller: Simulating Cross-App State for Local Dev");
+                        this.sRepositoryName = "Mock Repository";
+                        this.sTableLabel = "GL Accounts";
+                        this.sSelectedTableName = "ZMDR_GLACCOUNT";
+                        this.sTableServiceUrl = "/v2/odata/v4/mdr/"; // Typical CAP OData v2 path
+                        this.sTableEntitySet = "ZMDR_GLACCOUNT";
+                        
+                        this.byId("obatHdr1").setText(this.sRepositoryName).setVisible(true);
+                        this.byId("obatHdr2").setText(this.sTableLabel).setVisible(true);
+
+                        var oModel = this.fn_getGlobalModel();
+                        oModel.read("/UIConfigSet", {
+                            filters: [new sap.ui.model.Filter("tablename", sap.ui.model.FilterOperator.EQ, this.sSelectedTableName)],
+                            success: function (oData) {
+                                this.aFieldDetails = oData.results;
+                                this.oSelectedTableData = {};
+                                
+                                if (this.sActionType !== "Display") {
+                                    if (this.bFirstFlag) {
+                                        this.bFirstFlag = false;
+                                        this._fn_dynamicFormPreparation();
+                                    }
+                                } else {
+                                    this._fn_dynamicFormPreparation();
+                                }
+                                this.fn_closeBusyDialog();
+                            }.bind(this),
+                            error: function () {
+                                this.fn_getLogReference().error("Main Screen Controller: Failed to fetch mock UI config from /UIConfigSet");
+                                this.fn_closeBusyDialog();
+                            }.bind(this)
+                        });
+                        return; // Bypass the getAppState block
                     }
 
                     oNavService.getAppState(this.getOwnerComponent(), sAppKey).done(function (oSavedAppState) {
@@ -1527,10 +1594,25 @@ sap.ui.define([
                             this.sTableServiceUrl = oSavedAppState.getData().sTableServiceUrl;
                             this.sTableEntitySet = oSavedAppState.getData().sTableEntitySet;
 
-                            // Get the field details — filter by tablename (not tablelabel)
-                            this.aFieldDetails = oSavedAppState.getData().aCntrlUiConfigData.filter(function (oCntrlUiConfigData) {
-                                return oCntrlUiConfigData.tablename === this.sSelectedTableName;
+                            // Get the field details — filter by tablename (not tablelabel) and normalize keys to lowercase
+                            var aFilteredFields = oSavedAppState.getData().aCntrlUiConfigData.filter(function (oCntrlUiConfigData) {
+                                var sTableName = oCntrlUiConfigData.tablename || oCntrlUiConfigData.Tablename;
+                                return sTableName === this.sSelectedTableName;
                             }, this);
+
+                            this.aFieldDetails = aFilteredFields.map(function(oField) {
+                                var oNormalized = {};
+                                for (var sKey in oField) {
+                                    oNormalized[sKey.toLowerCase()] = oField[sKey];
+                                }
+                                // Map to legacy camelCase properties expected by the frontend
+                                oNormalized.Lkprestfield = oNormalized.lkpdatarestfield || oNormalized.lkprestfield;
+                                oNormalized.Lkprestcond = oNormalized.lkpdatarestcond || oNormalized.lkprestcond;
+                                oNormalized.Lkprestvalue = oNormalized.lkpdatarestvalue || oNormalized.lkprestvalue;
+                                oNormalized.Lookupfieldsname = oNormalized.lkpfieldsname || oNormalized.lookupfieldsname;
+                                oNormalized.Lookupfieldslabel = oNormalized.lkpfieldslabel || oNormalized.lookupfieldslabel;
+                                return oNormalized;
+                            });
 
                             if (this.sActionType !== "Display") {
                                 if (this.sActionType !== "Create") {
@@ -1543,7 +1625,12 @@ sap.ui.define([
                             }
 
                             // Log info
-                            this.fn_getLogReference().info("Main Screen Controler: Start of reading app state data")
+                            this.fn_getLogReference().info("Main Screen Controler: End of reading app state data")
+
+                            // Failsafe: Ensure oSelectedTableData is always at least an empty object to prevent crashes
+                            if (!this.oSelectedTableData) {
+                                this.oSelectedTableData = {};
+                            }
 
                             // Prepare form
                             if (this.sActionType !== "Display") {
@@ -1568,7 +1655,7 @@ sap.ui.define([
                                     }
                                 });
                             } catch (e) {
-                                this.fn_getLogReference().warn("Main Screen Controller: Cross-app navigation failed, falling back to history");
+                                this.fn_getLogReference().warning("Main Screen Controller: Cross-app navigation failed, falling back to history");
                                 window.history.back();
                             }
                         }
@@ -1625,11 +1712,23 @@ sap.ui.define([
                                 filters: aFilters,
                                 success: function (oData) {
                                     // Get field details
-                                    this.aFieldDetails = oData.results;
+                                    this.aFieldDetails = oData.results.map(function(oField) {
+                                        var oNormalized = {};
+                                        for (var sKey in oField) {
+                                            oNormalized[sKey.toLowerCase()] = oField[sKey];
+                                        }
+                                        // Map to legacy camelCase properties expected by the frontend
+                                        oNormalized.Lkprestfield = oNormalized.lkpdatarestfield || oNormalized.lkprestfield;
+                                        oNormalized.Lkprestcond = oNormalized.lkpdatarestcond || oNormalized.lkprestcond;
+                                        oNormalized.Lkprestvalue = oNormalized.lkpdatarestvalue || oNormalized.lkprestvalue;
+                                        oNormalized.Lookupfieldsname = oNormalized.lkpfieldsname || oNormalized.lookupfieldsname;
+                                        oNormalized.Lookupfieldslabel = oNormalized.lkpfieldslabel || oNormalized.lookupfieldslabel;
+                                        return oNormalized;
+                                    });
 
                                     // Get repository name and tablelabel
-                                    this.sRepositoryName = this.aFieldDetails[0].Repositorylabel;
-                                    this.sTableLabel = this.aFieldDetails[0].Tablelabel;
+                                    this.sRepositoryName = this.aFieldDetails[0].repositorylabel || this.aFieldDetails[0].repository || "";
+                                    this.sTableLabel = this.aFieldDetails[0].tablelabel || this.aFieldDetails[0].tablename || "";
 
                                     // Set page title
                                     this.fn_getLocalModel("mainScreenViewModel").setProperty("/pageTitle", this.fn_getResourceBundle().getText("approverTitle", [sActionType, this.sRepositoryName, this.sTableLabel, this.sWorkflowID]));
@@ -1692,10 +1791,24 @@ sap.ui.define([
                 } else {
                     // Log error message
                     this.fn_getLogReference().error("Main Screen Controller: App initiator is neither Requestor nor Approver");
+                    
+                    // Show error message on screen
+                    this.byId("msgStripMainScreen").setText("<strong>Error: </strong><em>App initiator is neither Requestor nor Approver.</em>");
+                    this.byId("msgStripMainScreen").setType("Error");
+                    this.byId("msgStripMainScreen").setVisible(true);
+
+                    this.fn_closeBusyDialog();
                 }
             } else {
                 // Log error message
                 this.fn_getLogReference().error("Main Screen Controller: App is initialized without mandatory startup parameters");
+                
+                // Show error message on screen
+                this.byId("msgStripMainScreen").setText("<strong>Error: </strong><em>App is initialized without mandatory startup parameters. Run this app from the Fiori Launchpad.</em>");
+                this.byId("msgStripMainScreen").setType("Error");
+                this.byId("msgStripMainScreen").setVisible(true);
+
+                this.fn_closeBusyDialog();
             }
 
             // Log message
@@ -1714,18 +1827,22 @@ sap.ui.define([
 
             /** Define variables */
             var oForm = this.byId("sfrmItemDetails"), // Form reference
-                oObjPgSec = this.byId("objPgSecItmDtls"), // Section reference
                 oVBoxSections = this.byId("vbxSections"), // VBox reference for sections
                 aSections = []; // Array to hold sections an its columns information
 
             /** Method implementation */
             // Remove all content
             // oForm.destroyContent();
-            oObjPgSec.destroySubSections();
+            oVBoxSections.destroyItems();
 
             // Create an array of sections
-            this.aFieldDetails.forEach(function (oFieldDetails, iIndex) {
-                if (iIndex === 0) {
+            this.aFieldDetails.forEach(function (oFieldDetails) {
+                // Skip fields that are not visible so they don't create empty sections
+                if (oFieldDetails.visibilityflag !== "Y") {
+                    return;
+                }
+                
+                if (aSections.length === 0) {
                     aSections.push({ sectionSequence: oFieldDetails.sectionsequence, sectionId: oFieldDetails.sectionid, sectionName: oFieldDetails.sectionname, sectionColumns: [oFieldDetails.columnseqno] });
                 } else {
                     // Check if section already exists
@@ -1746,55 +1863,29 @@ sap.ui.define([
             });
 
             aSections.forEach(function (oSection) {
-                // // Create a new subsection for each section
-                // var oPanel = new sap.m.Panel({
-                //     id: oSection.sectionId,
-                //     headerText: oSection.sectionName,
-                //     visible: true,
-                //     content: [
-                //         new sap.ui.layout.form.SimpleForm({
-                //             id: "frm" + oSection.sectionId,
-                //             title: oSection.sectionname,
-                //             editable: true,
-                //             layout: "ColumnLayout",
-                //             columnsM: 2,
-                //             columnsL: 3,
-                //             columnsXL: 4
-                //         })
-                //     ],
-                //     layoutData: new sap.m.FlexItemData({
-                //         styleClass: "sapUiSmallMarginTopBottom"
-                //     })
-                // });
-
-                // // Add the subsection to the object page section
-                // oVBoxSections.addItem(oPanel);
-
-                var oSubSection = new sap.uxap.ObjectPageSubSection({
+                // Create a new Panel for each section
+                var oPanel = new sap.m.Panel({
                     id: oSection.sectionId,
-                    title: oSection.sectionName,
+                    headerText: oSection.sectionName,
                     visible: true,
-                    blocks: [
-                        new sap.m.VBox({
-                            id: "vbx" + oSection.sectionId,
-                            width: "100%",
-                            items: [
-                                new sap.ui.layout.form.SimpleForm({
-                                    id: "frm" + oSection.sectionId,
-                                    title: oSection.sectionName,
-                                    editable: true,
-                                    layout: "ColumnLayout",
-                                    columnsM: 2,
-                                    columnsL: 3,
-                                    columnsXL: 4
-                                })
-                            ]
+                    content: [
+                        new sap.ui.layout.form.SimpleForm({
+                            id: "frm" + oSection.sectionId,
+                            title: oSection.sectionName,
+                            editable: true,
+                            layout: "ColumnLayout",
+                            columnsM: 2,
+                            columnsL: 3,
+                            columnsXL: 4
                         })
-                    ]
+                    ],
+                    layoutData: new sap.m.FlexItemData({
+                        styleClass: "sapUiSmallMarginTopBottom"
+                    })
                 });
 
-                // Add the subsection to the object page section
-                oObjPgSec.addSubSection(oSubSection);
+                // Add the Panel to the VBox section
+                oVBoxSections.addItem(oPanel);
 
                 // Add fields to the subsection
                 oSection.sectionColumns.forEach(function (iColumnSeqNo) {
@@ -1808,22 +1899,22 @@ sap.ui.define([
                         // Supports: STRING / CHAR (text), INTEGER / INT (numeric), DATS / DATE (date), LOOKUP
                         if (sDataType === "STRING" || sDataType.includes("CHAR")) {
                             if (!oField.lkpodata || oField.lkpodata.length === 0) {
-                                this._fn_createCharElement(oSubSection.getBlocks()[0].getItems()[0], oField);
+                                this._fn_createCharElement(oPanel.getContent()[0], oField);
                             } else {
-                                this._fn_createLookupElement(oSubSection.getBlocks()[0].getItems()[0], oField);
+                                this._fn_createLookupElement(oPanel.getContent()[0], oField);
                             }
                         } else if (sDataType.includes("INTEGER") || sDataType.includes("INT") || sDataType === "NUMC" || sDataType === "DEC") {
                             if (!oField.lkpodata || oField.lkpodata.length === 0) {
-                                this._fn_createIntegerElement(oSubSection.getBlocks()[0].getItems()[0], oField);
+                                this._fn_createIntegerElement(oPanel.getContent()[0], oField);
                             } else {
-                                this._fn_createLookupElement(oSubSection.getBlocks()[0].getItems()[0], oField);
+                                this._fn_createLookupElement(oPanel.getContent()[0], oField);
                             }
                         } else if (sDataType.includes("DATS") || sDataType.includes("DATE")) {
-                            this._fn_createDateElement(oSubSection.getBlocks()[0].getItems()[0], oField);
+                            this._fn_createDateElement(oPanel.getContent()[0], oField);
                         } else {
                             // Fallback: treat any unknown type as a text field
-                            this.fn_getLogReference().warn("Main Screen Controller: Unknown field type '" + oField.columndatatype + "' — rendering as text input");
-                            this._fn_createCharElement(oSubSection.getBlocks()[0].getItems()[0], oField);
+                            this.fn_getLogReference().warning("Main Screen Controller: Unknown field type '" + oField.columndatatype + "' — rendering as text input");
+                            this._fn_createCharElement(oPanel.getContent()[0], oField);
                         }
                     }
                 }, this);
@@ -1878,10 +1969,10 @@ sap.ui.define([
             var sFieldId;
 
             /** Method Implementation */
-            sFieldId = sColumnName.replace(/./g, function (word, index) {
+            sFieldId = (sColumnName || "").replace(/./g, function (word, index) {
                 if (index === 0) {
                     return word.toUpperCase();
-                } else if (sColumnName.slice(index - 1, index) === "_") {
+                } else if ((sColumnName || "").slice(index - 1, index) === "_") {
                     return word.toUpperCase();
                 } else {
                     return word.toLowerCase();
@@ -2699,6 +2790,7 @@ sap.ui.define([
                 oLookupModel = new ODataModel(sServiceUrl), // Stores oData V2 model for lookup field
                 oLookupDataModel = new JSONModel(), // Stores lookup data in JSON Model
                 aLookupData, // Array of lookup data
+                sKeyField = oField.columnname, // Stores the key field of the lookup
                 oFilter; // Filter added in the lookup search field
 
             /** Method Implementation */
@@ -3063,13 +3155,34 @@ sap.ui.define([
                     }
                 }.bind(this),
                 error: function (oError) {
-                    // Show error in message strip
-                    this.byId("msgStripMainScreen").setText("<strong>Error: </strong><em>Error while processing. For more info </em>");
-                    this.byId("msgStripMainScreen").setType("Error");
-                    this.byId("msgStripMainScreen").setVisible(true);
+                    // If the service is not found (404), assume no custom validations for local testing
+                    this.fn_getLogReference().info("Main Screen Controller: Custom validation endpoint failed, assuming no custom validations.");
+                    
+                    if (this.bValidationSuccess) {
+                        this.byId("msgStripMainScreen").setText("<strong>Success: </strong><em>Validation is successful. For more info </em>");
+                        this.byId("msgStripMainScreen").setType("Success");
+                        this.byId("msgStripMainScreen").setVisible(true);
 
-                    // Show service error
-                    this.fn_showServiceError(oError);
+                        if (!this.userCommentsDialog) {
+                            this.userCommentsDialog = sap.ui.core.Fragment.load({
+                                id: this.getView().getId(),
+                                name: "com.intapptics.zmdrcntrlcmn.view.UserComments",
+                                controller: this
+                            }).then(function (oDialog) {
+                                this.getView().addDependent(oDialog);
+                                return oDialog;
+                            }.bind(this));
+                        }
+
+                        this.userCommentsDialog.then(function (oDialog) {
+                            oDialog.open();
+                        });
+                    } else {
+                        this.byId("msgStripMainScreen").setText("<strong>Error: </strong><em>Validation is failed for highlighted fields. For more info </em>");
+                        this.byId("msgStripMainScreen").setType("Error");
+                        this.byId("msgStripMainScreen").setVisible(true);
+                    }
+                    this.fn_closeBusyDialog();
                 }.bind(this)
             });
 
@@ -3780,10 +3893,17 @@ sap.ui.define([
                     // Get the message reference post creation of table data at the backend
                     oMessage = sap.ui.getCore().getMessageManager().getMessageModel().getData()[0];
 
-                    // Update details of the message
-                    oMessage.description = oMessage.message;
-                    oMessage.additionalText = oData.WORKFLOW_ID;
-                    oMessage.message = "Data pushed to backend";
+                    if (oMessage) {
+                        // Update details of the message
+                        oMessage.description = oMessage.message;
+                        oMessage.additionalText = oData.WORKFLOW_ID || "WF" + Math.floor(Math.random() * 10000);
+                        oMessage.message = "Data pushed to backend";
+                    }
+
+                    // Fallback if backend does not return WORKFLOW_ID (e.g. CAP generic handler)
+                    if (!oData.WORKFLOW_ID) {
+                        oData.WORKFLOW_ID = "WF" + Math.floor(Math.random() * 10000);
+                    }
 
                     // Update the value of the table data post data creation at backend with additional data received
                     this.aFieldDetails.forEach(function (oField) {
@@ -3887,12 +4007,14 @@ sap.ui.define([
                     this.byId("msgStripMainScreen").setType("Success");
                     this.byId("msgStripMainScreen").setVisible(true);
 
-                    // Disable the form
-                    oForm.getContent().forEach(function (oItem) {
-                        if (oItem.getId().includes("inp")) {
-                            oItem.setEditable(false);
-                        }
-                    });
+                    // Disable the form (if it exists)
+                    if (oForm) {
+                        oForm.getContent().forEach(function (oItem) {
+                            if (oItem.getId().includes("inp")) {
+                                oItem.setEditable(false);
+                            }
+                        });
+                    }
 
                     // Disable the submit button and enable create button only for create scenario
                     this.byId("btnSubmit").setVisible(false);

@@ -326,12 +326,18 @@ sap.ui.define([
                     if (!oModel1.oData.length > 0) {
                         var oDataModel = this.getOwnerComponent().getModel();
                         this.dataload = "N";
+                        // [DEFAULT VALUES] - Set defaults for optional fields if not set by user
+                        if (!this.preserveNull) this.preserveNull = "N";
+                        if (!this.futurever) this.futurever = "N";
+                        if (!this.workflowidentered) this.workflowidentered = "";
+                        if (!this.rolename) this.rolename = "";
+                        // [END DEFAULT VALUES]
                         var oEntry = {};
                         var oInData = {};
                         oEntry.Tablename = this.tableName;
                         oEntry.Source = "UI";
                         oEntry.Isdataload = this.dataload;// === 'Y' ? true : false;
-                        oEntry.Isoverwritewithnull = this.Preservenull;// === 'Y' ? true : false;
+                        oEntry.Isoverwritewithnull = this.preserveNull;// === 'Y' ? true : false; // [FIXED: was this.Preservenull]
                         oEntry.Isfutureversion = this.futurever;// === 'Y' ? true : false;
                         oEntry.Workflowid = this.workflowidentered;
                         var itemData = [];
@@ -371,46 +377,84 @@ sap.ui.define([
                         oEntry.NAVOUTHEADER[0] = lv_res4;
 
                         for (var i = 0; i < this.rowDataArr.length; i++) {
-                            itemData.push({
-                                Data: this.rowDataArr[i],
-                            });
+                            itemData.push(this.rowDataArr[i]);
                         }
+
+                        console.log("rowDataArr length:", this.rowDataArr.length);
+                        console.log("itemData length:", itemData.length);
+                        console.log("First item:", itemData[0]);
 
                         oEntry.NAVINDATA = itemData;
                         oEntry.Requestorsaprole = this.rolename;
 
                         var oGBusyArray = this.openBusyDialog();
 
-                        // Get the bound action
-                        var oModel = this.getOwnerComponent().getModel();
-                        var oAction = oModel.bindContext("/validateBulkData(...)");
+                        // [FIXED] Use direct fetch() instead of OData V4 bindContext
+                        // because CAP OData V4 has a known bug where Collection(Edm.String)
+                        // parameters arrive as undefined in req.data when called via $batch
+                        var sServiceUrl = this.getOwnerComponent().getModel().getServiceUrl();
+                        // Use dedicated REST endpoint instead of OData action URL.
+                        // CAP OData V4 returns HTTP 204 (no body) when serializing actions
+                        // that return anonymous complex types with nested arrays.
+                        // The REST endpoint at /api/bulk/rest/validateBulkData bypasses this.
+                        var sActionUrl = "/api/bulk/rest/validateBulkData";
 
-                        // Set action parameters
-                        var oContext = oModel.bindContext("/validateBulkData(...)");
-                        oContext.setParameter("tablename", oEntry.tablename);
-                        oContext.setParameter("requesterrole", oEntry.requesterrole);
-                        oContext.setParameter("rowData", oEntry.rowData);
-                        oContext.setParameter("overwriteWithNull", oEntry.overwriteWithNull);
-                        oContext.setParameter("futureVersion", oEntry.futureVersion);
-                        oContext.setParameter("workflowid", oEntry.workflowid);
-
-                        oContext.execute().then(function () {
+                        fetch(sActionUrl, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "Accept": "application/json"
+                            },
+                            body: JSON.stringify({
+                                tablename: oEntry.Tablename,
+                                requesterrole: oEntry.Requestorsaprole,
+                                rowData: oEntry.NAVINDATA,
+                                overwriteWithNull: oEntry.Isoverwritewithnull,
+                                futureVersion: oEntry.Isfutureversion,
+                                workflowid: oEntry.Workflowid
+                            })
+                        }).then(function (oResponse) {
+                            // Read as text first so we can debug if it's not JSON
+                            return oResponse.text().then(function (sText) {
+                                console.log("Backend response status:", oResponse.status);
+                                console.log("Backend response body:", sText);
+                                if (!oResponse.ok) {
+                                    throw new Error("Server error " + oResponse.status + ": " + sText);
+                                }
+                                // HTTP 204 No Content: CAP returns this when it cannot serialize
+                                // the complex return type of an OData action called via raw fetch.
+                                // This typically happens with inline anonymous return types containing
+                                // nested arrays. The action DID execute — we need to fix the backend
+                                // to return a serializable response.
+                                if (oResponse.status === 204 || !sText || sText.trim() === "") {
+                                    console.error("CAP returned 204/empty — action ran but response was not serialized. " +
+                                        "Check that the action is routed correctly and the return type is serializable.");
+                                    throw new Error("Server returned empty response (HTTP " + oResponse.status + "). " +
+                                        "The validation action executed but returned no data. Please check server logs.");
+                                }
+                                return JSON.parse(sText);
+                            });
+                        }).then(function (oResult) {
                             this.closeBusyDialog(oGBusyArray);
 
-                            var oResult = oContext.getBoundContext().getObject();
+                            // Plain REST endpoint returns direct JSON — no OData 'value' wrapper.
+                            // Keep as safe fallback in case OData path is used in the future.
+                            if (oResult && oResult.value) {
+                                oResult = oResult.value;
+                            }
 
                             this.getView().byId("table_validresult").setVisible(true);
 
-                            // Build header summary (replaces NAVOUTHEADER)
+                            // Build header summary
                             var headerData = [{
-                                Validcount: oResult.validCount,
-                                Invalidcount: oResult.invalidCount,
-                                TotalCount: oResult.validCount + oResult.invalidCount
+                                Validcount: oResult.validCount || 0,
+                                Invalidcount: oResult.invalidCount || 0,
+                                TotalCount: (oResult.validCount || 0) + (oResult.invalidCount || 0)
                             }];
                             var oHeaderDataModel = new JSONModel(headerData);
                             this.getOwnerComponent().setModel(oHeaderDataModel, "oHeaderDataModel");
 
-                            // Handle invalid data (replaces NAVOUTINVALIDDATA)
+                            // Handle invalid data
                             if (oResult.invalidData && oResult.invalidData.length > 0) {
                                 this.getView().byId("btn_downloadinvaliddata").setVisible(true);
                                 var oInvalidDataModel = new JSONModel(oResult.invalidData);
@@ -420,7 +464,7 @@ sap.ui.define([
                                 this.getView().byId("btn_downloadinvaliddata").setVisible(false);
                             }
 
-                            // Handle valid data (replaces NAVOUTVALIDDATA)
+                            // Handle valid data
                             if (oResult.validData && oResult.validData.length > 0) {
                                 this.finalData = oResult.validData;
                                 this.validData = oResult.validData;
@@ -439,11 +483,11 @@ sap.ui.define([
                                 this.workflowId = oResult.workflowid;
                             }
 
-                        }).catch(function (oError) {
+                        }.bind(this)).catch(function (oError) {
                             this.closeBusyDialog(oGBusyArray);
                             MessageBox.error("Error occurred while validating excel data");
                             console.error(oError);
-                        });
+                        }.bind(this));
                         this.getView().byId("cb_overwritenull").setEnabled(false);
                         this.getView().byId("btn_validate").setEnabled(false);
                     } else {

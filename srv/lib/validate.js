@@ -32,48 +32,57 @@ async function validateKeyExists(params) {
 
 // validateRow: full field-level validation for one bulk data row
 // Replaces the inner validation loop in ZMDR_FM_PROCESS_BULK_DATA
+// NOTE: lineitemConfig rows use PascalCase column names from zmdr_BulkItmConfig:
+//   Colseqno, IsLookup, LookupTablename, LookupField, IsDateField,
+//   ValidationIndex, Columnname
 async function validateRow(params) {
   const { splitData, lineitemConfig, keyFields, tablename } = params;
   const errors = [];
   const db = await cds.connect.to('db');
 
   for (const cfg of lineitemConfig) {
-    const val = splitData[cfg.colseqno - 1] ?? '';
+    // Colseqno is 1-based
+    const val = splitData[cfg.Colseqno - 1] ?? '';
 
-    // 1. Lookup validation (ISLOOKUP='Y')
-    if (cfg.islookup === 'Y' && val) {
+    // 1. Lookup validation (IsLookup='Y')
+    if (cfg.IsLookup === 'Y' && val) {
       const ok = await validateKeyExists({
-        splitData, tablename: cfg.lookuptablename, isLookup: 'Y',
-        lookupField: cfg.lookupfield, lookupSeq: cfg.colseqno,
+        splitData, tablename: cfg.LookupTablename, isLookup: 'Y',
+        lookupField: cfg.LookupField, lookupSeq: cfg.Colseqno,
         versionInProgress: 'N', lineitemConfig, keyFields,
       });
-      if (!ok) errors.push(`Invalid value for ${cfg.columnname} (lookup: ${cfg.lookuptablename})`);
+      if (!ok) errors.push(`Invalid value for ${cfg.Columnname} (lookup: ${cfg.LookupTablename})`);
     }
 
-    // 2. Date format (ISDATEFIELD='Y')
-    if (cfg.isdatefield === 'Y' && val && !/^\d{2}\.\d{2}\.\d{4}$/.test(val))
-      errors.push(`Invalid date format for ${cfg.columnname}. Use dd.MM.yyyy`);
+    // 2. Date format (IsDateField='Y')
+    if (cfg.IsDateField === 'Y' && val && !/^\d{2}\.\d{2}\.\d{4}$/.test(val))
+      errors.push(`Invalid date format for ${cfg.Columnname}. Use dd.MM.yyyy`);
 
     // 3. Validation index rules — REGEX and conditional LOOKUP
-    if (cfg.validationindex) {
-      const indices = cfg.validationindex.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+    if (cfg.ValidationIndex) {
+      const indices = cfg.ValidationIndex.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
       for (const idx of indices) {
         const { BulkDataValidation } = db.entities;  // config table — CAP ORM
-        const rules = await db.run(SELECT.from(BulkDataValidation).where({ tablename, sourcecolname: cfg.columnname, valindex: idx }));
+        // BulkDataValidation columns: Tablename, SourceColName, ValIndex
+        const rules = await db.run(
+          SELECT.from(BulkDataValidation)
+                .where({ Tablename: tablename, SourceColName: cfg.Columnname, ValIndex: idx })
+        );
         for (const rule of rules) {
-          if (rule.operation === 'REGEX' && rule.sourcecolvalue) {
-            if (!new RegExp(rule.sourcecolvalue).test(val))
-              errors.push(`${rule.errormessage} for field ${cfg.columnname}`);
-          } else if (rule.operation === 'LOOKUP') {
+          // rule columns: Operation, SourceColValue, DestColName, DestColValue, ErrorMessage
+          if (rule.Operation === 'REGEX' && rule.SourceColValue) {
+            if (!new RegExp(rule.SourceColValue).test(val))
+              errors.push(`${rule.ErrorMessage} for field ${cfg.Columnname}`);
+          } else if (rule.Operation === 'LOOKUP') {
             let condMet = true;
-            if (rule.sourcecolvalue) {
-              const [cf, cv] = rule.sourcecolvalue.split('=');
-              const cc = lineitemConfig.find(c => c.columnname === cf);
-              if (cc) condMet = (splitData[cc.colseqno - 1] ?? '') === cv;
+            if (rule.SourceColValue) {
+              const [cf, cv] = rule.SourceColValue.split('=');
+              const cc = lineitemConfig.find(c => c.Columnname === cf);
+              if (cc) condMet = (splitData[cc.Colseqno - 1] ?? '') === cv;
             }
-            if (condMet && rule.destcolvalue && rule.destcolname && val) {
-              const ok = await checkExists(db, rule.destcolvalue, `"${rule.destcolname.toUpperCase()}" = ?`, [val]);
-              if (!ok) errors.push(`${rule.errormessage} for field ${cfg.columnname}`);
+            if (condMet && rule.DestColValue && rule.DestColName && val) {
+              const ok = await checkExists(db, rule.DestColValue, `"${rule.DestColName.toUpperCase()}" = ?`, [val]);
+              if (!ok) errors.push(`${rule.ErrorMessage} for field ${cfg.Columnname}`);
             }
           }
         }

@@ -7,10 +7,75 @@ sap.ui.define([
     "com/intapptics/zmdrcntrlcmn/model/models",
     "com/intapptics/zmdrcntrlcmn/controller/ErrorHandler",
     "sap/m/BusyDialog",
-    "sap/base/Log"
+    "sap/base/Log",
+    "sap/ui/model/odata/v4/ODataModel"
 ],
-    function (UIComponent, models, ErrorHandler, BusyDialog, Log) {
+    function (UIComponent, models, ErrorHandler, BusyDialog, Log, V4ODataModel) {
         "use strict";
+
+        // Global shim for OData V4 Model to support V2 methods locally across all controllers
+        if (V4ODataModel && !V4ODataModel.prototype.read) {
+            V4ODataModel.prototype.read = function (sPath, mParameters) {
+                mParameters = mParameters || {};
+                var bCount = sPath.endsWith("/$count");
+                var sEntityPath = bCount ? sPath.replace("/$count", "") : sPath;
+                var iSkip = (mParameters.urlParameters && mParameters.urlParameters.$skip) || 0;
+                var iTop = (mParameters.urlParameters && mParameters.urlParameters.$top) || 1000;
+                
+                var oListBinding = this.bindList(sEntityPath, null, null, mParameters.filters, bCount ? { $$count: true } : undefined);
+                
+                oListBinding.requestContexts(iSkip, iTop).then(function (aContexts) {
+                    if (bCount) {
+                        if (mParameters.success) mParameters.success(oListBinding.getLength().toString(), null);
+                    } else {
+                        var aData = aContexts.map(function (c) { return c.getObject(); });
+                        if (mParameters.success) mParameters.success({ results: aData }, null);
+                    }
+                }).catch(function (oError) {
+                    if (mParameters.error) mParameters.error(oError);
+                });
+            };
+
+            V4ODataModel.prototype.create = function (sPath, oData, mParameters) {
+                mParameters = mParameters || {};
+                var oListBinding = this.bindList(sPath);
+                var oContext = oListBinding.create(oData, true);
+                oContext.created().then(function () {
+                    if (mParameters.success) mParameters.success(oContext.getObject(), null);
+                }).catch(function (oError) {
+                    if (mParameters.error) mParameters.error(oError);
+                });
+            };
+
+            V4ODataModel.prototype.update = function (sPath, oData, mParameters) {
+                mParameters = mParameters || {};
+                var oBinding = this.bindContext(sPath);
+                oBinding.requestObject().then(function() {
+                    var oCtx = oBinding.getBoundContext();
+                    for (var sKey in oData) {
+                        oCtx.setProperty(sKey, oData[sKey]);
+                    }
+                    if (mParameters.success) mParameters.success(oData, null);
+                }).catch(function (oError) {
+                    if (mParameters.error) mParameters.error(oError);
+                });
+            };
+
+            V4ODataModel.prototype.remove = function (sPath, mParameters) {
+                mParameters = mParameters || {};
+                var oBinding = this.bindContext(sPath);
+                oBinding.requestObject().then(function() {
+                    var oCtx = oBinding.getBoundContext();
+                    oCtx.delete().then(function() {
+                        if (mParameters.success) mParameters.success(null, null);
+                    }).catch(function(oError) {
+                        if (mParameters.error) mParameters.error(oError);
+                    });
+                }).catch(function (oError) {
+                    if (mParameters.error) mParameters.error(oError);
+                });
+            };
+        }
 
         return UIComponent.extend("com.intapptics.zmdrcntrlcmn.Component", {
             metadata: {

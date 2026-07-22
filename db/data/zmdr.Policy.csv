@@ -1,0 +1,5 @@
+policy_lineid,version_start_date,apprlevel,apprconstraint,version_end_date,version_active
+1,2025-01-01T00:00:00Z,1,1,9999-12-31T00:00:00Z,X
+2,2025-01-01T00:00:00Z,1,1,9999-12-31T00:00:00Z,X
+3,2025-01-01T00:00:00Z,2,1,9999-12-31T00:00:00Z,X
+4,2025-01-01T00:00:00Z,1,1,9999-12-31T00:00:00Z,X

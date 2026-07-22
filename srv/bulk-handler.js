@@ -11,10 +11,12 @@ const { readRows } = require('./lib/db-dynamic');
 module.exports = cds.service.impl(async function (srv) {
 
     srv.on('validateBulkData', async req => {
+        console.log("---- validateBulkData called ----");
+        console.log("Payload:", JSON.stringify(req.data, null, 2));
         const { tablename, requesterrole, rowData, overwriteWithNull, futureVersion, workflowid } = req.data;
         return processBulkData({
             tablename, requesterrole, dataload: 'N',
-            overwriteWithNull, futureVersion, workflowid, rowData, userId: req.user.id
+            overwriteWithNull, futureVersion, workflowid, rowData: rowData || [], userId: req.user.id
         });
     });
 

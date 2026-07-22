@@ -1,0 +1,3 @@
+approver_class_lineid,version_start_date,system,hierarchy,subclass,version_end_date,version_active
+1,2025-01-01T00:00:00Z,S4HANA_PRD,BP_CUST_REPO,STANDARD,9999-12-31T00:00:00Z,X
+2,2025-01-01T00:00:00Z,S4HANA_PRD,BP_CUST_REPO,BULK,9999-12-31T00:00:00Z,X

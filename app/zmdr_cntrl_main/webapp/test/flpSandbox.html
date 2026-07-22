@@ -43,8 +43,65 @@
                     }
                 }
             },
+            services: {
+                NavTargetResolution: {
+                    config: {
+                        "enableClientSideTargetResolution": true
+                    }
+                },
+                ClientSideTargetResolution: {
+                    adapter: {
+                        config: {
+                            inbounds: {
+                                "zmdr_central_cmn-manage": {
+                                    semanticObject: "zmdr_central_cmn",
+                                    action: "manage",
+                                    title: "Central Common App",
+                                    signature: {
+                                        parameters: {},
+                                        additionalParameters: "allowed"
+                                    },
+                                    resolutionResult: {
+                                        applicationType: "SAPUI5",
+                                        additionalInformation: "SAPUI5.Component=com.intapptics.zmdrcntrlcmn",
+                                        url: "/com.intapptics.zmdrcntrlcmn/"
+                                    }
+                                },
+                                "zmdr_central_main-manage": {
+                                    semanticObject: "zmdr_central_main",
+                                    action: "manage",
+                                    title: "Central Main App",
+                                    signature: {
+                                        parameters: {},
+                                        additionalParameters: "allowed"
+                                    },
+                                    resolutionResult: {
+                                        applicationType: "SAPUI5",
+                                        additionalInformation: "SAPUI5.Component=com.intapptics.zmdrcntrlmain",
+                                        url: "../"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
             applications: {
                 "comintappticszmdrcntrlmain-display": {
+                    title: "Central Main App",
+                    description: "Central Main App",
+                    additionalInformation: "SAPUI5.Component=com.intapptics.zmdrcntrlmain",
+                    applicationType: "URL",
+                    url: "../"
+                },
+                "zmdr_central_cmn-manage": {
+                    title: "Central Common App",
+                    description: "Central Common App",
+                    additionalInformation: "SAPUI5.Component=com.intapptics.zmdrcntrlcmn",
+                    applicationType: "URL",
+                    url: "/com.intapptics.zmdrcntrlcmn/"
+                },
+                "zmdr_central_main-manage": {
                     title: "Central Main App",
                     description: "Central Main App",
                     additionalInformation: "SAPUI5.Component=com.intapptics.zmdrcntrlmain",
@@ -65,7 +122,7 @@
         data-sap-ui-theme="sap_horizon"
         data-sap-ui-compatVersion="edge"
         data-sap-ui-language="en"
-        data-sap-ui-resourceroots='{"com.intapptics.zmdrcntrlmain": "../"}'
+        data-sap-ui-resourceroots='{"com.intapptics.zmdrcntrlmain": "../", "com.intapptics.zmdrcntrlcmn": "/com.intapptics.zmdrcntrlcmn/"}'
         data-sap-ui-frameOptions="allow"
         data-sap-ui-flexibilityServices='[{"connector": "LocalStorageConnector"}]'>
     </script>

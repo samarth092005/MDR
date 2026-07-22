@@ -1,0 +1,41 @@
+tablename,columnname,columnseqno,columndatatype,columnlabel,fieldsize,sectionid,sectionname,sectionsequence,defaultvalue,lkpodata,lkpfieldsname,lkpfieldslabel,lkpfieldstype,lkpdatarestfield,lkpdatarestcond,lkpdatarestvalue,mandatoryflag,visibilityflag,editableflag,searchfieldflag,resultsetfieldflag,itemdetailsflag,primarykeyflag,parentfieldflag,childfieldflag,displayfieldflag,displayfieldof,created_on,created_by,updated_on,updated_by
+ZMDR_GLACCOUNT,GL_ACCOUNT,1,String,GL Account,10,SEC01,General Information,1,,,,,,,,,Y,Y,Y,Y,Y,Y,Y,N,N,N,,2026-07-09T00:00:00,SYSTEM,2026-07-09T00:00:00,SYSTEM
+ZMDR_GLACCOUNT,COMPANY_CODE,2,String,Company Code,4,SEC01,General Information,1,,,,,,,,,Y,Y,Y,Y,Y,Y,Y,N,N,N,,2026-07-09T00:00:00,SYSTEM,2026-07-09T00:00:00,SYSTEM
+ZMDR_GLACCOUNT,ACCOUNT_DESC,3,String,Account Description,40,SEC01,General Information,1,,,,,,,,,N,Y,Y,Y,Y,Y,N,N,N,N,,2026-07-09T00:00:00,SYSTEM,2026-07-09T00:00:00,SYSTEM
+ZMDR_GLACCOUNT,ACCOUNT_TYPE,4,String,Account Type,2,SEC01,General Information,1,,,,,,,,,N,Y,Y,N,Y,Y,N,N,N,N,,2026-07-09T00:00:00,SYSTEM,2026-07-09T00:00:00,SYSTEM
+ZMDR_GLACCOUNT,CURRENCY,5,String,Currency,5,SEC01,General Information,1,,,,,,,,,N,Y,Y,N,Y,Y,N,N,N,N,,2026-07-09T00:00:00,SYSTEM,2026-07-09T00:00:00,SYSTEM
+ZMDR_GLACCOUNT,STATUS,6,String,Status,3,SEC02,Status,2,,,,,,,,,N,N,N,N,Y,Y,N,N,N,N,,2026-07-09T00:00:00,SYSTEM,2026-07-09T00:00:00,SYSTEM
+ZMDR_EMPLOYEES,EMP_ID,1,String,Employee ID,8,SEC01,Employee Details,1,,,,,,,,,Y,Y,Y,Y,Y,Y,Y,N,N,N,,2026-07-09T00:00:00,SYSTEM,2026-07-09T00:00:00,SYSTEM
+ZMDR_EMPLOYEES,FIRST_NAME,2,String,First Name,40,SEC01,Employee Details,1,,,,,,,,,N,Y,Y,Y,Y,Y,N,N,N,N,,2026-07-09T00:00:00,SYSTEM,2026-07-09T00:00:00,SYSTEM
+ZMDR_EMPLOYEES,LAST_NAME,3,String,Last Name,40,SEC01,Employee Details,1,,,,,,,,,N,Y,Y,Y,Y,Y,N,N,N,N,,2026-07-09T00:00:00,SYSTEM,2026-07-09T00:00:00,SYSTEM
+ZMDR_EMPLOYEES,DEPARTMENT,4,String,Department,30,SEC01,Employee Details,1,,,,,,,,,N,Y,Y,N,Y,Y,N,N,N,N,,2026-07-09T00:00:00,SYSTEM,2026-07-09T00:00:00,SYSTEM
+ZMDR_EMPLOYEES,DESIGNATION,5,String,Designation,40,SEC01,Employee Details,1,,,,,,,,,N,Y,Y,N,Y,Y,N,N,N,N,,2026-07-09T00:00:00,SYSTEM,2026-07-09T00:00:00,SYSTEM
+ZMDR_EMPLOYEES,STATUS,6,String,Status,3,SEC02,Status,2,,,,,,,,,N,N,N,N,Y,Y,N,N,N,N,,2026-07-09T00:00:00,SYSTEM,2026-07-09T00:00:00,SYSTEM
+ZMDR_VENDORS,VENDOR_ID,1,String,Vendor ID,10,SEC01,Vendor Details,1,,,,,,,,,Y,Y,Y,Y,Y,Y,Y,N,N,N,,2026-07-09T00:00:00,SYSTEM,2026-07-09T00:00:00,SYSTEM
+ZMDR_VENDORS,VENDOR_NAME,2,String,Vendor Name,80,SEC01,Vendor Details,1,,,,,,,,,N,Y,Y,Y,Y,Y,N,N,N,N,,2026-07-09T00:00:00,SYSTEM,2026-07-09T00:00:00,SYSTEM
+ZMDR_VENDORS,COUNTRY,3,String,Country,3,SEC01,Vendor Details,1,,,,,,,,,N,Y,Y,N,Y,Y,N,N,N,N,,2026-07-09T00:00:00,SYSTEM,2026-07-09T00:00:00,SYSTEM
+ZMDR_VENDORS,PAYMENT_TERMS,4,String,Payment Terms,4,SEC01,Vendor Details,1,,,,,,,,,N,Y,Y,N,Y,Y,N,N,N,N,,2026-07-09T00:00:00,SYSTEM,2026-07-09T00:00:00,SYSTEM
+ZMDR_VENDORS,CURRENCY,5,String,Currency,5,SEC01,Vendor Details,1,,,,,,,,,N,Y,Y,N,Y,Y,N,N,N,N,,2026-07-09T00:00:00,SYSTEM,2026-07-09T00:00:00,SYSTEM
+ZMDR_VENDORS,STATUS,6,String,Status,3,SEC02,Status,2,,,,,,,,,N,N,N,N,Y,Y,N,N,N,N,,2026-07-09T00:00:00,SYSTEM,2026-07-09T00:00:00,SYSTEM
+ZMDR_BP_MASTER,BP_ID,1,CHAR,Business Partner ID,10,BASIC,Basic Information,1,,,,,,,,,X,X, ,X,X,X,X,,, ,,,,,
+ZMDR_BP_MASTER,BP_TYPE,2,CHAR,BP Type,3,BASIC,Basic Information,1,ORG,/sap/opu/odata/MDR/BP_TYPE_SRV/BPTypeSet,"BP_TYPE,DESCRIPTION",,,,,,X,X,X, , ,X, ,,, ,,,,,
+ZMDR_BP_MASTER,BP_ROLE,3,CHAR,BP Role,30,BASIC,Basic Information,1,Domestic Customer,/sap/opu/odata/MDR/BP_ROLE_SRV/BPRoleSet,"BP_ROLE,DESCRIPTION",,,,,,X,X,X,X,X,X, ,,, ,,,,,
+ZMDR_BP_MASTER,CUSTOMER_NO,4,CHAR,Customer Number,10,BASIC,Basic Information,1,,,,,,,,,X,X, ,X,X,X, ,,, ,,,,,
+ZMDR_BP_MASTER,LEGAL_NAME,5,CHAR,Legal Name,80,BASIC,Basic Information,1,,,,,,,,,X,X,X,X,X,X, ,,, ,,,,,
+ZMDR_BP_MASTER,TRADE_NAME,6,CHAR,Trade Name,80,BASIC,Basic Information,1,,,,,,,,,,X,X, , ,X, ,,, ,,,,,
+ZMDR_BP_MASTER,INDUSTRY,7,CHAR,Industry Sector,30,BASIC,Basic Information,1,,/sap/opu/odata/MDR/INDUSTRY_SRV/IndustrySet,"INDUSTRY,DESCRIPTION",,,,,,,X,X,X, ,X, ,,, ,,,,,
+ZMDR_BP_MASTER,COUNTRY,8,CHAR,Country,3,ADDR,Address,2,,/sap/opu/odata/sap/API_COUNTRY/CountrySet,"Country,CountryName",,,,,,X,X,X,X,X,X, ,,,X,COUNTRY_NAME,,,,
+ZMDR_BP_MASTER,COUNTRY_NAME,9,CHAR,Country Name,50,ADDR,Address,2,,,,,,,,,,X, , ,X,X, ,,,X,COUNTRY,,,,
+ZMDR_BP_MASTER,REGION,10,CHAR,Region,3,ADDR,Address,2,,/sap/opu/odata/MDR/REGION_SRV/RegionSet?$filter=Country eq '{COUNTRY}',"Region,RegionName",,,,,,,X,X, , ,X, ,,, ,,,,,
+ZMDR_BP_MASTER,CITY,11,CHAR,City,35,ADDR,Address,2,,,,,,,,,X,X,X, ,X,X, ,,, ,,,,,
+ZMDR_BP_MASTER,POSTAL_CODE,12,CHAR,Postal Code,10,ADDR,Address,2,,,,,,,,,,X,X, , ,X, ,,, ,,,,,
+ZMDR_BP_MASTER,STREET,13,CHAR,Street Address,60,ADDR,Address,2,,,,,,,,,,X,X, , ,X, ,,, ,,,,,
+ZMDR_BP_MASTER,LANGUAGE,14,CHAR,Language,1,COMM,Communication,3,EN,/sap/opu/odata/MDR/LANG_SRV/LanguageSet,"Language,LanguageName",,,,,,X,X,X, , ,X, ,,, ,,,,,
+ZMDR_BP_MASTER,CURRENCY,15,CHAR,Currency,5,FIN,Financial,4,,/sap/opu/odata/MDR/CURR_SRV/CurrencySet,"Currency,CurrencyName",,,,,,X,X,X, , ,X, ,,, ,,,,,
+ZMDR_BP_MASTER,PAYMENT_TERMS,16,CHAR,Payment Terms,4,FIN,Financial,4,,/sap/opu/odata/MDR/PYMTTERM_SRV/PaymentTermSet,"PaymentTerms,Description",,,,,,,X,X, , ,X, ,,, ,,,,,
+ZMDR_BP_MASTER,CREDIT_LIMIT,17,CURR,Credit Limit (USD),15,FIN,Financial,4,0,,,,,,,,,X,X, , ,X, ,,, ,,,,,
+ZMDR_BP_MASTER,TAX_ID,18,CHAR,Tax ID / VAT No,20,TAX,Tax & Legal,5,,,,,,,,,,X,X, , ,X, ,,, ,,,,,
+ZMDR_BP_MASTER,INCOTERMS,19,CHAR,Incoterms,3,SALES,Sales,6,,/sap/opu/odata/MDR/INCO_SRV/IncotermsSet,"Incoterms,Description",,,,,,,X,X, , ,X, ,,, ,,,,,
+ZMDR_BP_MASTER,SALES_ORG,20,CHAR,Sales Organisation,4,SALES,Sales,6,,/sap/opu/odata/MDR/SALESORG_SRV/SalesOrgSet,"SalesOrg,Description",,,,,,,X,X, , ,X, ,,, ,,,,,
+ZMDR_BP_MASTER,STATUS,21,CHAR,Status,1,GOV,Status & Governance,7,A,/sap/opu/odata/MDR/STATUS_SRV/BPStatusSet,"Status,Description",,,,,,X,X,X,X,X,X, ,,, ,,,,,
+ZMDR_BP_MASTER,NOTES,22,CHAR,Notes,255,GOV,Status & Governance,7,,,,,,,,,,X,X, , ,X, ,,, ,,,,,

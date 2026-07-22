@@ -6,24 +6,43 @@ const { insertVersionedRow, storeBulkTemp } = require('./insert');
 const { buildKeyWhere, checkExists } = require('./db-dynamic');
 const { generateWorkflowId } = require('./wf-id');
 
+// NOTE on field-name casing:
+// SQLite column names follow the CDS element names exactly (PascalCase).
+// db.run() returns rows with keys matching the DB column names, so we must
+// use the exact casing defined in mdr-config.cds throughout this file.
+//
+//  zmdr_BulkHdrConfig : TableName, RequesterRole, Versioned
+//  zmdr_BulkItmConfig : Tablename, Columnname, RequesterRole, Colseqno,
+//                       IsMatching, IsLookup, LookupTablename, LookupField,
+//                       IsDateField, ValidationIndex
+//  zmdr_BulkTemp      : Tablename, BulkData, WorkflowId, ActionType,
+//                       InitiationDate, RequestStatus
+
 async function processBulkData(params) {
     const { tablename, requesterrole, dataload, overwriteWithNull,
         futureVersion, workflowid: inputWfId, rowData, userId } = params;
     const db = await cds.connect.to('db');
     const { BulkHdrConfig, BulkItmConfig } = db.entities;
 
-    // Config reads — CAP ORM (config tables)
-    const hdrConfig = await db.run(SELECT.one.from(BulkHdrConfig).where({ tablename, requesterrole }));
+    // Config reads — use PascalCase element names that match the DB columns
+    const hdrConfig = await db.run(
+        SELECT.one.from(BulkHdrConfig).where({ TableName: tablename, RequesterRole: requesterrole })
+    );
     if (!hdrConfig) throw new Error(`No config for ${tablename}/${requesterrole}`);
 
     const lineitemConfig = await db.run(
-        SELECT.from(BulkItmConfig).where({ tablename, requesterrole }).orderBy('colseqno')
+        SELECT.from(BulkItmConfig)
+              .where({ Tablename: tablename, RequesterRole: requesterrole })
+              .orderBy('Colseqno')
     );
     if (!lineitemConfig.length) throw new Error('No column config found');
 
-    const isVersioned = hdrConfig.isversioned === 'Y';
-    let keyFields = lineitemConfig.filter(c => c.ismatching === 'Y').map(c => c.columnname);
-    if (!keyFields.length) keyFields = [lineitemConfig[0].columnname];
+    // hdrConfig.Versioned matches the DB column name
+    const isVersioned = hdrConfig.Versioned === 'Y';
+
+    // lineitemConfig rows: use PascalCase properties
+    let keyFields = lineitemConfig.filter(c => c.IsMatching === 'Y').map(c => c.Columnname);
+    if (!keyFields.length) keyFields = [lineitemConfig[0].Columnname];
 
     const validData = [], invalidData = [], createData = [], updateData = [];
 

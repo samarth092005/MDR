@@ -10,6 +10,17 @@ service WorkflowService @(
   @readonly
   entity MDRWorkflowLink as projection on zmdr.MDRWorkflowLink;
 
+  @cds.persistence.skip
+  entity TriggerWorkflowSet {
+    key WorkflowId : String(10);
+    EntityName : String(40);
+    EntityId : String(100);
+    Tablename : String(30);
+    OperationType : String(40);
+    UserRemarks : String(300);
+    WorkflowIdentifier : String(20);
+  }
+
   action cancelWorkflow(bpaInstanceId: String)                      returns {
     message : String
   };

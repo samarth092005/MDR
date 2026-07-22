@@ -22,9 +22,9 @@ function parseDate(val) {
 function buildRowFromSplit(splitData, lineitemConfig, extraFields = {}) {
   const row = {};
   for (const cfg of lineitemConfig) {
-    const raw = splitData[cfg.colseqno - 1] ?? '';
-    const val = cfg.isdatefield === 'Y' ? parseDate(raw) : raw;
-    row[cfg.columnname.toUpperCase()] = val || null;
+    const raw = splitData[cfg.Colseqno - 1] ?? '';
+    const val = cfg.IsDateField === 'Y' ? parseDate(raw) : raw;
+    row[cfg.Columnname.toUpperCase()] = val || null;
   }
   for (const [k, v] of Object.entries(extraFields)) {
     row[k.toUpperCase()] = v;
@@ -38,10 +38,10 @@ function buildRowFromSplit(splitData, lineitemConfig, extraFields = {}) {
 function buildKeyWhere(splitData, lineitemConfig, keyFields) {
   const parts = [], values = [];
   for (const kf of keyFields) {
-    const cfg = lineitemConfig.find(c => c.columnname === kf);
+    const cfg = lineitemConfig.find(c => c.Columnname === kf);
     if (!cfg) continue;
     parts.push(`"${kf.toUpperCase()}" = ?`);
-    values.push(splitData[cfg.colseqno - 1] ?? '');
+    values.push(splitData[cfg.Colseqno - 1] ?? '');
   }
   return { clause: parts.join(' AND '), values };
 }

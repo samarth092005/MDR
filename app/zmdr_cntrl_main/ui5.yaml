@@ -19,9 +19,10 @@ server:
           - path: /sap
             url: http://cloud9.way2erp.us:8000
             client: '400'
-          - url: http://cloud9.way2erp.us:8000
-            client: '400'
-            path: /sap
+          - path: /api
+            url: http://localhost:4004
+          - path: /odata/v2
+            url: http://localhost:4004
     - name: fiori-tools-appreload
       afterMiddleware: compression
       configuration:
