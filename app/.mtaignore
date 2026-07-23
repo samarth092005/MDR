@@ -1,1 +1,5 @@
-zmdr_bulkload/node_modules
+node_modules/
+zmdr_bulkload/
+zmdr_cntrl_main/
+zmdr_cntrl_cmn/
+.*

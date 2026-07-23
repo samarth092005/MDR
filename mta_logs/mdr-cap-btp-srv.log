@@ -1,0 +1,184 @@
+#2026 07 22 12:26:33.330#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3889#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:25:44.445527] Uploading app package for app with guid 37c2c616-fab0-482e-8200-67a21fc809b9 (STDOUT, API)#
+#2026 07 22 12:26:33.330#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3889#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:25:44.736926] Updated app with guid 37c2c616-fab0-482e-8200-67a21fc809b9 ({"environment_variables"=>"[PRIVATE DATA HIDDEN]"}) (STDOUT, API)#
+#2026 07 22 12:26:33.330#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3889#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:26:23.683776] Stopping app with guid 37c2c616-fab0-482e-8200-67a21fc809b9 (STDOUT, API)#
+#2026 07 22 12:26:33.330#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3889#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:26:23.733151] Cell ae385de4-68d2-4100-ab72-22e100a12d5f stopping instance 11bae07a-be00-4aab-79cf-23a7 (STDOUT, CELL)#
+#2026 07 22 12:26:33.330#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3889#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:26:24.014188] Creating build for app with guid 37c2c616-fab0-482e-8200-67a21fc809b9 (STDOUT, API)#
+#2026 07 22 12:26:33.330#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3889#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:26:24.459919] Downloading nodejs_buildpack... (STDOUT, STG)#
+#2026 07 22 12:26:33.330#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3889#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:26:24.498198] Downloaded nodejs_buildpack (STDOUT, STG)#
+#2026 07 22 12:26:33.330#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3889#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:26:24.498265] Cell ae385de4-68d2-4100-ab72-22e100a12d5f creating container for instance 07f50efa-3f88-4606-b0a4-681ff94140f9 (STDOUT, STG)#
+#2026 07 22 12:26:33.330#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3889#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:26:24.864714] Security group rules were updated (STDOUT, STG)#
+#2026 07 22 12:26:33.330#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3889#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:26:24.883464] Cell ae385de4-68d2-4100-ab72-22e100a12d5f successfully created container for instance 07f50efa-3f88-4606-b0a4-681ff94140f9 (STDOUT, STG)#
+#2026 07 22 12:26:33.330#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3889#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:26:25.357937] Downloading app package... (STDOUT, STG)#
+#2026 07 22 12:26:33.330#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3889#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:26:25.357954] Downloading build artifacts cache... (STDOUT, STG)#
+#2026 07 22 12:26:33.330#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3889#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:26:25.444776] Downloaded build artifacts cache (225B) (STDOUT, STG)#
+#2026 07 22 12:26:33.330#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3889#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:26:28.691816] Downloaded app package (85.7M) (STDOUT, STG)#
+#2026 07 22 12:26:33.330#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3889#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:26:28.759113] -----> Nodejs Buildpack version 1.9.2 (STDOUT, STG)#
+#2026 07 22 12:26:33.330#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3889#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:26:29.585492] -----> Bootstrapping python (STDOUT, STG)#
+#2026 07 22 12:26:33.330#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3889#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:26:29.585501] -----> Installing python 3.13.13 (STDOUT, STG)#
+#2026 07 22 12:26:33.330#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3889#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:26:29.585682] Copy [/tmp/buildpacks/2604d70fc57a339c/dependencies/268a5e3743d51a14b86ea9da64439307/python_3.13.13_linux_x64_cflinuxfs4_8311abbf.tgz] (STDOUT, STG)#
+#2026 07 22 12:26:33.330#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3889#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:26:32.894704] -----> Installing binaries (STDOUT, STG)#
+#2026 07 22 12:26:33.330#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3889#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:26:32.894730] engines.node (package.json): >=18 (STDOUT, STG)#
+#2026 07 22 12:26:33.330#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3889#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:26:32.894734] engines.npm (package.json): unspecified (use default) (STDOUT, STG)#
+#2026 07 22 12:26:33.330#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3889#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:26:32.894741] [31;1m**WARNING**[0m Dangerous semver range (>) in engines.node. See: http://docs.cloudfoundry.org/buildpacks/node/node-tips.html (STDOUT, STG)#
+#2026 07 22 12:26:33.330#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3889#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:26:32.894843] -----> Installing node 24.15.0 (STDOUT, STG)#
+#2026 07 22 12:26:33.330#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3889#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:26:32.894964] Copy [/tmp/buildpacks/2604d70fc57a339c/dependencies/6441e97e6386f47ec4c16cfdf8db0a17/node_24.15.0_linux_x64_cflinuxfs4_1a62d98b.tgz] (STDOUT, STG)#
+#2026 07 22 12:26:43.422#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3900#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:26:34.801111] Using default npm version: 11.12.1 (STDOUT, STG)#
+#2026 07 22 12:26:43.422#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3900#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:26:34.801132] -----> Installing yarn 1.22.22 (STDOUT, STG)#
+#2026 07 22 12:26:43.422#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3900#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:26:34.801153] Copy [/tmp/buildpacks/2604d70fc57a339c/dependencies/e4fe26756e9984a665478d350474fa2e/yarn_1.22.22_linux_noarch_any-stack_b6132b86.tgz] (STDOUT, STG)#
+#2026 07 22 12:26:43.422#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3900#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:26:35.092382] Installed yarn 1.22.22 (STDOUT, STG)#
+#2026 07 22 12:26:43.422#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3900#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:26:35.092405] -----> Creating runtime environment (STDOUT, STG)#
+#2026 07 22 12:26:43.422#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3900#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:26:35.093401] NODE_ENV=production (STDOUT, STG)#
+#2026 07 22 12:26:43.422#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3900#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:26:35.093414] NODE_HOME=/tmp/contents3226640742/deps/0/node (STDOUT, STG)#
+#2026 07 22 12:26:43.422#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3900#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:26:35.093426] NODE_MODULES_CACHE=true (STDOUT, STG)#
+#2026 07 22 12:26:43.422#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3900#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:26:35.093429] NODE_VERBOSE=false (STDOUT, STG)#
+#2026 07 22 12:26:43.422#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3900#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:26:35.093434] NPM_CONFIG_LOGLEVEL=error (STDOUT, STG)#
+#2026 07 22 12:26:43.422#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3900#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:26:35.093436] NPM_CONFIG_PRODUCTION=true (STDOUT, STG)#
+#2026 07 22 12:26:43.422#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3900#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:26:35.093448] -----> Building dependencies (STDOUT, STG)#
+#2026 07 22 12:26:43.422#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3900#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:26:35.093451] Prebuild detected (node_modules already exists) (STDOUT, STG)#
+#2026 07 22 12:26:43.422#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3900#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:26:35.093453] Rebuilding any native modules (STDOUT, STG)#
+#2026 07 22 12:27:33.458#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4625#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:27:30.000549] Cell ae385de4-68d2-4100-ab72-22e100a12d5f destroying container for instance 11bae07a-be00-4aab-79cf-23a7 (STDOUT, CELL)#
+#2026 07 22 12:27:33.458#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4625#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:27:30.142422] Exit status 137 (STDOUT, PROXY)#
+#2026 07 22 12:27:33.458#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4625#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:27:31.225576] Cell ae385de4-68d2-4100-ab72-22e100a12d5f successfully destroyed container for instance 11bae07a-be00-4aab-79cf-23a7 (STDOUT, CELL)#
+#2026 07 22 12:27:43.486#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3906#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:27:35.217571] rebuilt dependencies successfully (STDOUT, STG)#
+#2026 07 22 12:27:43.486#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3906#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:27:35.219256] npm notice (STDOUT, STG)#
+#2026 07 22 12:27:43.486#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3906#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:27:35.219290] npm notice New major version of npm available! 11.12.1 -> 12.0.1 (STDOUT, STG)#
+#2026 07 22 12:27:43.486#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3906#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:27:35.219301] npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.0.1 (STDOUT, STG)#
+#2026 07 22 12:27:43.486#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3906#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:27:35.219306] npm notice To update run: npm install -g npm@12.0.1 (STDOUT, STG)#
+#2026 07 22 12:27:43.486#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3906#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:27:35.219312] npm notice (STDOUT, STG)#
+#2026 07 22 12:27:43.486#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3906#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:27:35.258845] Installing any new modules (package.json + package-lock.json) (STDOUT, STG)#
+#2026 07 22 12:27:43.486#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3906#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:27:36.176648] removed 1 package in 853ms (STDOUT, STG)#
+#2026 07 22 12:27:43.486#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3906#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:27:36.176888] 62 packages are looking for funding (STDOUT, STG)#
+#2026 07 22 12:27:43.486#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3906#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:27:36.176932] run `npm fund` for details (STDOUT, STG)#
+#2026 07 22 12:27:43.486#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3906#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:27:37.679578] Contrast Security no credentials found. Will not write environment files. (STDOUT, STG)#
+#2026 07 22 12:28:03.579#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3952#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:27:57.807649] Exit status 0 (STDOUT, STG)#
+#2026 07 22 12:28:03.579#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3952#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:27:57.807705] Uploading droplet, build artifacts cache... (STDOUT, STG)#
+#2026 07 22 12:28:03.579#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3952#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:27:57.807742] Uploading droplet... (STDOUT, STG)#
+#2026 07 22 12:28:03.579#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3952#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:27:57.807786] Uploading build artifacts cache... (STDOUT, STG)#
+#2026 07 22 12:28:03.579#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3952#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:27:57.835451] Uploaded build artifacts cache (224B) (STDOUT, STG)#
+#2026 07 22 12:28:03.579#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-3952#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:27:59.439488] Creating droplet for app with guid 37c2c616-fab0-482e-8200-67a21fc809b9 (STDOUT, API)#
+#2026 07 22 12:28:13.546#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4636#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:28:04.844743] Uploaded droplet (141.1M) (STDOUT, STG)#
+#2026 07 22 12:28:13.546#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4636#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:28:04.867165] Uploading complete (STDOUT, STG)#
+#2026 07 22 12:28:13.546#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4636#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:28:05.125974] Cell ae385de4-68d2-4100-ab72-22e100a12d5f stopping instance 07f50efa-3f88-4606-b0a4-681ff94140f9 (STDOUT, STG)#
+#2026 07 22 12:28:13.546#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4636#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:28:05.125998] Cell ae385de4-68d2-4100-ab72-22e100a12d5f destroying container for instance 07f50efa-3f88-4606-b0a4-681ff94140f9 (STDOUT, STG)#
+#2026 07 22 12:28:13.546#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4636#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:28:05.190670] Staging complete for build 07f50efa-3f88-4606-b0a4-681ff94140f9 (STDOUT, API)#
+#2026 07 22 12:28:13.546#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4636#
+[PollStageAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:28:06.582719] Cell ae385de4-68d2-4100-ab72-22e100a12d5f successfully destroyed container for instance 07f50efa-3f88-4606-b0a4-681ff94140f9 (STDOUT, STG)#
+#2026 07 22 12:28:23.682#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4644#
+[PollStartAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:28:13.641963] Updated app with guid 37c2c616-fab0-482e-8200-67a21fc809b9 ({:droplet_guid=>"48c7d68e-75c4-4c55-8797-6cb007d101e3"}) (STDOUT, API)#
+#2026 07 22 12:28:23.682#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4644#
+[PollStartAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:28:13.911796] Creating revision for app with guid 37c2c616-fab0-482e-8200-67a21fc809b9 (STDOUT, API)#
+#2026 07 22 12:28:23.682#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4644#
+[PollStartAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:28:13.977382] Starting app with guid 37c2c616-fab0-482e-8200-67a21fc809b9 (STDOUT, API)#
+#2026 07 22 12:28:23.682#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4644#
+[PollStartAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:28:14.289547] Cell d7c394a1-6943-4783-8b12-9d26faca5e6e creating container for instance c5298fea-aa72-4c1e-4c5f-c62c (STDOUT, CELL)#
+#2026 07 22 12:28:23.682#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4644#
+[PollStartAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:28:14.658929] Security group rules were updated (STDOUT, CELL)#
+#2026 07 22 12:28:23.682#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4644#
+[PollStartAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:28:14.674994] Cell d7c394a1-6943-4783-8b12-9d26faca5e6e successfully created container for instance c5298fea-aa72-4c1e-4c5f-c62c (STDOUT, CELL)#
+#2026 07 22 12:28:23.682#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4644#
+[PollStartAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:28:15.225153] Downloading droplet... (STDOUT, CELL)#
+#2026 07 22 12:28:23.682#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4644#
+[PollStartAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:28:20.701658] Downloaded droplet (141.1M) (STDOUT, CELL)#
+#2026 07 22 12:28:23.682#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4644#
+[PollStartAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:28:20.701781] Starting health monitoring of container (STDOUT, CELL)#
+#2026 07 22 12:28:23.682#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4644#
+[PollStartAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:28:20.701828] Starting readiness health monitoring of container (STDOUT, HEALTH)#
+#2026 07 22 12:28:23.682#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4644#
+[PollStartAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:28:20.764982] Invoking pre-start scripts. (STDOUT, APP/PROC/WEB)#
+#2026 07 22 12:28:23.682#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4644#
+[PollStartAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:28:20.924884] Invoking start command. (STDOUT, APP/PROC/WEB)#
+#2026 07 22 12:28:23.682#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4644#
+[PollStartAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:28:21.232725] > mdr-btp@1.0.0 start (STDOUT, APP/PROC/WEB)#
+#2026 07 22 12:28:23.682#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4644#
+[PollStartAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:28:21.232745] > cds-serve (STDOUT, APP/PROC/WEB)#
+#2026 07 22 12:28:23.682#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4644#
+[PollStartAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:28:21.461309] [cds] - loading server from { file: 'server.js' } (STDOUT, APP/PROC/WEB)#
+#2026 07 22 12:28:23.682#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4644#
+[PollStartAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:28:21.596024] {"level":"info","logger":"cds","timestamp":"2026-07-22T12:28:21.595Z","layer":"cds","component_type":"application","container_id":"10.5.9.13","component_id":"37c2c616-fab0-482e-8200-67a21fc809b9","component_name":"mdr-cap-btp-srv","component_instance":0,"source_instance":0,"organization_name":"Abhiyanta_India Solutions Private Limited_sap-btp-ais-d0a7p7v8","organization_id":"7db1e60b-e8b4-4e9c-86ca-e6eb3a9c0e81","space_name":"mdr-cap-manual","space_id":"9cf373cd-9932-49b7-9582-514d01f19b68","msg":"loaded model from 1 file(s):\n","type":"log"} (STDOUT, APP/PROC/WEB)#
+#2026 07 22 12:28:23.682#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4644#
+[PollStartAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:28:21.596049] srv/csn.json (STDOUT, APP/PROC/WEB)#
+#2026 07 22 12:28:23.682#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4644#
+[PollStartAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:28:21.845290] {"level":"info","logger":"cds","timestamp":"2026-07-22T12:28:21.844Z","layer":"cds","component_type":"application","container_id":"10.5.9.13","component_id":"37c2c616-fab0-482e-8200-67a21fc809b9","component_name":"mdr-cap-btp-srv","component_instance":0,"source_instance":0,"organization_name":"Abhiyanta_India Solutions Private Limited_sap-btp-ais-d0a7p7v8","organization_id":"7db1e60b-e8b4-4e9c-86ca-e6eb3a9c0e81","space_name":"mdr-cap-manual","space_id":"9cf373cd-9932-49b7-9582-514d01f19b68","msg":"connect to db > hana {\n  database_id: '688de400-4bc2-401c-a999-61344c68f308',\n  host: '688de400-4bc2-401c-a999-61344c68f308.hana.prod-eu30.hanacloud.ondemand.com',\n  port: '443',\n  driver: 'com.sap.db.jdbc.Driver',\n  url: 'jdbc:sap://688de400-4bc2-401c-a999-61344c68f308.hana.prod-eu30.hanacloud.ondemand.com:443?encrypt=true&validateCertificate=true&currentschema=1A22B831600B4F7BAEF1F91269F61926',\n  schema: '1A22B831600B4F7BAEF1F91269F61926',\n  certificate: '...',\n  hdi_user: '1A22B831600B4F7BAEF1F91269F61926_AMSW3T6RBY560C57LMAD109GC_DT',\n  hdi_password: '...',\n  user: '1A22B831600B4F7BAEF1F91269F61926_AMSW3T6RBY560C57LMAD109GC_RT',\n  password: '...'\n}","type":"log"} (STDOUT, APP/PROC/WEB)#
+#2026 07 22 12:28:23.682#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4644#
+[PollStartAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:28:21.875698] {"level":"info","logger":"cds","timestamp":"2026-07-22T12:28:21.875Z","layer":"cds","component_type":"application","container_id":"10.5.9.13","component_id":"37c2c616-fab0-482e-8200-67a21fc809b9","component_name":"mdr-cap-btp-srv","component_instance":0,"source_instance":0,"organization_name":"Abhiyanta_India Solutions Private Limited_sap-btp-ais-d0a7p7v8","organization_id":"7db1e60b-e8b4-4e9c-86ca-e6eb3a9c0e81","space_name":"mdr-cap-manual","space_id":"9cf373cd-9932-49b7-9582-514d01f19b68","msg":"using auth strategy {\n  kind: 'xsuaa',\n  impl: 'node_modules/@sap/cds/lib/srv/middlewares/auth/jwt-auth'\n} \n","type":"log"} (STDOUT, APP/PROC/WEB)#
+#2026 07 22 12:28:23.682#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4644#
+[PollStartAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:28:21.961483] {"level":"info","logger":"cds","timestamp":"2026-07-22T12:28:21.961Z","layer":"cds","component_type":"application","container_id":"10.5.9.13","component_id":"37c2c616-fab0-482e-8200-67a21fc809b9","component_name":"mdr-cap-btp-srv","component_instance":0,"source_instance":0,"organization_name":"Abhiyanta_India Solutions Private Limited_sap-btp-ais-d0a7p7v8","organization_id":"7db1e60b-e8b4-4e9c-86ca-e6eb3a9c0e81","space_name":"mdr-cap-manual","space_id":"9cf373cd-9932-49b7-9582-514d01f19b68","msg":"serving AdminService {\n  impl: 'node_modules/@sap/cds/libx/_runtime/common/Service.js',\n  path: '/api/admin'\n}","type":"log"} (STDOUT, APP/PROC/WEB)#
+#2026 07 22 12:28:23.682#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4644#
+[PollStartAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:28:21.962156] {"level":"info","logger":"cds","timestamp":"2026-07-22T12:28:21.961Z","layer":"cds","component_type":"application","container_id":"10.5.9.13","component_id":"37c2c616-fab0-482e-8200-67a21fc809b9","component_name":"mdr-cap-btp-srv","component_instance":0,"source_instance":0,"organization_name":"Abhiyanta_India Solutions Private Limited_sap-btp-ais-d0a7p7v8","organization_id":"7db1e60b-e8b4-4e9c-86ca-e6eb3a9c0e81","space_name":"mdr-cap-manual","space_id":"9cf373cd-9932-49b7-9582-514d01f19b68","msg":"serving BulkService {\n  impl: 'node_modules/@sap/cds/libx/_runtime/common/Service.js',\n  path: '/api/bulk'\n}","type":"log"} (STDOUT, APP/PROC/WEB)#
+#2026 07 22 12:28:23.682#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4644#
+[PollStartAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:28:21.962557] {"level":"info","logger":"cds","timestamp":"2026-07-22T12:28:21.962Z","layer":"cds","component_type":"application","container_id":"10.5.9.13","component_id":"37c2c616-fab0-482e-8200-67a21fc809b9","component_name":"mdr-cap-btp-srv","component_instance":0,"source_instance":0,"organization_name":"Abhiyanta_India Solutions Private Limited_sap-btp-ais-d0a7p7v8","organization_id":"7db1e60b-e8b4-4e9c-86ca-e6eb3a9c0e81","space_name":"mdr-cap-manual","space_id":"9cf373cd-9932-49b7-9582-514d01f19b68","msg":"serving CentralService { impl: 'srv/central-handler.js', path: '/api/central' }","type":"log"} (STDOUT, APP/PROC/WEB)#
+#2026 07 22 12:28:23.682#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4644#
+[PollStartAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:28:21.962868] {"level":"info","logger":"cds","timestamp":"2026-07-22T12:28:21.962Z","layer":"cds","component_type":"application","container_id":"10.5.9.13","component_id":"37c2c616-fab0-482e-8200-67a21fc809b9","component_name":"mdr-cap-btp-srv","component_instance":0,"source_instance":0,"organization_name":"Abhiyanta_India Solutions Private Limited_sap-btp-ais-d0a7p7v8","organization_id":"7db1e60b-e8b4-4e9c-86ca-e6eb3a9c0e81","space_name":"mdr-cap-manual","space_id":"9cf373cd-9932-49b7-9582-514d01f19b68","msg":"serving WorkflowService { impl: 'srv/workflow-service.js', path: '/api/workflow' }","type":"log"} (STDOUT, APP/PROC/WEB)#
+#2026 07 22 12:28:23.682#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4644#
+[PollStartAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:28:21.966092] {"level":"info","logger":"cds","timestamp":"2026-07-22T12:28:21.965Z","layer":"cds","component_type":"application","container_id":"10.5.9.13","component_id":"37c2c616-fab0-482e-8200-67a21fc809b9","component_name":"mdr-cap-btp-srv","component_instance":0,"source_instance":0,"organization_name":"Abhiyanta_India Solutions Private Limited_sap-btp-ais-d0a7p7v8","organization_id":"7db1e60b-e8b4-4e9c-86ca-e6eb3a9c0e81","space_name":"mdr-cap-manual","space_id":"9cf373cd-9932-49b7-9582-514d01f19b68","msg":"server listening on { url: 'http://localhost:8080' }","type":"log"} (STDOUT, APP/PROC/WEB)#
+#2026 07 22 12:28:23.682#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4644#
+[PollStartAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:28:21.966123] [cds] - server launched at 7/22/2026, 12:28:21 PM, version: 8.9.10, in: 487.489ms (STDOUT, APP/PROC/WEB)#
+#2026 07 22 12:28:33.749#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4648#
+[PollStartAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:28:24.419319] Container became healthy (STDOUT, CELL)#
+#2026 07 22 12:28:33.749#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4648#
+[PollStartAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:28:24.419430] Container passed the readiness health check. Container marked ready and added to route pool. (STDOUT, HEALTH)#
+#2026 07 22 12:28:33.749#Z#DEBUG#5d3da36c-85c8-11f1-abcb-eeee0a9de768.mdr-cap-btp-srv#flowable-async-job-executor-thread-4648#
+[PollStartAppStatusExecution] 37c2c616-fab0-482e-8200-67a21fc809b9 [2026-07-22T12:28:24.483839] Process became ready with guid 37c2c616-fab0-482e-8200-67a21fc809b9 payload: {"instance"=>"c5298fea-aa72-4c1e-4c5f-c62c", "index"=>0, "cell_id"=>"d7c394a1-6943-4783-8b12-9d26faca5e6e", "ready"=>true, "version"=>"130ce590-afaf-43c5-96b9-dc1bc4f79279"} (STDOUT, API)#

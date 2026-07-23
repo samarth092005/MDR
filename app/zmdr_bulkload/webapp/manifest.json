@@ -17,7 +17,7 @@
     },
     "dataSources": {
       "mainService": {
-        "uri": "/api/bulk/",
+        "uri": "/odata/v4/api/bulk/",
         "type": "OData",
         "settings": {
           "annotations": [],
@@ -25,7 +25,7 @@
         }
       },
       "adminService": {
-        "uri": "/api/admin/",
+        "uri": "/odata/v4/api/admin/",
         "type": "OData",
         "settings": {
           "annotations": [],
@@ -71,6 +71,7 @@
         }
       },
       "": {
+        "type": "sap.ui.model.odata.v4.ODataModel",
         "dataSource": "mainService",
         "preload": true,
         "settings": {
@@ -80,6 +81,7 @@
         }
       },
       "adminModel": {
+        "type": "sap.ui.model.odata.v4.ODataModel",
         "dataSource": "adminService",
         "preload": true,
         "settings": {
@@ -138,9 +140,5 @@
       "id": "App",
       "async": true
     }
-  },
-  "sap.cloud": {
-    "public": true,
-    "service": "mdr.cap.btp"
   }
 }

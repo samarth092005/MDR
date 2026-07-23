@@ -368,26 +368,23 @@ sap.ui.define([
                 // Add version active filter
                 aFilters.push(new Filter("VERSION_ACTIVE", FilterOperator.EQ, "Y"));
 
-                this.oTableModel.read(this.sEntitySet, {
-                    async: true,
-                    filters: aFilters,
-                    urlParameters: {
-                        "$top": iNum,
-                        "$skip": iSkip
-                    },
-                    success: function (oData) {
-                        // Set the data into the existing model
-                        // [ORIGINAL CODE] this.fn_getGlobalModel("oCurrentTableBoundModel").setData(oData.results);
-                        this.fn_getGlobalModel("oCurrentTableBoundModel").setData(oData.value || oData.results || []);
+                // [V4 MIGRATION] Replaced V2 oModel.read() with native OData V4 bindList().requestContexts().
+                // this.sEntitySet is a plain EntitySet path (e.g. "/ZMDR_GLACCOUNT").
+                // $skip and $top are passed as the skip/top arguments of requestContexts().
+                // The V2-only async:true is removed. Success/error preserved via .then()/.catch().
+                this.oTableModel.bindList(this.sEntitySet, null, null, aFilters).requestContexts(iSkip, iNum).then(function (aContexts) {
+                    // Map V4 contexts to plain JS objects for the JSONModel
+                    var aData = aContexts.map(function (oContext) { return oContext.getObject(); });
 
-                        // Close busy dialog
-                        this.fn_closeBusyDialog();
-                    }.bind(this),
-                    error: function (oError) {
-                        // Show error
-                        this.fn_showServiceError(oError);
-                    }.bind(this)
-                });
+                    // Set the data into the existing model
+                    this.fn_getGlobalModel("oCurrentTableBoundModel").setData(aData);
+
+                    // Close busy dialog
+                    this.fn_closeBusyDialog();
+                }.bind(this)).catch(function (oError) {
+                    // Show error
+                    this.fn_showServiceError(oError);
+                }.bind(this));
 
                 // Log information
                 this.fn_getLogReference().info("Table Result Controller: Exiting onPaginationAction method");
@@ -870,73 +867,71 @@ sap.ui.define([
                         and: false
                     }));
 
-                    // Read the in-progress record data
-                    this.oTableModel.read(this.sEntitySet, {
-                        async: true,
-                        filters: aFilters,
-                        success: function (oData) {
-                            // Enable/Disable Amend/ReOpen/Close buttons based on the in-progress record
-                            // [ORIGINAL CODE] if (oData.results.length === 0) {
-                            if ((oData.value || oData.results).length === 0) {
-                                // Log information
-                                this.fn_getLogReference().info("Table Result Controller: No in-progress record exists for the selected entry");
+                    // [V4 MIGRATION] Replaced V2 oModel.read() with native OData V4 bindList().requestContexts().
+                    // this.sEntitySet is a plain EntitySet. Filters for VERSION_ACTIVE = I or G check in-progress records.
+                    // The V2-only async:true is removed. All success/error logic preserved via .then()/.catch().
+                    this.oTableModel.bindList(this.sEntitySet, null, null, aFilters).requestContexts(0, Infinity).then(function (aContexts) {
+                        // Map V4 contexts to plain JS objects for downstream logic
+                        var aData = aContexts.map(function (oContext) { return oContext.getObject(); });
 
-                                // Check status — seed data uses "ACT" for active/approved and "CLO" for closed
-                                if (this.oSelectedTableData.STATUS === "ACT" || this.oSelectedTableData.STATUS === "Approved") {
-                                    // Enable Amend and close button
-                                    this.byId("btnAmend").setVisible(true);
-                                    this.byId("btnReopen").setVisible(false);
-                                    this.byId("btnClose").setVisible(true);
+                        // Enable/Disable Amend/ReOpen/Close buttons based on the in-progress record
+                        if (aData.length === 0) {
+                            // Log information
+                            this.fn_getLogReference().info("Table Result Controller: No in-progress record exists for the selected entry");
 
-                                    // Show below information in the message strip area
-                                    this.byId("msgStripTableResult").setText("<strong>Success:</strong><em> Record is valid for modification </em>");
-                                    this.byId("msgStripTableResult").setType("Success");
-                                } else if (this.oSelectedTableData.STATUS === "CLO" || this.oSelectedTableData.STATUS === "Closed") {
-                                    // Enable Reopen button
-                                    this.byId("btnAmend").setVisible(false);
-                                    this.byId("btnReopen").setVisible(true);
-                                    this.byId("btnClose").setVisible(false);
-
-                                    // Show below information in the message strip area
-                                    this.byId("msgStripTableResult").setText("<strong>Success:</strong><em> Record is valid for modification </em>");
-                                    this.byId("msgStripTableResult").setType("Success");
-                                } else {
-                                    // Show below information in the message strip area
-                                    this.byId("msgStripTableResult").setText("<strong>Error:</strong><em> Record status is invalid for modification </em>");
-                                    this.byId("msgStripTableResult").setType("Error");
-                                }
-
-                                // Disable the workflow link in message area
-                                this.byId("lnkWorkflowId").setVisible(false);
-                            } else {
-                                // [ORIGINAL CODE] oInProgressData = oData.results[0];
-                                oInProgressData = (oData.value || oData.results)[0];
-                                // Log information
-                                this.fn_getLogReference().info("Table Result Controller: In-progress record exists for the selected entry. Workflow id - " + oInProgressData.WORKFLOW_ID);
-
-                                // Disable the amend, re-open and close buttons
-                                this.byId("btnAmend").setVisible(false);
+                            // Check status — seed data uses "ACT" for active/approved and "CLO" for closed
+                            if (this.oSelectedTableData.STATUS === "ACT" || this.oSelectedTableData.STATUS === "Approved") {
+                                // Enable Amend and close button
+                                this.byId("btnAmend").setVisible(true);
                                 this.byId("btnReopen").setVisible(false);
+                                this.byId("btnClose").setVisible(true);
+
+                                // Show below information in the message strip area
+                                this.byId("msgStripTableResult").setText("<strong>Success:</strong><em> Record is valid for modification </em>");
+                                this.byId("msgStripTableResult").setType("Success");
+                            } else if (this.oSelectedTableData.STATUS === "CLO" || this.oSelectedTableData.STATUS === "Closed") {
+                                // Enable Reopen button
+                                this.byId("btnAmend").setVisible(false);
+                                this.byId("btnReopen").setVisible(true);
                                 this.byId("btnClose").setVisible(false);
 
                                 // Show below information in the message strip area
-                                this.byId("msgStripTableResult").setText("<strong>Warning: </strong><em> Workflow <strong>" + oInProgressData.WORKFLOW_ID +
-                                    "</strong> is in progress for the selected entry. For more information of the in progress workflow </em>");
-
-                                this.byId("msgStripTableResult").setType("Warning");
-
-                                // Enable the link
-                                this.byId("lnkWorkflowId").setVisible(true);
+                                this.byId("msgStripTableResult").setText("<strong>Success:</strong><em> Record is valid for modification </em>");
+                                this.byId("msgStripTableResult").setType("Success");
+                            } else {
+                                // Show below information in the message strip area
+                                this.byId("msgStripTableResult").setText("<strong>Error:</strong><em> Record status is invalid for modification </em>");
+                                this.byId("msgStripTableResult").setType("Error");
                             }
 
-                            // Close the busy dialog
-                            this.fn_closeBusyDialog();
-                        }.bind(this),
-                        error: function (oError) {
-                            // Show error
-                            this.fn_showServiceError(oError);
-                        }.bind(this)
-                    });
+                            // Disable the workflow link in message area
+                            this.byId("lnkWorkflowId").setVisible(false);
+                        } else {
+                            oInProgressData = aData[0];
+                            // Log information
+                            this.fn_getLogReference().info("Table Result Controller: In-progress record exists for the selected entry. Workflow id - " + oInProgressData.WORKFLOW_ID);
+
+                            // Disable the amend, re-open and close buttons
+                            this.byId("btnAmend").setVisible(false);
+                            this.byId("btnReopen").setVisible(false);
+                            this.byId("btnClose").setVisible(false);
+
+                            // Show below information in the message strip area
+                            this.byId("msgStripTableResult").setText("<strong>Warning: </strong><em> Workflow <strong>" + oInProgressData.WORKFLOW_ID +
+                                "</strong> is in progress for the selected entry. For more information of the in progress workflow </em>");
+
+                            this.byId("msgStripTableResult").setType("Warning");
+
+                            // Enable the link
+                            this.byId("lnkWorkflowId").setVisible(true);
+                        }
+
+                        // Close the busy dialog
+                        this.fn_closeBusyDialog();
+                    }.bind(this)).catch(function (oError) {
+                        // Show error
+                        this.fn_showServiceError(oError);
+                    }.bind(this));
 
                     // Drop all contents of the item details form
                     ofrmItemDetails.removeAllContent();
@@ -1297,36 +1292,35 @@ sap.ui.define([
                                     // Set the title of the page
                                     oViewTableResultModel.setProperty("/pageTitle", this.fn_getResourceBundle().getText("tableResultPageTitle", [oSelectedTableData.tableName]));
                                     oViewTableResultModel.setProperty("/tableTooltip", this.fn_getResourceBundle().getText("tableResultPageTitle", [oSelectedTableData.tableName]));
-
                                     // Fetch the field configuration data based on the selected table directly from backend
+                                    // [V4 MIGRATION] Replaced V2 oModel.read() with native OData V4 bindList().requestContexts().
+                                    // /CntrlUIConfig is a @readonly EntitySet (central-service.cds line 14). bindList() is correct.
+                                    // Filter on tablename is preserved. All downstream logic is unchanged.
                                     var that = this;
-                                    this.fn_getGlobalModel().read("/CntrlUIConfig", {
-                                        filters: [new sap.ui.model.Filter("tablename", sap.ui.model.FilterOperator.EQ, oSelectedTableData.tableId)],
-                                        success: function (oData) {
-                                            var aFieldsData = oData.results || oData.value || [];
-                                            if (aFieldsData.length !== 0) {
-                                                aFieldsData.sort(function (a, b) {
-                                                    var aSeq = a.columnseqno !== undefined ? a.columnseqno : a.Columnseqno;
-                                                    var bSeq = b.columnseqno !== undefined ? b.columnseqno : b.Columnseqno;
-                                                    return aSeq - bSeq;
-                                                });
-                                                oCompleteFieldsModel.setData(aFieldsData);
-                                                if (!that.fn_getGlobalModel("oFieldsDataModel")) {
-                                                    that.fn_setGlobalModel(oCompleteFieldsModel, "oFieldsDataModel");
-                                                } else {
-                                                    that.fn_getGlobalModel("oFieldsDataModel").setData(aFieldsData);
-                                                }
-                                                that._fn_populateSearchForm(aFieldsData);
-                                                that._fn_readTableUrl();
+                                    var aConfigFilters = [new sap.ui.model.Filter("tablename", sap.ui.model.FilterOperator.EQ, oSelectedTableData.tableId)];
+                                    this.fn_getGlobalModel().bindList("/CntrlUIConfig", null, null, aConfigFilters).requestContexts(0, Infinity).then(function (aContexts) {
+                                        var aFieldsData = aContexts.map(function (oCtx) { return oCtx.getObject(); });
+                                        if (aFieldsData.length !== 0) {
+                                            aFieldsData.sort(function (a, b) {
+                                                var aSeq = a.columnseqno !== undefined ? a.columnseqno : a.Columnseqno;
+                                                var bSeq = b.columnseqno !== undefined ? b.columnseqno : b.Columnseqno;
+                                                return aSeq - bSeq;
+                                            });
+                                            oCompleteFieldsModel.setData(aFieldsData);
+                                            if (!that.fn_getGlobalModel("oFieldsDataModel")) {
+                                                that.fn_setGlobalModel(oCompleteFieldsModel, "oFieldsDataModel");
                                             } else {
-                                                that.fn_getLogReference().error("Table Result Controller: Table configuration not maintained properly at the backend");
-                                                that.fn_closeBusyDialog();
+                                                that.fn_getGlobalModel("oFieldsDataModel").setData(aFieldsData);
                                             }
-                                        },
-                                        error: function (err) {
-                                            that.fn_getLogReference().error("Table Result Controller: Backend error reading CntrlUIConfig");
+                                            that._fn_populateSearchForm(aFieldsData);
+                                            that._fn_readTableUrl();
+                                        } else {
+                                            that.fn_getLogReference().error("Table Result Controller: Table configuration not maintained properly at the backend");
                                             that.fn_closeBusyDialog();
                                         }
+                                    }).catch(function (err) {
+                                        that.fn_getLogReference().error("Table Result Controller: Backend error reading CntrlUIConfig");
+                                        that.fn_closeBusyDialog();
                                     });
                                 } else {
                                     // Show error message in console
@@ -1362,36 +1356,35 @@ sap.ui.define([
                             // Set the title of the page
                             oViewTableResultModel.setProperty("/pageTitle", this.fn_getResourceBundle().getText("tableResultPageTitle", [oSelectedTableData.tableName]));
                             oViewTableResultModel.setProperty("/tableTooltip", this.fn_getResourceBundle().getText("tableResultPageTitle", [oSelectedTableData.tableName]));
-
                             // Fetch the configuration data based on the selected table directly from backend
+                            // [V4 MIGRATION] Replaced V2 oModel.read() with native OData V4 bindList().requestContexts().
+                            // /CntrlUIConfig is a @readonly EntitySet (central-service.cds line 14). bindList() is correct.
+                            // Filter on tablename is preserved. All downstream logic is unchanged.
                             var that = this;
-                            this.fn_getGlobalModel().read("/CntrlUIConfig", {
-                                filters: [new sap.ui.model.Filter("tablename", sap.ui.model.FilterOperator.EQ, oSelectedTableData.tableId)],
-                                success: function (oData) {
-                                    var aFieldsData = oData.results || oData.value || [];
-                                    if (aFieldsData.length !== 0) {
-                                        aFieldsData.sort(function (a, b) {
-                                            var aSeq = a.columnseqno !== undefined ? a.columnseqno : a.Columnseqno;
-                                            var bSeq = b.columnseqno !== undefined ? b.columnseqno : b.Columnseqno;
-                                            return aSeq - bSeq;
-                                        });
-                                        oCompleteFieldsModel.setData(aFieldsData);
-                                        if (!that.fn_getGlobalModel("oFieldsDataModel")) {
-                                            that.fn_setGlobalModel(oCompleteFieldsModel, "oFieldsDataModel");
-                                        } else {
-                                            that.fn_getGlobalModel("oFieldsDataModel").setData(aFieldsData);
-                                        }
-                                        that._fn_populateSearchForm(aFieldsData);
-                                        that._fn_readTableUrl();
+                            var aConfigFilters = [new sap.ui.model.Filter("tablename", sap.ui.model.FilterOperator.EQ, oSelectedTableData.tableId)];
+                            this.fn_getGlobalModel().bindList("/CntrlUIConfig", null, null, aConfigFilters).requestContexts(0, Infinity).then(function (aContexts) {
+                                var aFieldsData = aContexts.map(function (oCtx) { return oCtx.getObject(); });
+                                if (aFieldsData.length !== 0) {
+                                    aFieldsData.sort(function (a, b) {
+                                        var aSeq = a.columnseqno !== undefined ? a.columnseqno : a.Columnseqno;
+                                        var bSeq = b.columnseqno !== undefined ? b.columnseqno : b.Columnseqno;
+                                        return aSeq - bSeq;
+                                    });
+                                    oCompleteFieldsModel.setData(aFieldsData);
+                                    if (!that.fn_getGlobalModel("oFieldsDataModel")) {
+                                        that.fn_setGlobalModel(oCompleteFieldsModel, "oFieldsDataModel");
                                     } else {
-                                        that.fn_getLogReference().error("Table Result Controller: Unable to read the field data of the selected table from the backend");
-                                        that.fn_closeBusyDialog();
+                                        that.fn_getGlobalModel("oFieldsDataModel").setData(aFieldsData);
                                     }
-                                },
-                                error: function (err) {
-                                    that.fn_getLogReference().error("Table Result Controller: Backend error reading CntrlUIConfig");
+                                    that._fn_populateSearchForm(aFieldsData);
+                                    that._fn_readTableUrl();
+                                } else {
+                                    that.fn_getLogReference().error("Table Result Controller: Unable to read the field data of the selected table from the backend");
                                     that.fn_closeBusyDialog();
                                 }
+                            }).catch(function (err) {
+                                that.fn_getLogReference().error("Table Result Controller: Backend error reading CntrlUIConfig");
+                                that.fn_closeBusyDialog();
                             });
                         } else {
                             // oSelectedTableData is null — close busy dialog and go home

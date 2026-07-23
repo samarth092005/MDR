@@ -30,7 +30,7 @@
     },
     "dataSources": {
       "mainService": {
-        "uri": "/api/central/",
+        "uri": "/odata/v4/api/central/",
         "type": "OData",
         "settings": {
           "annotations": [],
@@ -39,7 +39,7 @@
         }
       },
       "ZMDGCPCNTRLVAL01_CDS": {
-        "uri": "/api/central/",
+        "uri": "/odata/v4/api/central/",
         "type": "OData",
         "settings": {
           "annotations": [],
@@ -48,7 +48,7 @@
         }
       },
       "ZMDR_UTILITY_WORKFLOW_SRV": {
-        "uri": "/api/workflow/",
+        "uri": "/odata/v4/api/workflow/",
         "type": "OData",
         "settings": {
           "annotations": [],
@@ -57,7 +57,7 @@
         }
       },
       "ZMDGCPCNTRLURL01_CDS": {
-        "uri": "/api/central/",
+        "uri": "/odata/v4/api/central/",
         "type": "OData",
         "settings": {
           "annotations": [],
@@ -196,9 +196,5 @@
       "async": true,
       "id": "app"
     }
-  },
-  "sap.cloud": {
-    "public": true,
-    "service": "mdr.cap.btp"
   }
 }

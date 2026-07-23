@@ -39,7 +39,7 @@
     },
     "dataSources": {
       "mainService": {
-        "uri": "/api/central/",
+        "uri": "/odata/v4/api/central/",
         "type": "OData",
         "settings": {
           "annotations": [],
@@ -94,14 +94,13 @@
         }
       },
       "": {
+        "type": "sap.ui.model.odata.v4.ODataModel",
         "dataSource": "mainService",
         "preload": true,
-        "type": "sap.ui.model.odata.v4.ODataModel",
         "settings": {
-          "autoExpandSelect": true,
           "operationMode": "Server",
-          "synchronizationMode": "None",
-          "groupId": "$direct"
+          "autoExpandSelect": true,
+          "earlyRequests": true
         }
       }
     },
@@ -206,9 +205,5 @@
       "async": true,
       "id": "fcl"
     }
-  },
-  "sap.cloud": {
-    "public": true,
-    "service": "mdr.cap.btp"
   }
 }

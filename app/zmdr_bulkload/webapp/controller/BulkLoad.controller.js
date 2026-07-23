@@ -861,6 +861,7 @@ sap.ui.define([
                 oEntry.Requestorsaprole = this.rolename;
                 oEntry.Requestorremarks = this.sValue;
 
+                // TODO: Migrate to native V4 once InHeaderSet is mapped in backend
                 oDataModel.create("/InHeaderSet", oEntry, {
                     method: "POST",
                     success: function (oData, oResponse) {
@@ -931,6 +932,7 @@ sap.ui.define([
                 this.Subclass = "ZMDR_ACCOUNTApprover";
             }
 
+            // TODO: Migrate to native V4 once TrigBulkUploadWFSet is mapped in backend
             oDataModel.create("/TrigBulkUploadWFSet", oEntry, {
                 method: "POST",
                 success: function (oData, oResponse) {
