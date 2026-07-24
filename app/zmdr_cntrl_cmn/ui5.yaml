@@ -9,26 +9,18 @@ server:
     - name: fiori-tools-proxy
       afterMiddleware: compression
       configuration:
-        ignoreCertError: false # If set to true, certificate errors will be ignored. E.g. self-signed certificates will be accepted
+        ignoreCertError: false
         ui5:
           path:
             - /resources
             - /test-resources
           url: https://ui5.sap.com
+          version: 1.120.20
         backend:
-          - path: /sap
-            url: http://cloud9.way2erp.us:8000
-            client: '400'
-          - url: http://cloud9.way2erp.us:8000
-            client: '400'
-            path: /sap/opu/odata/sap/ZMDGCPCNTRLVAL01_CDS/
-          - url: http://cloud9.way2erp.us:8000
-            client: '400'
-            path: /sap/opu/odata/sap/ZMDR_UTILITY_WORKFLOW_SRV/
-          - url: http://cloud9.way2erp.us:8000
-            client: '400'
-            # destination: ABAP
-            path: /sap/opu/odata/sap/ZMDGCPCNTRLURL01_CDS/
+          - path: /api
+            url: http://localhost:4004
+          - path: /odata/v2
+            url: http://localhost:4004
     - name: fiori-tools-appreload
       afterMiddleware: compression
       configuration:

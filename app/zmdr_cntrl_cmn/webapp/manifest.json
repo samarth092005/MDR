@@ -9,7 +9,6 @@
     },
     "title": "{{appTitle}}",
     "description": "{{appDescription}}",
-    "resources": "resources.json",
     "sourceTemplate": {
       "id": "@sap/generator-fiori:basic",
       "version": "1.16.5",
@@ -30,7 +29,7 @@
     },
     "dataSources": {
       "mainService": {
-        "uri": "/odata/v4/api/central/",
+        "uri": "/api/central/",
         "type": "OData",
         "settings": {
           "annotations": [],
@@ -39,7 +38,7 @@
         }
       },
       "ZMDGCPCNTRLVAL01_CDS": {
-        "uri": "/odata/v4/api/central/",
+        "uri": "/api/central/",
         "type": "OData",
         "settings": {
           "annotations": [],
@@ -48,7 +47,7 @@
         }
       },
       "ZMDR_UTILITY_WORKFLOW_SRV": {
-        "uri": "/odata/v4/api/workflow/",
+        "uri": "/api/workflow/",
         "type": "OData",
         "settings": {
           "annotations": [],
@@ -57,7 +56,7 @@
         }
       },
       "ZMDGCPCNTRLURL01_CDS": {
-        "uri": "/odata/v4/api/central/",
+        "uri": "/api/central/",
         "type": "OData",
         "settings": {
           "annotations": [],
@@ -87,7 +86,7 @@
   "sap.ui5": {
     "flexEnabled": false,
     "dependencies": {
-      "minUI5Version": "1.114.0",
+      "minUI5Version": "1.120.20",
       "libs": {
         "sap.m": {},
         "sap.ui.core": {},
@@ -196,5 +195,9 @@
       "async": true,
       "id": "app"
     }
+  },
+  "sap.cloud": {
+    "public": true,
+    "service": "mdr.cap.btp"
   }
 }

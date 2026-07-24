@@ -1587,6 +1587,9 @@ sap.ui.define([
                             // Get the table service URL
                             this.sTableServiceUrl = oSavedAppState.getData().sTableServiceUrl;
                             this.sTableEntitySet = oSavedAppState.getData().sTableEntitySet;
+                            if (this.sTableEntitySet && this.sTableEntitySet.indexOf("/") === 0) {
+                                this.sTableEntitySet = this.sTableEntitySet.substring(1);
+                            }
 
                             // Get the field details — filter by tablename (not tablelabel) and normalize keys to lowercase
                             var aFilteredFields = oSavedAppState.getData().aCntrlUiConfigData.filter(function (oCntrlUiConfigData) {
@@ -3136,7 +3139,6 @@ sap.ui.define([
                         // Close busy dialog
                         this.fn_closeBusyDialog();
                     }
-                }.bind(this),
             }.bind(this)).catch(function (oError) {
                 // If the service is not found (404), assume no custom validations for local testing
                 this.fn_getLogReference().info("Main Screen Controller: Custom validation endpoint failed, assuming no custom validations.");
@@ -4088,7 +4090,7 @@ sap.ui.define([
 
                     // Set the service url and entity set
                     this.sTableServiceUrl = oData.serviceurl.substring(0, iLastIndex);
-                    this.sTableEntitySet = oData.serviceurl.substring(iLastIndex, oData.serviceurl.length);
+                    this.sTableEntitySet = oData.serviceurl.substring(iLastIndex + 1, oData.serviceurl.length);
 
                     // Get workflow data
                     this._fn_readWfData();

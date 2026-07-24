@@ -375,6 +375,8 @@ sap.ui.define([
                 // Log information
                 this.fn_getLogReference().info("Table List Controller: Entering _fn_onObjectMatched method");
 
+                this.getView().getParent().getParent().setLayout("TwoColumnsMidExpanded");
+
                 /** Define Variables */
                 var oCntrlUiConfigData, // Stores all the Central UI configuration data applicable to the logged in user
                     aFilteredTables = [], // Array of all tables applicable to the selected repository

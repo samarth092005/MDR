@@ -9,7 +9,6 @@
     },
     "title": "{{appTitle}}",
     "description": "{{appDescription}}",
-    "resources": "resources.json",
     "sourceTemplate": {
       "id": "@sap/generator-fiori:basic",
       "version": "1.25.0",
@@ -17,7 +16,7 @@
     },
     "dataSources": {
       "mainService": {
-        "uri": "/odata/v4/api/bulk/",
+        "uri": "/api/bulk/",
         "type": "OData",
         "settings": {
           "annotations": [],
@@ -25,7 +24,7 @@
         }
       },
       "adminService": {
-        "uri": "/odata/v4/api/admin/",
+        "uri": "/api/admin/",
         "type": "OData",
         "settings": {
           "annotations": [],
@@ -53,7 +52,7 @@
   "sap.ui5": {
     "flexEnabled": true,
     "dependencies": {
-      "minUI5Version": "1.148.1",
+      "minUI5Version": "1.120.20",
       "libs": {
         "sap.m": {},
         "sap.ui.core": {}

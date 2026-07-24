@@ -117,13 +117,13 @@ modules:
               Authentication: OAuth2UserTokenExchange
               ServiceInstanceName: mdr-cap-manual-auth
               ServiceKeyName: mdr-cap-btp-auth-key
-            - Name: srv-api
+            - Name: mdr.cap.btp.srv-api
               Description: CAP service backend
               URL: ~{srv-api/srv-url}
               Authentication: OAuth2UserTokenExchange
               ServiceInstanceName: mdr-cap-manual-auth
               ServiceKeyName: mdr-cap-btp-auth-key
-              HTML5.DynamicDestination: false
+              HTML5.DynamicDestination: true
               WebIDEEnabled: true
 
 

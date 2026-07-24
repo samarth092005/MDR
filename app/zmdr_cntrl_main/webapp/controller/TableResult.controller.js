@@ -1194,6 +1194,8 @@ sap.ui.define([
                 // Log information
                 this.fn_getLogReference().info("Table Result Controller: Entering _fn_onObjectMatched method");
 
+                this.getView().getParent().getParent().setLayout("EndColumnFullScreen");
+
                 /** Define Variables */
                 var oSelectedTableData, // Stores the selected table information
                     aFieldsData = [], // Stores all fields of the selected table
@@ -1929,3 +1931,4 @@ sap.ui.define([
         });
     }
 );
+

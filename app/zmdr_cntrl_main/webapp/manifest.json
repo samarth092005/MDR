@@ -9,7 +9,6 @@
     },
     "title": "{{appTitle}}",
     "description": "{{appDescription}}",
-    "resources": "resources.json",
     "sourceTemplate": {
       "id": "@sap/generator-fiori:basic",
       "version": "1.16.5",
@@ -39,7 +38,7 @@
     },
     "dataSources": {
       "mainService": {
-        "uri": "/odata/v4/api/central/",
+        "uri": "/api/central/",
         "type": "OData",
         "settings": {
           "annotations": [],
@@ -68,14 +67,15 @@
   "sap.ui5": {
     "flexEnabled": true,
     "dependencies": {
-      "minUI5Version": "1.114.0",
+      "minUI5Version": "1.120.20",
       "libs": {
         "sap.m": {},
         "sap.ui.core": {},
         "sap.f": {},
         "sap.ui.export": {},
         "sap.ui.layout": {},
-        "sap.ui.unified": {}
+        "sap.ui.unified": {},
+        "sap.ui.table": {}
       }
     },
     "contentDensities": {
@@ -205,5 +205,9 @@
       "async": true,
       "id": "fcl"
     }
+  },
+  "sap.cloud": {
+    "public": true,
+    "service": "mdr.cap.btp"
   }
 }
