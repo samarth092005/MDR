@@ -813,91 +813,74 @@ sap.ui.define([
                 MessageBox.error(
                     "Please enter upto 10 digits number for workflow number!"
                 );
-            } else {
-                this.workflowidentered = this.byId("inp_workflow").getValue();
-
-                this.getView().byId("btn_submit").setEnabled(false);
-                this.getView().byId("btn_cancel").setEnabled(false);
-
-                this.openBusyDialog();
-
-                var oDataModel = this.getOwnerComponent().getModel();
-                this.dataload = "Y";
-
-                var oEntry = {};
-                oEntry.Tablename = this.tableName;
-                oEntry.Source = "UI";
-                oEntry.Isdataload = this.dataload;// === 'Y' ? true : false;
-                oEntry.Isoverwritewithnull = this.preserveNull;// === 'Y' ? true : false;
-                oEntry.Isfutureversion = this.futureAllowed;// === 'Y' ? true : false;
-                oEntry.Workflowid = this.workflowidentered;
-
-                var itemData = [];
-
-                for (var i = 0; i < this.finalData.length; i++) {
-                    itemData.push({
-                        Data: this.finalData[i].Data,
-                    });
-                }
-
-                oEntry.NAVINDATA = itemData;
-
-                oEntry.NAVOUTRETMESSAGE = [];
-                var lv_res4 = {};
-                lv_res4.Type = "";
-                lv_res4.Message = "";
-                oEntry.NAVOUTRETMESSAGE[0] = lv_res4;
-
-                oEntry.NAVOUTHEADER = [];
-                var lv_res5 = {};
-                lv_res5.Createcount = 0;
-                lv_res5.Updatecount = 0;
-                lv_res5.Validcount = 0;
-                lv_res5.Invalidcount = 0;
-                lv_res5.Workflowid = "";
-                lv_res5.Tablename = "";
-                oEntry.NAVOUTHEADER[0] = lv_res5;
-
-                oEntry.Requestorsaprole = this.rolename;
-                oEntry.Requestorremarks = this.sValue;
-
-                // TODO: Migrate to native V4 once InHeaderSet is mapped in backend
-                oDataModel.create("/InHeaderSet", oEntry, {
-                    method: "POST",
-                    success: function (oData, oResponse) {
-                        this.closeBusyDialog();
-                        this.WorkflowId =
-                            oResponse.data.NAVOUTHEADER.results[0].Workflowid;
-
-                        /*var oUserData = this
-                          .getOwnerComponent()
-                          .getModel("usermodel")
-                          .getData();
-                        this.oUserId = oUserData.id;
-                        this.ReqEmailId = oUserData.email; */
-
-                        //this.onTriggerWF();
-
-                        MessageBox.information(
-                            "Request submitted successfully with workflow Id " +
-                            oResponse.data.NAVOUTHEADER.results[0].Workflowid,
-                            {
-                                onClose: function (oAction) {
-                                    window.location.reload();
-                                },
-                            }
-                        );
-
-                        this.getView().byId("btn_submit").setVisible(false);
-                        this.getView().byId("btn_cancel").setVisible(false);
-                        this.getView().byId("lbl_warning").setVisible(false);
-                    },
-                    error: function (oError) {
-                        this.closeBusyDialog();
-                        alert("Error Occurred while processing data load");
-                    },
-                });
+                return;
             }
+
+            this.workflowidentered = this.byId("inp_workflow").getValue();
+            this.getView().byId("btn_submit").setEnabled(false);
+            this.getView().byId("btn_cancel").setEnabled(false);
+
+            var oGBusyArray = this.openBusyDialog();
+
+            // Build validData array from finalData — each item must have a 'data' key
+            // matching the { data: String } shape expected by the REST endpoint.
+            var validData = (this.finalData || []).map(function (item) {
+                return { data: item.data || item.Data || "" };
+            });
+
+            // Use fetch() against the REST endpoint.
+            // Rationale: CAP OData V4 returns HTTP 204 (no body) for actions whose
+            // return type contains nested arrays of complex types. The REST endpoint
+            // at /api/bulk/rest/submitBulkData bypasses that limitation and returns
+            // proper JSON.
+            fetch("/api/bulk/rest/submitBulkData", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({
+                    tablename: this.tableName,
+                    requesterrole: this.rolename,
+                    validData: validData,
+                    overwriteWithNull: this.preserveNull || "N",
+                    futureVersion: this.futureAllowed || "N",
+                    workflowid: this.workflowidentered || "",
+                    remarks: this.sValue || ""
+                })
+            }).then(function (oResponse) {
+                return oResponse.text().then(function (sText) {
+                    if (!oResponse.ok) {
+                        throw new Error("Server error " + oResponse.status + ": " + sText);
+                    }
+                    return JSON.parse(sText);
+                });
+            }).then(function (oResult) {
+                this.closeBusyDialog(oGBusyArray);
+                this.WorkflowId = oResult.workflowid;
+
+                // Automatically trigger the BPA workflow after a successful submit
+                this.onTriggerWF();
+
+                MessageBox.information(
+                    "Request submitted successfully with Workflow ID: " + oResult.workflowid,
+                    {
+                        onClose: function () {
+                            window.location.reload();
+                        }
+                    }
+                );
+
+                this.getView().byId("btn_submit").setVisible(false);
+                this.getView().byId("btn_cancel").setVisible(false);
+                this.getView().byId("lbl_warning").setVisible(false);
+            }.bind(this)).catch(function (oError) {
+                this.closeBusyDialog(oGBusyArray);
+                this.getView().byId("btn_submit").setEnabled(true);
+                this.getView().byId("btn_cancel").setEnabled(true);
+                MessageBox.error("Error occurred while submitting data. Please check server logs.");
+                console.error("[onSubmit] Error:", oError);
+            }.bind(this));
         },
 
         onCancel: function (oEvent) {
@@ -905,42 +888,48 @@ sap.ui.define([
         },
 
         onTriggerWF: function () {
-            var oDataModel = this.getOwnerComponent().getModel();
-
-            var oEntry = {};
-            oEntry.Isfutureallowed = this.futureVer;
-            oEntry.Isversioned = this.versioned;
-            oEntry.Category = this.categoryName;
-            oEntry.Tablename = this.tableName;
-            oEntry.Workflowid = this.WorkflowId.toString();
-            oEntry.Requestorid = this.oUserId;
-            oEntry.Requestoremailid = this.ReqEmailId;
-            oEntry.ValidRecordsCount = this.ValidRecordsCount;
-            oEntry.Requestorremarks = this.sValue;
-            oEntry.DeleteFlag = "N";
-            oEntry.Isoverwritewithnull = this.Preservenull;
-            oEntry.Operationtype = "BULK UPDATE";
-            oEntry.Requestorrole = this.rolename;
-            oEntry.Updateztabonly = this.updateztabonly;
-
-            oEntry.Approverstage = "APPROVER";
-            oEntry.Systemname = "MDR";
-            oEntry.Hierarchy = "ZMDR_ACCOUNT";
-            if (this.tableappr == "Y") {
-                this.Subclass = this.tableName;
-            } else {
-                this.Subclass = "ZMDR_ACCOUNTApprover";
+            // Resolve approver class from BulkHdrConfig — the backend reads
+            // ApprClass to determine which approver group handles this table.
+            var apprClass = "";
+            var tabConfig = (this.array || []).find(function (c) {
+                return c.TableName === this.tableName && c.RequesterRole === this.rolename;
+            }.bind(this));
+            if (tabConfig && tabConfig.ApprClass) {
+                apprClass = tabConfig.ApprClass;
             }
 
-            // TODO: Migrate to native V4 once TrigBulkUploadWFSet is mapped in backend
-            oDataModel.create("/TrigBulkUploadWFSet", oEntry, {
+            // Use fetch() against the REST endpoint (OData V4 compatible).
+            // This replaces the legacy V2 oDataModel.create("/TrigBulkUploadWFSet") call.
+            fetch("/api/bulk/rest/triggerBulkWorkflow", {
                 method: "POST",
-                success: function (oData, oResponse) {
-                    console.log("WF Triggered");
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
                 },
-                error: function (oError) {
-                    alert("Error occurred while triggering WF");
-                },
+                body: JSON.stringify({
+                    workflowid: this.WorkflowId || "",
+                    tablename: this.tableName,
+                    requestorid: this.oUserId || "",
+                    requestoremail: this.ReqEmailId || "",
+                    operationtype: "BULK UPDATE",
+                    approverstage: "APPROVER",
+                    apprclass: apprClass,
+                    validrecordcount: this.validRecordCount || 0,
+                    requesterrole: this.rolename || ""
+                })
+            }).then(function (oResponse) {
+                return oResponse.text().then(function (sText) {
+                    if (!oResponse.ok) {
+                        throw new Error("WF trigger server error " + oResponse.status + ": " + sText);
+                    }
+                    return JSON.parse(sText);
+                });
+            }).then(function (oResult) {
+                console.log("[onTriggerWF] Workflow triggered. BPA Instance:", oResult.bpaInstanceId);
+            }).catch(function (oError) {
+                // Workflow trigger failure is non-blocking — data is already staged.
+                // Log the error but do not interrupt the user experience.
+                console.error("[onTriggerWF] Workflow trigger failed:", oError);
             });
         },
 
@@ -1016,9 +1005,9 @@ sap.ui.define([
                                 .byId("submitDialogTextArea")
                                 .getValue();
                             this.sValue = sText;
-                            this.onSubmit();
                             oDialog.close();
-                        },
+                            this.onSubmit();
+                        }.bind(this),
                     }),
                     endButton: new Button({
                         text: "Cancel",

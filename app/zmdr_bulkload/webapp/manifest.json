@@ -16,7 +16,7 @@
     },
     "dataSources": {
       "mainService": {
-        "uri": "/api/bulk/",
+        "uri": "api/bulk/",
         "type": "OData",
         "settings": {
           "annotations": [],
@@ -24,7 +24,7 @@
         }
       },
       "adminService": {
-        "uri": "/api/admin/",
+        "uri": "api/admin/",
         "type": "OData",
         "settings": {
           "annotations": [],
@@ -139,5 +139,9 @@
       "id": "App",
       "async": true
     }
+  },
+  "sap.cloud": {
+    "public": true,
+    "service": "mdr.cap.btp"
   }
 }

@@ -3,7 +3,7 @@
 const cds = require('@sap/cds');
 const { validateKeyExists, validateRow } = require('./validate');
 const { insertVersionedRow, storeBulkTemp } = require('./insert');
-const { buildKeyWhere, checkExists } = require('./db-dynamic');
+const { buildKeyWhere, checkExists, getEntityDef } = require('./db-dynamic');
 const { generateWorkflowId } = require('./wf-id');
 
 // NOTE on field-name casing:
@@ -75,11 +75,19 @@ async function processBulkData(params) {
         const { valid, message } = await validateRow({ splitData, lineitemConfig, keyFields, tablename });
         if (!valid) { invalidData.push({ code: rowCode, message, rownumber: i + 1 }); continue; }
 
-        // Determine create vs amend — dynamic raw SQL
-        const { clause, values: kv } = buildKeyWhere(splitData, lineitemConfig, keyFields);
-        let wh = clause, wv = [...kv];
-        if (!isVersioned) { wh += ' AND "VERSION_ACTIVE" = ?'; wv.push('Y'); }
-        const exists = await checkExists(db, tablename, wh, wv);
+        // Determine create vs amend — use CAP ORM to avoid raw SQL table name issues
+        const entity = getEntityDef(tablename);
+        let exists = false;
+        if (entity) {
+            const keyWhere = {};
+            for (const kf of keyFields) {
+                const cfg = lineitemConfig.find(c => c.Columnname === kf);
+                if (cfg) keyWhere[kf.toUpperCase()] = splitData[cfg.Colseqno - 1] ?? '';
+            }
+            if (!isVersioned) keyWhere['VERSION_ACTIVE'] = 'Y';
+            const rows = await db.run(SELECT.from(entity).where(keyWhere).limit(1));
+            exists = rows.length > 0;
+        }
         validData.push({ data: rowStr });
         if (exists) updateData.push({ data: rowStr });
         else createData.push({ data: rowStr });
@@ -96,8 +104,12 @@ async function processBulkData(params) {
     // Submit — generate WF ID and write
     const workflowid = inputWfId || await generateWorkflowId('BULK');
     if (isVersioned) {
-        if (await checkExists(db, tablename, '"WORKFLOW_ID" = ?', [workflowid]))
-            throw new Error(`Workflow ID ${workflowid} already in use`);
+        // Duplicate workflow ID check via CAP ORM
+        const entity = getEntityDef(tablename);
+        if (entity) {
+            const dup = await db.run(SELECT.from(entity).where({ WORKFLOW_ID: workflowid }).limit(1));
+            if (dup.length > 0) throw new Error(`Workflow ID ${workflowid} already in use`);
+        }
     }
 
     const version = futureVersion === 'Y' ? 'F' : 'G';

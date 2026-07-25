@@ -21,6 +21,8 @@ sap.ui.define([
     function (BaseController, JSONModel, Fragment, ODataModel, Filter, FilterOperator, FilterBar, FilterGroupItem, ViewSettingsDialog, ViewSettingsItem, Spreadsheet, MessageToast, Dialog, Label, DatePicker, Input, ComboBox, ListItem) {
         "use strict";
 
+        var _oSelf;
+
         return BaseController.extend("com.intapptics.zmdrcntrlmain.controller.TableResult", {
             /**
              * Lifecycle Methods
@@ -38,6 +40,7 @@ sap.ui.define([
 
                 /** Define Variables */
                 var oTableResultViewModel; // Stores the view related settings in this model
+                _oSelf = this;
 
                 /** Method Implementation */
                 //Instantiate view model with few default model parameters
@@ -1121,51 +1124,100 @@ sap.ui.define([
 
                 // Get reference of the cross app navigation service
                 if (sap.ushell && sap.ushell.Container) {
-                    oNavServiceToCommonApp = sap.ushell.Container.getService("CrossApplicationNavigation");
+                    // swapnil - commented below code for async call
+                    // oNavServiceToCommonApp = sap.ushell.Container.getService("CrossApplicationNavigation");
 
-                    // Create an application state
-                    oAppState = oNavServiceToCommonApp.createEmptyAppState(this.getOwnerComponent());
+                    // // Create an application state
+                    // oAppState = oNavServiceToCommonApp.createEmptyAppState(this.getOwnerComponent());
 
-                    // Set the parameters into the app state
-                    oAppState.setData(oStateToSave);
+                    // // Set the parameters into the app state
+                    // oAppState.setData(oStateToSave);
 
-                    // Save the data
-                    oAppState.save();
+                    // // Save the data
+                    // oAppState.save();
 
-                    // Get reference of the hash changer service
-                    oHashChanger = sap.ui.core.routing.HashChanger.getInstance();
+                    // // Get reference of the hash changer service
+                    // oHashChanger = sap.ui.core.routing.HashChanger.getInstance();
 
-                    // Get the current hash
-                    sCurrentHash = oHashChanger.getHash();
+                    // // Get the current hash
+                    // sCurrentHash = oHashChanger.getHash();
 
-                    // Check if any app state is already present in the current hash using regex
-                    aAppStateKeys = /(?:sap-iapp-state=)([^&=]+)/.exec(sCurrentHash);
+                    // // Check if any app state is already present in the current hash using regex
+                    // aAppStateKeys = /(?:sap-iapp-state=)([^&=]+)/.exec(sCurrentHash);
 
-                    if (aAppStateKeys) {
-                        // Split the current hash and remove the current app state
-                        sCurrentHash = sCurrentHash.split("?")[0];
-                    }
+                    // if (aAppStateKeys) {
+                    //     // Split the current hash and remove the current app state
+                    //     sCurrentHash = sCurrentHash.split("?")[0];
+                    // }
 
-                    // Prepare the new hash by adding the new app state
-                    sNewHash = sCurrentHash + "?sap-iapp-state=" + oAppState.getKey();
+                    // // Prepare the new hash by adding the new app state
+                    // sNewHash = sCurrentHash + "?sap-iapp-state=" + oAppState.getKey();
 
-                    // Replace hash
-                    oHashChanger.replaceHash(sNewHash);
+                    // // Replace hash
+                    // oHashChanger.replaceHash(sNewHash);
 
-                    /** eslint-disable sap-cross-application-navigation */
-                    // Navigate to the child app
-                    oNavServiceToCommonApp.toExternal({
-                        target: {
-                            semanticObject: "zmdr_central_cmn",
-                            action: "manage"
-                        },
-                        params: {
-                            sActionedBy: "Requestor",
-                            sActionType: sBtnText
-                        },
-                        appStateKey: oAppState.getKey()
-                    });
+                    // /** eslint-disable sap-cross-application-navigation */
+                    // // Navigate to the child app
+                    // oNavServiceToCommonApp.toExternal({
+                    //     target: {
+                    //         semanticObject: "zmdr_central_cmn",
+                    //         action: "manage"
+                    //     },
+                    //     params: {
+                    //         sActionedBy: "Requestor",
+                    //         sActionType: sBtnText
+                    //     },
+                    //     appStateKey: oAppState.getKey()
+                    // });
                     /** eslint-enable sap-cross-application-navigation */
+                    // swapnil - updated code for async call
+                    oNavServiceToCommonApp = sap.ushell.Container.getServiceAsync("CrossApplicationNavigation")
+                        .then(function (oService) {
+                            oNavServiceToCommonApp = oService;
+                            // Create an application state
+                            oAppState = oNavServiceToCommonApp.createEmptyAppStateAsync(_oSelf.getOwnerComponent())
+                            .then(function (oAppState) {
+                                // Set the parameters into the app state
+                                oAppState.setData(oStateToSave);
+
+                                // Save the data
+                                oAppState.save();
+
+                                // Get reference of the hash changer service
+                                oHashChanger = sap.ui.core.routing.HashChanger.getInstance();
+
+                                // Get the current hash
+                                sCurrentHash = oHashChanger.getHash();
+
+                                // Check if any app state is already present in the current hash using regex
+                                aAppStateKeys = /(?:sap-iapp-state=)([^&=]+)/.exec(sCurrentHash);
+                                    
+                                if (aAppStateKeys) {
+                                    // Split the current hash and remove the current app state
+                                    sCurrentHash = sCurrentHash.split("?")[0];
+                                }
+
+                                // Prepare the new hash by adding the new app state
+                                sNewHash = sCurrentHash + "?sap-iapp-state=" + oAppState.getKey();
+
+                                // Replace hash
+                                oHashChanger.replaceHash(sNewHash);
+
+                                // Navigate to the child app
+                                oNavServiceToCommonApp.toExternal({
+                                    target: {
+                                        semanticObject: "zmdr_central_cmn",
+                                        action: "manage"
+                                    },
+                                    params: {
+                                        sActionedBy: "Requestor",
+                                        sActionType: sBtnText
+                                    },
+                                    appStateKey: oAppState.getKey()
+                                });                            
+                            })
+
+                        });
                 } else {
                     // Running in standalone mode without Fiori Launchpad
                     this.fn_getLogReference().error("Cross application navigation is not supported in standalone mode");

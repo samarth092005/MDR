@@ -1,5 +1,5 @@
 {
-  "name": "mdr-btp",
+  "name": "mdr-cap-btp",
   "version": "1.0.0",
   "description": "A simple CAP project.",
   "engines": {
@@ -69,7 +69,9 @@
         "vcap": {
           "label": "destination"
         }
-      }
+      },
+      "html5-repo": true,
+      "workzone": true
     },
     "sql": {
       "mapping": "upper"

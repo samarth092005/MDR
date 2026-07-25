@@ -28,7 +28,6 @@ modules:
       - name: mdr-cap-btp-destination
       - name: mdr-cap-btp-db
       - name: mdr-cap-btp-auth
-      - name: mdr-btp-destination
 
   - name: mdr-cap-btp-db-deployer
     type: hdb
@@ -113,16 +112,19 @@ modules:
             - Name: mdr-cap-btp-html5-repository
               ServiceInstanceName: mdr-cap-btp-html5-repo-host
               ServiceKeyName: mdr-cap-btp-html5-repo-host-key
+              sap.cloud.service: mdr.cap.btp
             - Name: mdr-cap-btp-auth
               Authentication: OAuth2UserTokenExchange
               ServiceInstanceName: mdr-cap-manual-auth
               ServiceKeyName: mdr-cap-btp-auth-key
+              sap.cloud.service: mdr.cap.btp
             - Name: mdr.cap.btp.srv-api
               Description: CAP service backend
               URL: ~{srv-api/srv-url}
               Authentication: OAuth2UserTokenExchange
               ServiceInstanceName: mdr-cap-manual-auth
               ServiceKeyName: mdr-cap-btp-auth-key
+              sap.cloud.service: mdr.cap.btp
               HTML5.DynamicDestination: true
               WebIDEEnabled: true
 
@@ -136,7 +138,7 @@ modules:
       commands:
         - npm install --no-workspaces
         - npm run build
-        - bash -c "cd dist && zip -r zmdr_cntrl_main.zip *"
+        - bash -c "cp xs-app.json dist/ && cd dist && zip -r zmdr_cntrl_main.zip *"
       supported-platforms: []
 
   - name: zmdr_cntrl_cmn
@@ -148,7 +150,7 @@ modules:
       commands:
         - npm install --no-workspaces
         - npm run build
-        - bash -c "cd dist && zip -r zmdr_cntrl_cmn.zip *"
+        - bash -c "cp xs-app.json dist/ && cd dist && zip -r zmdr_cntrl_cmn.zip *"
       supported-platforms: []
 
   - name: zmdr_bulkload
@@ -160,7 +162,7 @@ modules:
       commands:
         - npm install --no-workspaces
         - npm run build
-        - bash -c "cd dist && zip -r zmdr_bulkload.zip *"
+        - bash -c "cp xs-app.json dist/ && cd dist && zip -r zmdr_bulkload.zip *"
       supported-platforms: []
 
 resources:

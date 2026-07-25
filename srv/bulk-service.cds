@@ -1,4 +1,5 @@
 using zmdr from '../db/mdr-config';
+using from '../db/mdr-master-data';
 
 service BulkService @(
   path    : '/api/bulk',
@@ -13,6 +14,22 @@ service BulkService @(
   entity BulkItmConfig   as projection on zmdr.BulkItmConfig;
 
   entity BulkTemp        as projection on zmdr.BulkTemp;
+
+  // Explicitly expose master data tables so they are definitively deployed
+  @readonly entity ZMDR_BPMASTER as projection on zmdr.ZMDR_BPMASTER;
+  @readonly entity ZMDR_GLACCOUNT as projection on zmdr.ZMDR_GLACCOUNT;
+  @readonly entity ZMDR_EMPLOYEES as projection on zmdr.ZMDR_EMPLOYEES;
+  @readonly entity ZMDR_VENDORS as projection on zmdr.ZMDR_VENDORS;
+
+  // Explicitly expose lookup tables
+  @readonly entity ZMDXCNAPPSTATS01 as projection on zmdr.ZMDXCNAPPSTATS01;
+  @readonly entity ZMDR_BP_ROLE_REF as projection on zmdr.ZMDR_BP_ROLE_REF;
+  @readonly entity T005             as projection on zmdr.T005;
+  @readonly entity T002             as projection on zmdr.T002;
+  @readonly entity TCURC            as projection on zmdr.TCURC;
+  @readonly entity T052             as projection on zmdr.T052;
+  @readonly entity TINC             as projection on zmdr.TINC;
+  @readonly entity ZMDR_BP_STATUS   as projection on zmdr.ZMDR_BP_STATUS;
 
   // Actions — dynamic tables handled inside handlers via raw parameterised SQL
 

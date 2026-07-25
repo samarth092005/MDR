@@ -34,9 +34,9 @@ async function getApprovers(params) {
     let apprSystem = system, apprHierarchy = hierarchy, apprSubclass = subclass, nextstage = '';
 
     if (appidentifier === 'BULK') {
-        const hdr = await db.run(SELECT.one.from(BulkHdrConfig).where({ tablename, requesterrole: saprole }));
-        if (hdr?.apprclass) {
-            const p = hdr.apprclass.split(',');
+        const hdr = await db.run(SELECT.one.from(BulkHdrConfig).where({ TableName: tablename, RequesterRole: saprole }));
+        if (hdr?.ApprClass) {
+            const p = hdr.ApprClass.split(',');
             [apprSystem, apprHierarchy, apprSubclass] = p.map(x => x.trim());
         }
     }
@@ -45,21 +45,31 @@ async function getApprovers(params) {
         nextstage = sr?.nextstage || '';
     }
 
-    // Approver and ApproverClass are config tables — note: CAP generated table names
-    // are COM_MDR_APPROVER and COM_MDR_APPROVERCLASS in HANA
-    const rows = await db.run(
-        'SELECT a.APPROVER_ID FROM "COM_MDR_APPROVER" a ' +
-        'INNER JOIN "COM_MDR_APPROVERCLASS" ac ON a.APPROVER_CLASS_LINEID = ac.APPROVER_CLASS_LINEID ' +
-        'WHERE ac.SYSTEM = ? AND ac.HIERARCHY = ? AND ac.SUBCLASS = ? AND a.VERSION_ACTIVE = ?',
-        [apprSystem, apprHierarchy, apprSubclass, 'Y']
+    // Use CAP ORM to avoid hardcoded table names (works on SQLite and HANA)
+    const { Approver, ApproverClass } = db.entities;
+    const classes = await db.run(
+        SELECT.from(ApproverClass).where({
+            system: apprSystem, hierarchy: apprHierarchy,
+            subclass: apprSubclass, version_active: 'Y'
+        })
     );
+    const classIds = classes.map(c => c.approver_class_lineid);
+    let rows = [];
+    if (classIds.length > 0) {
+        rows = await db.run(
+            SELECT.from(Approver).where({
+                approver_class_lineid: { in: classIds },
+                version_active: 'Y'
+            })
+        );
+    }
 
     const approvers = rows
-        .filter(r => r.APPROVER_ID !== requesterid)
+        .filter(r => (r.approver_id || r.APPROVER_ID) !== requesterid)
         .map(r => ({
-            approverid: r.APPROVER_ID,
-            approvername: r.APPROVER_ID,           // TODO: resolve via IAS SCIM API
-            approveremail: `${r.APPROVER_ID}@company.com`,  // TODO: resolve via IAS
+            approverid: r.approver_id || r.APPROVER_ID,
+            approvername: r.approver_id || r.APPROVER_ID,           // TODO: resolve via IAS SCIM API
+            approveremail: `${r.approver_id || r.APPROVER_ID}@company.com`,  // TODO: resolve via IAS
         }));
 
     return { approvers, nextstage, agent: `US${requesterid}` };
