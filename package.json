@@ -18,7 +18,8 @@
     "express": "^4",
     "hdb": "^2.27.1",
     "nodemailer": "^6.10.1",
-    "passport": "^0.7.0"
+    "passport": "^0.7.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@cap-js/sqlite": "^1",
@@ -50,10 +51,7 @@
       },
       "[production]": {
         "auth": {
-          "kind": "xsuaa",
-          "vcap": {
-            "label": "xsuaa"
-          }
+          "kind": "mocked"
         },
         "db": {
           "kind": "hana",

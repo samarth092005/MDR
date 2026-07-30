@@ -229,6 +229,7 @@ sap.ui.define([
 
                     var wb = XLSX.read(arr, {
                         type: "base64",
+                        cellDates: true
                     });
 
                     var tableName = wb.SheetNames;
@@ -259,10 +260,15 @@ sap.ui.define([
                         })
                         ];
                     if (cellData !== undefined) {
-                        cellDataVal =
-                            typeof cellData.v === "string"
-                                ? cellData.v.trim()
-                                : cellData.v;
+                        if (cellData.v instanceof Date) {
+                            // Safely convert JavaScript Date to HANA expected YYYY-MM-DD format
+                            var yyyy = cellData.v.getFullYear();
+                            var mm = String(cellData.v.getMonth() + 1).padStart(2, '0');
+                            var dd = String(cellData.v.getDate()).padStart(2, '0');
+                            cellDataVal = yyyy + "-" + mm + "-" + dd;
+                        } else {
+                            cellDataVal = typeof cellData.v === "string" ? cellData.v.trim() : cellData.v;
+                        }
                         cellDataVal = this._replaceNewLineChar(cellDataVal);
                     }
                     rowData = rowData + "«" + (cellData ? cellDataVal : '');
@@ -393,26 +399,34 @@ sap.ui.define([
                         // because CAP OData V4 has a known bug where Collection(Edm.String)
                         // parameters arrive as undefined in req.data when called via $batch
                         var sServiceUrl = this.getOwnerComponent().getModel().getServiceUrl();
-                        // Use dedicated REST endpoint instead of OData action URL.
-                        // CAP OData V4 returns HTTP 204 (no body) when serializing actions
-                        // that return anonymous complex types with nested arrays.
-                        // The REST endpoint at /api/bulk/rest/validateBulkData bypasses this.
-                        var sActionUrl = "/api/bulk/rest/validateBulkData";
+                        var sBaseUrl = sServiceUrl.endsWith("/") ? sServiceUrl.slice(0, -1) : sServiceUrl;
+                        var sActionUrl = sBaseUrl + "/rest/validateBulkData";
 
-                        fetch(sActionUrl, {
-                            method: "POST",
+                        fetch(sServiceUrl, {
+                            method: "GET",
                             headers: {
-                                "Content-Type": "application/json",
+                                "X-CSRF-Token": "Fetch",
                                 "Accept": "application/json"
-                            },
-                            body: JSON.stringify({
-                                tablename: oEntry.Tablename,
-                                requesterrole: oEntry.Requestorsaprole,
-                                rowData: oEntry.NAVINDATA,
-                                overwriteWithNull: oEntry.Isoverwritewithnull,
-                                futureVersion: oEntry.Isfutureversion,
-                                workflowid: oEntry.Workflowid
-                            })
+                            }
+                        }).then(function (oTokenResponse) {
+                            var sCsrfToken = oTokenResponse.headers.get("X-CSRF-Token") || "";
+                            
+                            return fetch(sActionUrl, {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "Accept": "application/json",
+                                    "X-CSRF-Token": sCsrfToken
+                                },
+                                body: JSON.stringify({
+                                    tablename: oEntry.Tablename,
+                                    requesterrole: oEntry.Requestorsaprole,
+                                    rowData: oEntry.NAVINDATA,
+                                    overwriteWithNull: oEntry.Isoverwritewithnull,
+                                    futureVersion: oEntry.Isfutureversion,
+                                    workflowid: oEntry.Workflowid
+                                })
+                            });
                         }).then(function (oResponse) {
                             // Read as text first so we can debug if it's not JSON
                             return oResponse.text().then(function (sText) {
@@ -833,21 +847,37 @@ sap.ui.define([
             // return type contains nested arrays of complex types. The REST endpoint
             // at /api/bulk/rest/submitBulkData bypasses that limitation and returns
             // proper JSON.
-            fetch("/api/bulk/rest/submitBulkData", {
-                method: "POST",
+            var that = this;
+            var sServiceUrl = this.getOwnerComponent().getModel().getServiceUrl();
+            var sBaseUrl = sServiceUrl.endsWith("/") ? sServiceUrl.slice(0, -1) : sServiceUrl;
+            var sSubmitUrl = sBaseUrl + "/rest/submitBulkData";
+
+            fetch(sServiceUrl, {
+                method: "GET",
                 headers: {
-                    "Content-Type": "application/json",
+                    "X-CSRF-Token": "Fetch",
                     "Accept": "application/json"
-                },
-                body: JSON.stringify({
-                    tablename: this.tableName,
-                    requesterrole: this.rolename,
-                    validData: validData,
-                    overwriteWithNull: this.preserveNull || "N",
-                    futureVersion: this.futureAllowed || "N",
-                    workflowid: this.workflowidentered || "",
-                    remarks: this.sValue || ""
-                })
+                }
+            }).then(function (oTokenResponse) {
+                var sCsrfToken = oTokenResponse.headers.get("X-CSRF-Token") || "";
+                
+                return fetch(sSubmitUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json",
+                        "X-CSRF-Token": sCsrfToken
+                    },
+                    body: JSON.stringify({
+                        tablename: that.tableName,
+                        requesterrole: that.rolename,
+                        validData: validData,
+                        overwriteWithNull: that.preserveNull || "N",
+                        futureVersion: that.futureAllowed || "N",
+                        workflowid: that.workflowidentered || "",
+                        remarks: that.sValue || ""
+                    })
+                });
             }).then(function (oResponse) {
                 return oResponse.text().then(function (sText) {
                     if (!oResponse.ok) {
@@ -900,23 +930,46 @@ sap.ui.define([
 
             // Use fetch() against the REST endpoint (OData V4 compatible).
             // This replaces the legacy V2 oDataModel.create("/TrigBulkUploadWFSet") call.
-            fetch("/api/bulk/rest/triggerBulkWorkflow", {
-                method: "POST",
+            var that = this;
+            var sServiceUrl = this.getOwnerComponent().getModel().getServiceUrl();
+            var sBaseUrl = sServiceUrl.endsWith("/") ? sServiceUrl.slice(0, -1) : sServiceUrl;
+            var sTriggerUrl = sBaseUrl + "/rest/triggerBulkWorkflow";
+
+            fetch(sServiceUrl, {
+                method: "GET",
                 headers: {
-                    "Content-Type": "application/json",
+                    "X-CSRF-Token": "Fetch",
                     "Accept": "application/json"
-                },
-                body: JSON.stringify({
-                    workflowid: this.WorkflowId || "",
-                    tablename: this.tableName,
-                    requestorid: this.oUserId || "",
-                    requestoremail: this.ReqEmailId || "",
-                    operationtype: "BULK UPDATE",
-                    approverstage: "APPROVER",
-                    apprclass: apprClass,
-                    validrecordcount: this.validRecordCount || 0,
-                    requesterrole: this.rolename || ""
-                })
+                }
+            }).then(function (oTokenResponse) {
+                var sCsrfToken = oTokenResponse.headers.get("X-CSRF-Token") || "";
+                
+                return fetch(sTriggerUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json",
+                        "X-CSRF-Token": sCsrfToken
+                    },
+                    body: JSON.stringify({
+                        workflowid: that.WorkflowId || "",
+                        tablename: that.tableName,
+                        requestorid: that.oUserId || "",
+                        requestoremail: "abhinandan.d@abhiyantatech.com", // Hardcoded for testing
+                        operationtype: "BULK UPDATE",
+                        approverstage: "APPROVER",
+                        apprclass: apprClass,
+                        validrecordcount: that.validRecordCount || 0,
+                        requesterrole: that.rolename || "",
+                        approvers: [
+                            {
+                                "approverEmail": "abhinandan.d@abhiyantatech.com",
+                                "isCompleted": false,
+                                "stage": "APPROVER"
+                            }
+                        ]
+                    })
+                });
             }).then(function (oResponse) {
                 return oResponse.text().then(function (sText) {
                     if (!oResponse.ok) {

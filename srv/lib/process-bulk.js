@@ -85,7 +85,12 @@ async function processBulkData(params) {
                 if (cfg) keyWhere[kf.toUpperCase()] = splitData[cfg.Colseqno - 1] ?? '';
             }
             if (!isVersioned) keyWhere['VERSION_ACTIVE'] = 'Y';
-            const rows = await db.run(SELECT.from(entity).where(keyWhere).limit(1));
+            
+            // Map the uppercase keys to the exact entity property names
+            const { mapToEntityElements } = require('./db-dynamic');
+            const mappedWhere = mapToEntityElements(entity, keyWhere);
+            
+            const rows = await db.run(SELECT.from(entity).where(mappedWhere).limit(1));
             exists = rows.length > 0;
         }
         validData.push({ data: rowStr });
@@ -104,12 +109,9 @@ async function processBulkData(params) {
     // Submit — generate WF ID and write
     const workflowid = inputWfId || await generateWorkflowId('BULK');
     if (isVersioned) {
-        // Duplicate workflow ID check via CAP ORM
-        const entity = getEntityDef(tablename);
-        if (entity) {
-            const dup = await db.run(SELECT.from(entity).where({ WORKFLOW_ID: workflowid }).limit(1));
-            if (dup.length > 0) throw new Error(`Workflow ID ${workflowid} already in use`);
-        }
+        // Duplicate workflow ID check via checkExists (which safely falls back to raw SQL if ORM fails)
+        const dup = await checkExists(db, tablename, 'WORKFLOW_ID = ?', [workflowid]);
+        if (dup) throw new Error(`Workflow ID ${workflowid} already in use`);
     }
 
     const version = futureVersion === 'Y' ? 'F' : 'G';

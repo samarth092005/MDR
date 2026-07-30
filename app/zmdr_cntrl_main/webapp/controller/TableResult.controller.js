@@ -16,7 +16,9 @@ sap.ui.define([
     "sap/m/DatePicker",
     "sap/m/Input",
     "sap/m/ComboBox",
-    "sap/ui/core/ListItem"
+    "sap/ui/core/ListItem",
+    "sap/ushell/services/CrossApplicationNavigation",
+    "sap/ushell/services/appstate/AppState"
 ],
     function (BaseController, JSONModel, Fragment, ODataModel, Filter, FilterOperator, FilterBar, FilterGroupItem, ViewSettingsDialog, ViewSettingsItem, Spreadsheet, MessageToast, Dialog, Label, DatePicker, Input, ComboBox, ListItem) {
         "use strict";

@@ -2,9 +2,13 @@
 namespace zmdr;
 
 aspect Auditable {
-  created_on : Timestamp;  
+  @cds.on.insert: $now
+  created_on : Timestamp;
+  @cds.on.insert: $user
   created_by : String(12);
-  updated_on : Timestamp;  
+  @cds.on.insert: $now  @cds.on.update: $now
+  updated_on : Timestamp;
+  @cds.on.insert: $user @cds.on.update: $user
   updated_by : String(12);
   virtual OPERATIONTYPE : String(40);
 }
@@ -34,7 +38,7 @@ entity WFAudit {
       wfstage       : String(20);
       action        : String(20);  // INITIATED | APPROVED | REJECTED | COMPLETED
       userremarks   : String(300);
-      actioninguser : String(12);
+      actioninguser : String(255);
 }
 
 // Replaces ZMDR_MDRABAPWF  (MDR WF ID <-> BPA instance ID)

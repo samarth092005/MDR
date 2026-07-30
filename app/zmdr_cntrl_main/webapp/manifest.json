@@ -20,6 +20,7 @@
           "semanticObject": "zmdr_cntrl_main",
           "action": "display",
           "title": "Central Master Data",
+          "subTitle": "Create and maintain master data in a central location",
           "signature": {
             "parameters": {},
             "additionalParameters": "allowed"
@@ -29,6 +30,7 @@
           "semanticObject": "zmdr_central_main",
           "action": "manage",
           "title": "Central Master Data",
+          "subTitle": "Create and maintain master data in a central location",
           "signature": {
             "parameters": {},
             "additionalParameters": "allowed"

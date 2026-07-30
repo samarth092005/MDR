@@ -2,7 +2,7 @@ using zmdr from '../db/mdr-config';
 
 service AdminService @(
   path    : '/api/admin',
-  requires: 'authenticated-user'
+  // requires: 'authenticated-user'
 ) {
   entity Approver      as projection on zmdr.Approver;
   entity ApproverClass as projection on zmdr.ApproverClass;

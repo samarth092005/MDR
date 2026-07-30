@@ -4,6 +4,7 @@ const cds = require('@sap/cds');
 const bpa = require('./lib/bpa-client');
 const wfUtils = require('./lib/wf-utilities');
 const dynDb = require('./lib/db-dynamic');
+const { generateWorkflowId } = require('./lib/wf-id');
 
 module.exports = cds.service.impl(async function (srv) {
 
@@ -70,12 +71,21 @@ module.exports = cds.service.impl(async function (srv) {
             });
             
             // 2. Database Update Logic
-            if (action === 'APPROVED') {
-                console.log(`[Central] Decision APPROVED. Moving draft to live table: ${workflowid}`);
-                // TODO: Call insert.js or dynDb to promote draft to live table
+            const db = await cds.connect.to('db');
+            const { MDRWorkflowLink } = db.entities;
+            const link = await db.run(SELECT.one.from(MDRWorkflowLink).where({ mdr_workflow_id: workflowid }));
+            
+            // Use link if found, otherwise fallback to ZMDR_GLACCOUNT for the demo
+            const tablename = (link && link.tablename) ? link.tablename : 'ZMDR_GLACCOUNT';
+            
+            if (action && action.toUpperCase().includes('APPROV')) {
+                console.log(`[Central] Decision APPROVED. Moving draft to live table: ${workflowid} for ${tablename}`);
+                // Find the draft (I) and make it live (Y) AND set STATUS to ACT!
+                await dynDb.updateRow(db, tablename, { VERSION_ACTIVE: 'Y', STATUS: 'ACT' }, '"WORKFLOW_ID" = ? AND "VERSION_ACTIVE" = ?', [workflowid, 'I']);
             } else {
                 console.log(`[Central] Decision REJECTED for workflow: ${workflowid}`);
-                // TODO: Call logic to delete/mark draft as rejected
+                // Delete the rejected draft
+                await dynDb.deleteRows(db, tablename, '"WORKFLOW_ID" = ? AND "VERSION_ACTIVE" = ?', [workflowid, 'I']);
             }
             
             return { message: `Action ${action} recorded in CAP successfully`, type: 'S' };
@@ -103,9 +113,9 @@ module.exports = cds.service.impl(async function (srv) {
             req.data.VERSION_ACTIVE = 'I';
         }
         
-        // Ensure workflow ID is populated (dummy for now)
+        // Generate actual workflow ID if not populated
         if (req.target.elements.WORKFLOW_ID && !req.data.WORKFLOW_ID) {
-            req.data.WORKFLOW_ID = 'DUMMY_WF';
+            req.data.WORKFLOW_ID = await generateWorkflowId('CENTRAL');
         }
     });
 

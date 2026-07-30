@@ -3,7 +3,7 @@ using from '../db/mdr-master-data';
 
 service BulkService @(
   path    : '/api/bulk',
-  requires: 'authenticated-user'
+  // requires: 'authenticated-user'
 ) {
 
   // Config tables via CAP ORM

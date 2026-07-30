@@ -3,7 +3,6 @@ namespace zmdr;
 using zmdr.Auditable from './mdr-config';
 
 // Dummy table for GL Accounts
-@cds.persistence.table: 'ZMDR_GLACCOUNT'
 entity ZMDR_GLACCOUNT : Auditable {
   key GL_ACCOUNT         : String(10);
       COMPANY_CODE       : String(4);
@@ -18,57 +17,48 @@ entity ZMDR_GLACCOUNT : Auditable {
 }
 
 // Missing lookup tables required for validation
-@cds.persistence.table: 'ZMDXCNAPPSTATS01'
 entity ZMDXCNAPPSTATS01 : Auditable {
   key CODE           : String(10);
   key VERSION_ACTIVE : String(1);
       DESCRIPTION    : String(50);
 }
 
-@cds.persistence.table: 'ZMDR_BP_ROLE_REF'
 entity ZMDR_BP_ROLE_REF : Auditable {
   key BP_ROLE        : String(10);
   key VERSION_ACTIVE : String(1);
 }
 
-@cds.persistence.table: 'T005'
 entity T005 : Auditable {
   key LAND1          : String(3);
   key VERSION_ACTIVE : String(1);
 }
 
-@cds.persistence.table: 'T002'
 entity T002 : Auditable {
   key SPRAS          : String(2);
   key VERSION_ACTIVE : String(1);
 }
 
-@cds.persistence.table: 'TCURC'
 entity TCURC : Auditable {
   key WAERS          : String(5);
   key VERSION_ACTIVE : String(1);
 }
 
-@cds.persistence.table: 'T052'
 entity T052 : Auditable {
   key ZTERM          : String(4);
   key VERSION_ACTIVE : String(1);
 }
 
-@cds.persistence.table: 'TINC'
 entity TINC : Auditable {
   key INCO1          : String(3);
   key VERSION_ACTIVE : String(1);
 }
 
-@cds.persistence.table: 'ZMDR_BP_STATUS'
 entity ZMDR_BP_STATUS : Auditable {
   key STATUS         : String(10);
   key VERSION_ACTIVE : String(1);
 }
 
 // Dummy table for Employees
-@cds.persistence.table: 'ZMDR_EMPLOYEES'
 entity ZMDR_EMPLOYEES : Auditable {
   key EMP_ID             : String(8);
       FIRST_NAME         : String(40);
@@ -83,7 +73,6 @@ entity ZMDR_EMPLOYEES : Auditable {
 }
 
 // Dummy table for Vendors
-@cds.persistence.table: 'ZMDR_VENDORS'
 entity ZMDR_VENDORS : Auditable {
   key VENDOR_ID          : String(10);
       VENDOR_NAME        : String(80);
@@ -98,7 +87,6 @@ entity ZMDR_VENDORS : Auditable {
 }
 
 // Table for Business Partner Master Data (used by bulk load)
-@cds.persistence.table: 'ZMDR_BPMASTER'
 entity ZMDR_BPMASTER : Auditable {
   key BP_ID              : String(20);
       BP_TYPE            : String(10);

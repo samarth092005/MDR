@@ -14,6 +14,21 @@
       "version": "1.25.0",
       "toolsId": "e3d307ca-e06c-482f-a656-2a2ee2946412"
     },
+    "crossNavigation": {
+      "inbounds": {
+        "zmdr_bulkupload-manage": {
+          "semanticObject": "zmdr_bulkupload",
+          "action": "manage",
+          "title": "Bulk Upload",
+          "subTitle": "Upload master data in a central location",
+          "shortTitle": "Common Application - Do not launch directly",
+          "signature": {
+            "parameters": {},
+            "additionalParameters": "allowed"
+          }
+        }
+      }
+    },    
     "dataSources": {
       "mainService": {
         "uri": "api/bulk/",
@@ -94,6 +109,11 @@
       "css": [
         {
           "uri": "css/style.css"
+        }
+      ],
+      "js": [
+        {
+          "uri": "lib/xlsx.full.min.js"
         }
       ]
     },

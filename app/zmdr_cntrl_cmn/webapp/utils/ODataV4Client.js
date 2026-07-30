@@ -23,6 +23,12 @@ sap.ui.define([
             // Replace /odata/v2/ proxy paths with native V4 paths if present
             sUrl = sUrl.replace("/odata/v2/api/", "/api/");
 
+            // [FIXED] If the URL is an absolute path (starts with "/"), we must prepend the module path
+            // so that it gets routed properly by the SAP Fiori Launchpad Approuter!
+            if (sUrl.startsWith("/")) {
+                sUrl = sap.ui.require.toUrl("com/intapptics/zmdrcntrlcmn") + sUrl;
+            }
+
             // Initialize native V4 ODataModel
             this._oNativeV4Model = new V4ODataModel({
                 serviceUrl: sUrl,

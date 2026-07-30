@@ -52,8 +52,8 @@ async function cancelBPAWorkflow(instanceId) {
     });
 }
 
-const startBulkApprovalWorkflow = ctx => startBPAWorkflow('mdr-bulk-approval', ctx);
-const startCentralApprovalWorkflow = ctx => startBPAWorkflow('mdr-central-approval', ctx);
+const startBulkApprovalWorkflow = ctx => startBPAWorkflow('eu30.sap-btp-ais-d0a7p7v8.mdrprocessautomation.mdrbulkapproval', ctx);
+const startCentralApprovalWorkflow = ctx => startBPAWorkflow('eu30.sap-btp-ais-d0a7p7v8.mdrprocessautomation.mdrcentralapproval', ctx);
 
 module.exports = {
     startBulkApprovalWorkflow, startCentralApprovalWorkflow,

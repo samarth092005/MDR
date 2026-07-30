@@ -59,7 +59,9 @@ async function validateKeyExists(params) {
   }
 
   try {
-    const rows = await db.run(SELECT.from(entity).where(where).limit(1));
+    const { mapToEntityElements } = require('./db-dynamic');
+    const mappedWhere = mapToEntityElements(entity, where);
+    const rows = await db.run(SELECT.from(entity).where(mappedWhere).limit(1));
     return rows.length > 0;
   } catch (err) {
     console.error(`[validateKeyExists] Query failed for ${tablename}:`, err.message);

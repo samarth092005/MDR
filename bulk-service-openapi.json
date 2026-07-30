@@ -1,0 +1,5250 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Use the title annotation on your CDS service to provide a meaningful title.",
+    "description": "Use the Core.LongDescription or Core.Description annotation on your CDS service to provide a meaningful description.",
+    "version": ""
+  },
+  "x-sap-api-type": "ODATAV4",
+  "x-odata-version": "4.01",
+  "x-sap-shortText": "Use the Core.Description annotation on your CDS service to provide a meaningful short text.",
+  "servers": [
+    {
+      "url": "/api/bulk"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Bulk Hdr Config"
+    },
+    {
+      "name": "Bulk Itm Config"
+    },
+    {
+      "name": "Bulk Temp"
+    },
+    {
+      "name": "T002"
+    },
+    {
+      "name": "T005"
+    },
+    {
+      "name": "T052"
+    },
+    {
+      "name": "TCURC"
+    },
+    {
+      "name": "TINC"
+    },
+    {
+      "name": "ZMDR BP ROLE REF"
+    },
+    {
+      "name": "ZMDR BP STATUS"
+    },
+    {
+      "name": "ZMDR BPMASTER"
+    },
+    {
+      "name": "ZMDR EMPLOYEES"
+    },
+    {
+      "name": "ZMDR GLACCOUNT"
+    },
+    {
+      "name": "ZMDR VENDORS"
+    },
+    {
+      "name": "ZMDXCNAPPSTATS01"
+    }
+  ],
+  "paths": {
+    "/$batch": {
+      "post": {
+        "summary": "Sends a group of requests",
+        "description": "Group multiple requests into a single request payload, see [Batch Requests](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_BatchRequests).\n\n*Please note that \"Try it out\" is not supported for this request.*",
+        "tags": [
+          "Batch Requests"
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Batch request",
+          "content": {
+            "multipart/mixed;boundary=request-separator": {
+              "schema": {
+                "type": "string"
+              },
+              "example": "--request-separator\nContent-Type: application/http\nContent-Transfer-Encoding: binary\n\nGET BulkHdrConfig HTTP/1.1\nAccept: application/json\n\n\n--request-separator--"
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Batch response",
+            "content": {
+              "multipart/mixed": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "--response-separator\nContent-Type: application/http\n\nHTTP/1.1 200 OK\nContent-Type: application/json\n\n{...}\n--response-separator--"
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/BulkHdrConfig": {
+      "get": {
+        "summary": "Retrieves a list of bulk hdr config.",
+        "tags": [
+          "Bulk Hdr Config"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "name": "$filter",
+            "description": "Filter items by property values, see [Filtering](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionfilter)",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "name": "$orderby",
+            "description": "Order items by property values, see [Sorting](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionorderby)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_on desc",
+                  "created_by",
+                  "created_by desc",
+                  "updated_on",
+                  "updated_on desc",
+                  "updated_by",
+                  "updated_by desc",
+                  "OPERATIONTYPE",
+                  "OPERATIONTYPE desc",
+                  "TableName",
+                  "TableName desc",
+                  "RequesterRole",
+                  "RequesterRole desc",
+                  "TableDescription",
+                  "TableDescription desc",
+                  "ApprClass",
+                  "ApprClass desc",
+                  "Category",
+                  "Category desc",
+                  "Versioned",
+                  "Versioned desc",
+                  "IsFutureVersionAllowed",
+                  "IsFutureVersionAllowed desc",
+                  "IsTableLevelApproval",
+                  "IsTableLevelApproval desc",
+                  "IsOverwrireWithNull",
+                  "IsOverwrireWithNull desc",
+                  "IsWorkflowVisible",
+                  "IsWorkflowVisible desc",
+                  "IsUpdateZTableOnly",
+                  "IsUpdateZTableOnly desc"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_by",
+                  "updated_on",
+                  "updated_by",
+                  "OPERATIONTYPE",
+                  "TableName",
+                  "RequesterRole",
+                  "TableDescription",
+                  "ApprClass",
+                  "Category",
+                  "Versioned",
+                  "IsFutureVersionAllowed",
+                  "IsTableLevelApproval",
+                  "IsOverwrireWithNull",
+                  "IsWorkflowVisible",
+                  "IsUpdateZTableOnly"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved bulk hdr config",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of BulkHdrConfig",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BulkService.BulkHdrConfig"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/BulkHdrConfig(TableName='{TableName}',RequesterRole='{RequesterRole}')": {
+      "parameters": [
+        {
+          "description": "key: TableName",
+          "in": "path",
+          "name": "TableName",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 30
+          }
+        },
+        {
+          "description": "key: RequesterRole",
+          "in": "path",
+          "name": "RequesterRole",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 30
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves a single bulk hdr config.",
+        "tags": [
+          "Bulk Hdr Config"
+        ],
+        "parameters": [
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_by",
+                  "updated_on",
+                  "updated_by",
+                  "OPERATIONTYPE",
+                  "TableName",
+                  "RequesterRole",
+                  "TableDescription",
+                  "ApprClass",
+                  "Category",
+                  "Versioned",
+                  "IsFutureVersionAllowed",
+                  "IsTableLevelApproval",
+                  "IsOverwrireWithNull",
+                  "IsWorkflowVisible",
+                  "IsUpdateZTableOnly"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved bulk hdr config",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkService.BulkHdrConfig"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/BulkItmConfig": {
+      "get": {
+        "summary": "Retrieves a list of bulk itm config.",
+        "tags": [
+          "Bulk Itm Config"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "name": "$filter",
+            "description": "Filter items by property values, see [Filtering](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionfilter)",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "name": "$orderby",
+            "description": "Order items by property values, see [Sorting](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionorderby)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_on desc",
+                  "created_by",
+                  "created_by desc",
+                  "updated_on",
+                  "updated_on desc",
+                  "updated_by",
+                  "updated_by desc",
+                  "OPERATIONTYPE",
+                  "OPERATIONTYPE desc",
+                  "Tablename",
+                  "Tablename desc",
+                  "Columnname",
+                  "Columnname desc",
+                  "RequesterRole",
+                  "RequesterRole desc",
+                  "Colseqno",
+                  "Colseqno desc",
+                  "IsLookup",
+                  "IsLookup desc",
+                  "LookupTablename",
+                  "LookupTablename desc",
+                  "LookupField",
+                  "LookupField desc",
+                  "IsMatching",
+                  "IsMatching desc",
+                  "IsDateField",
+                  "IsDateField desc",
+                  "ValidationIndex",
+                  "ValidationIndex desc"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_by",
+                  "updated_on",
+                  "updated_by",
+                  "OPERATIONTYPE",
+                  "Tablename",
+                  "Columnname",
+                  "RequesterRole",
+                  "Colseqno",
+                  "IsLookup",
+                  "LookupTablename",
+                  "LookupField",
+                  "IsMatching",
+                  "IsDateField",
+                  "ValidationIndex"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved bulk itm config",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of BulkItmConfig",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BulkService.BulkItmConfig"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/BulkItmConfig(Tablename='{Tablename}',Columnname='{Columnname}',RequesterRole='{RequesterRole}')": {
+      "parameters": [
+        {
+          "description": "key: Tablename",
+          "in": "path",
+          "name": "Tablename",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 30
+          }
+        },
+        {
+          "description": "key: Columnname",
+          "in": "path",
+          "name": "Columnname",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 30
+          }
+        },
+        {
+          "description": "key: RequesterRole",
+          "in": "path",
+          "name": "RequesterRole",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 30
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves a single bulk itm config.",
+        "tags": [
+          "Bulk Itm Config"
+        ],
+        "parameters": [
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_by",
+                  "updated_on",
+                  "updated_by",
+                  "OPERATIONTYPE",
+                  "Tablename",
+                  "Columnname",
+                  "RequesterRole",
+                  "Colseqno",
+                  "IsLookup",
+                  "LookupTablename",
+                  "LookupField",
+                  "IsMatching",
+                  "IsDateField",
+                  "ValidationIndex"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved bulk itm config",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkService.BulkItmConfig"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/BulkTemp": {
+      "get": {
+        "summary": "Retrieves a list of bulk temp.",
+        "tags": [
+          "Bulk Temp"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "name": "$filter",
+            "description": "Filter items by property values, see [Filtering](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionfilter)",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "name": "$orderby",
+            "description": "Order items by property values, see [Sorting](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionorderby)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "BulkNumber",
+                  "BulkNumber desc",
+                  "Tablename",
+                  "Tablename desc",
+                  "BulkData",
+                  "BulkData desc",
+                  "WorkflowId",
+                  "WorkflowId desc",
+                  "ActionType",
+                  "ActionType desc",
+                  "InitiationDate",
+                  "InitiationDate desc",
+                  "RequestStatus",
+                  "RequestStatus desc"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "BulkNumber",
+                  "Tablename",
+                  "BulkData",
+                  "WorkflowId",
+                  "ActionType",
+                  "InitiationDate",
+                  "RequestStatus"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved bulk temp",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of BulkTemp",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BulkService.BulkTemp"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      },
+      "post": {
+        "summary": "Creates a single bulk temp.",
+        "tags": [
+          "Bulk Temp"
+        ],
+        "requestBody": {
+          "description": "New bulk temp",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkService.BulkTemp-create"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created bulk temp",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkService.BulkTemp"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/BulkTemp({BulkNumber})": {
+      "parameters": [
+        {
+          "description": "key: BulkNumber",
+          "in": "path",
+          "name": "BulkNumber",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves a single bulk temp.",
+        "tags": [
+          "Bulk Temp"
+        ],
+        "parameters": [
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "BulkNumber",
+                  "Tablename",
+                  "BulkData",
+                  "WorkflowId",
+                  "ActionType",
+                  "InitiationDate",
+                  "RequestStatus"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved bulk temp",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkService.BulkTemp"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Changes a single bulk temp.",
+        "tags": [
+          "Bulk Temp"
+        ],
+        "requestBody": {
+          "description": "New property values",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkService.BulkTemp-update"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Success"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Deletes a single bulk temp.",
+        "tags": [
+          "Bulk Temp"
+        ],
+        "responses": {
+          "204": {
+            "description": "Success"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/T002": {
+      "get": {
+        "summary": "Retrieves a list of T002.",
+        "tags": [
+          "T002"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "name": "$filter",
+            "description": "Filter items by property values, see [Filtering](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionfilter)",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "name": "$orderby",
+            "description": "Order items by property values, see [Sorting](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionorderby)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_on desc",
+                  "created_by",
+                  "created_by desc",
+                  "updated_on",
+                  "updated_on desc",
+                  "updated_by",
+                  "updated_by desc",
+                  "OPERATIONTYPE",
+                  "OPERATIONTYPE desc",
+                  "SPRAS",
+                  "SPRAS desc",
+                  "VERSION_ACTIVE",
+                  "VERSION_ACTIVE desc"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_by",
+                  "updated_on",
+                  "updated_by",
+                  "OPERATIONTYPE",
+                  "SPRAS",
+                  "VERSION_ACTIVE"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved T002",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of T002",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BulkService.T002"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/T002(SPRAS='{SPRAS}',VERSION_ACTIVE='{VERSION_ACTIVE}')": {
+      "parameters": [
+        {
+          "description": "key: SPRAS",
+          "in": "path",
+          "name": "SPRAS",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 2
+          }
+        },
+        {
+          "description": "key: VERSION_ACTIVE",
+          "in": "path",
+          "name": "VERSION_ACTIVE",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 1
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves a single T002.",
+        "tags": [
+          "T002"
+        ],
+        "parameters": [
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_by",
+                  "updated_on",
+                  "updated_by",
+                  "OPERATIONTYPE",
+                  "SPRAS",
+                  "VERSION_ACTIVE"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved T002",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkService.T002"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/T005": {
+      "get": {
+        "summary": "Retrieves a list of T005.",
+        "tags": [
+          "T005"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "name": "$filter",
+            "description": "Filter items by property values, see [Filtering](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionfilter)",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "name": "$orderby",
+            "description": "Order items by property values, see [Sorting](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionorderby)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_on desc",
+                  "created_by",
+                  "created_by desc",
+                  "updated_on",
+                  "updated_on desc",
+                  "updated_by",
+                  "updated_by desc",
+                  "OPERATIONTYPE",
+                  "OPERATIONTYPE desc",
+                  "LAND1",
+                  "LAND1 desc",
+                  "VERSION_ACTIVE",
+                  "VERSION_ACTIVE desc"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_by",
+                  "updated_on",
+                  "updated_by",
+                  "OPERATIONTYPE",
+                  "LAND1",
+                  "VERSION_ACTIVE"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved T005",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of T005",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BulkService.T005"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/T005(LAND1='{LAND1}',VERSION_ACTIVE='{VERSION_ACTIVE}')": {
+      "parameters": [
+        {
+          "description": "key: LAND1",
+          "in": "path",
+          "name": "LAND1",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 3
+          }
+        },
+        {
+          "description": "key: VERSION_ACTIVE",
+          "in": "path",
+          "name": "VERSION_ACTIVE",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 1
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves a single T005.",
+        "tags": [
+          "T005"
+        ],
+        "parameters": [
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_by",
+                  "updated_on",
+                  "updated_by",
+                  "OPERATIONTYPE",
+                  "LAND1",
+                  "VERSION_ACTIVE"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved T005",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkService.T005"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/T052": {
+      "get": {
+        "summary": "Retrieves a list of T052.",
+        "tags": [
+          "T052"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "name": "$filter",
+            "description": "Filter items by property values, see [Filtering](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionfilter)",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "name": "$orderby",
+            "description": "Order items by property values, see [Sorting](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionorderby)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_on desc",
+                  "created_by",
+                  "created_by desc",
+                  "updated_on",
+                  "updated_on desc",
+                  "updated_by",
+                  "updated_by desc",
+                  "OPERATIONTYPE",
+                  "OPERATIONTYPE desc",
+                  "ZTERM",
+                  "ZTERM desc",
+                  "VERSION_ACTIVE",
+                  "VERSION_ACTIVE desc"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_by",
+                  "updated_on",
+                  "updated_by",
+                  "OPERATIONTYPE",
+                  "ZTERM",
+                  "VERSION_ACTIVE"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved T052",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of T052",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BulkService.T052"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/T052(ZTERM='{ZTERM}',VERSION_ACTIVE='{VERSION_ACTIVE}')": {
+      "parameters": [
+        {
+          "description": "key: ZTERM",
+          "in": "path",
+          "name": "ZTERM",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 4
+          }
+        },
+        {
+          "description": "key: VERSION_ACTIVE",
+          "in": "path",
+          "name": "VERSION_ACTIVE",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 1
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves a single T052.",
+        "tags": [
+          "T052"
+        ],
+        "parameters": [
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_by",
+                  "updated_on",
+                  "updated_by",
+                  "OPERATIONTYPE",
+                  "ZTERM",
+                  "VERSION_ACTIVE"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved T052",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkService.T052"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/TCURC": {
+      "get": {
+        "summary": "Retrieves a list of TCURC.",
+        "tags": [
+          "TCURC"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "name": "$filter",
+            "description": "Filter items by property values, see [Filtering](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionfilter)",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "name": "$orderby",
+            "description": "Order items by property values, see [Sorting](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionorderby)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_on desc",
+                  "created_by",
+                  "created_by desc",
+                  "updated_on",
+                  "updated_on desc",
+                  "updated_by",
+                  "updated_by desc",
+                  "OPERATIONTYPE",
+                  "OPERATIONTYPE desc",
+                  "WAERS",
+                  "WAERS desc",
+                  "VERSION_ACTIVE",
+                  "VERSION_ACTIVE desc"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_by",
+                  "updated_on",
+                  "updated_by",
+                  "OPERATIONTYPE",
+                  "WAERS",
+                  "VERSION_ACTIVE"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved TCURC",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of TCURC",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BulkService.TCURC"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/TCURC(WAERS='{WAERS}',VERSION_ACTIVE='{VERSION_ACTIVE}')": {
+      "parameters": [
+        {
+          "description": "key: WAERS",
+          "in": "path",
+          "name": "WAERS",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 5
+          }
+        },
+        {
+          "description": "key: VERSION_ACTIVE",
+          "in": "path",
+          "name": "VERSION_ACTIVE",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 1
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves a single TCURC.",
+        "tags": [
+          "TCURC"
+        ],
+        "parameters": [
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_by",
+                  "updated_on",
+                  "updated_by",
+                  "OPERATIONTYPE",
+                  "WAERS",
+                  "VERSION_ACTIVE"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved TCURC",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkService.TCURC"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/TINC": {
+      "get": {
+        "summary": "Retrieves a list of TINC.",
+        "tags": [
+          "TINC"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "name": "$filter",
+            "description": "Filter items by property values, see [Filtering](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionfilter)",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "name": "$orderby",
+            "description": "Order items by property values, see [Sorting](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionorderby)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_on desc",
+                  "created_by",
+                  "created_by desc",
+                  "updated_on",
+                  "updated_on desc",
+                  "updated_by",
+                  "updated_by desc",
+                  "OPERATIONTYPE",
+                  "OPERATIONTYPE desc",
+                  "INCO1",
+                  "INCO1 desc",
+                  "VERSION_ACTIVE",
+                  "VERSION_ACTIVE desc"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_by",
+                  "updated_on",
+                  "updated_by",
+                  "OPERATIONTYPE",
+                  "INCO1",
+                  "VERSION_ACTIVE"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved TINC",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of TINC",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BulkService.TINC"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/TINC(INCO1='{INCO1}',VERSION_ACTIVE='{VERSION_ACTIVE}')": {
+      "parameters": [
+        {
+          "description": "key: INCO1",
+          "in": "path",
+          "name": "INCO1",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 3
+          }
+        },
+        {
+          "description": "key: VERSION_ACTIVE",
+          "in": "path",
+          "name": "VERSION_ACTIVE",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 1
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves a single TINC.",
+        "tags": [
+          "TINC"
+        ],
+        "parameters": [
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_by",
+                  "updated_on",
+                  "updated_by",
+                  "OPERATIONTYPE",
+                  "INCO1",
+                  "VERSION_ACTIVE"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved TINC",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkService.TINC"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/ZMDR_BPMASTER": {
+      "get": {
+        "summary": "Retrieves a list of ZMDR BPMASTER.",
+        "tags": [
+          "ZMDR BPMASTER"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "name": "$filter",
+            "description": "Filter items by property values, see [Filtering](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionfilter)",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "name": "$orderby",
+            "description": "Order items by property values, see [Sorting](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionorderby)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_on desc",
+                  "created_by",
+                  "created_by desc",
+                  "updated_on",
+                  "updated_on desc",
+                  "updated_by",
+                  "updated_by desc",
+                  "OPERATIONTYPE",
+                  "OPERATIONTYPE desc",
+                  "BP_ID",
+                  "BP_ID desc",
+                  "BP_TYPE",
+                  "BP_TYPE desc",
+                  "BP_ROLE",
+                  "BP_ROLE desc",
+                  "CUSTOMER_NO",
+                  "CUSTOMER_NO desc",
+                  "LEGAL_NAME",
+                  "LEGAL_NAME desc",
+                  "TRADE_NAME",
+                  "TRADE_NAME desc",
+                  "INDUSTRY",
+                  "INDUSTRY desc",
+                  "BP_CATEGORY",
+                  "BP_CATEGORY desc",
+                  "COUNTRY",
+                  "COUNTRY desc",
+                  "REGION",
+                  "REGION desc",
+                  "CITY",
+                  "CITY desc",
+                  "POSTAL_CODE",
+                  "POSTAL_CODE desc",
+                  "STREET",
+                  "STREET desc",
+                  "PO_BOX",
+                  "PO_BOX desc",
+                  "LANGUAGE",
+                  "LANGUAGE desc",
+                  "TEL_NO",
+                  "TEL_NO desc",
+                  "FAX_NO",
+                  "FAX_NO desc",
+                  "EMAIL",
+                  "EMAIL desc",
+                  "WEBSITE",
+                  "WEBSITE desc",
+                  "CURRENCY",
+                  "CURRENCY desc",
+                  "CREDIT_LIMIT",
+                  "CREDIT_LIMIT desc",
+                  "CREDIT_CTRL_AREA",
+                  "CREDIT_CTRL_AREA desc",
+                  "PAYMENT_TERMS",
+                  "PAYMENT_TERMS desc",
+                  "INCOTERMS",
+                  "INCOTERMS desc",
+                  "INCOTERMS2",
+                  "INCOTERMS2 desc",
+                  "TAX_ID",
+                  "TAX_ID desc",
+                  "TAX_CATEGORY",
+                  "TAX_CATEGORY desc",
+                  "SALES_ORG",
+                  "SALES_ORG desc",
+                  "DIST_CHANNEL",
+                  "DIST_CHANNEL desc",
+                  "DIVISION",
+                  "DIVISION desc",
+                  "CUST_GRP",
+                  "CUST_GRP desc",
+                  "PRICE_LIST",
+                  "PRICE_LIST desc",
+                  "BP_STATUS",
+                  "BP_STATUS desc",
+                  "BLOCK_REASON",
+                  "BLOCK_REASON desc",
+                  "VALID_FROM",
+                  "VALID_FROM desc",
+                  "VALID_TO",
+                  "VALID_TO desc",
+                  "NOTES",
+                  "NOTES desc",
+                  "STATUS",
+                  "STATUS desc",
+                  "WORKFLOW_ID",
+                  "WORKFLOW_ID desc",
+                  "VERSION_ACTIVE",
+                  "VERSION_ACTIVE desc",
+                  "VERSION_START_DATE",
+                  "VERSION_START_DATE desc",
+                  "VERSION_END_DATE",
+                  "VERSION_END_DATE desc"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_by",
+                  "updated_on",
+                  "updated_by",
+                  "OPERATIONTYPE",
+                  "BP_ID",
+                  "BP_TYPE",
+                  "BP_ROLE",
+                  "CUSTOMER_NO",
+                  "LEGAL_NAME",
+                  "TRADE_NAME",
+                  "INDUSTRY",
+                  "BP_CATEGORY",
+                  "COUNTRY",
+                  "REGION",
+                  "CITY",
+                  "POSTAL_CODE",
+                  "STREET",
+                  "PO_BOX",
+                  "LANGUAGE",
+                  "TEL_NO",
+                  "FAX_NO",
+                  "EMAIL",
+                  "WEBSITE",
+                  "CURRENCY",
+                  "CREDIT_LIMIT",
+                  "CREDIT_CTRL_AREA",
+                  "PAYMENT_TERMS",
+                  "INCOTERMS",
+                  "INCOTERMS2",
+                  "TAX_ID",
+                  "TAX_CATEGORY",
+                  "SALES_ORG",
+                  "DIST_CHANNEL",
+                  "DIVISION",
+                  "CUST_GRP",
+                  "PRICE_LIST",
+                  "BP_STATUS",
+                  "BLOCK_REASON",
+                  "VALID_FROM",
+                  "VALID_TO",
+                  "NOTES",
+                  "STATUS",
+                  "WORKFLOW_ID",
+                  "VERSION_ACTIVE",
+                  "VERSION_START_DATE",
+                  "VERSION_END_DATE"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved ZMDR BPMASTER",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of ZMDR_BPMASTER",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BulkService.ZMDR_BPMASTER"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/ZMDR_BPMASTER(BP_ID='{BP_ID}',VERSION_ACTIVE='{VERSION_ACTIVE}')": {
+      "parameters": [
+        {
+          "description": "key: BP_ID",
+          "in": "path",
+          "name": "BP_ID",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 20
+          }
+        },
+        {
+          "description": "key: VERSION_ACTIVE",
+          "in": "path",
+          "name": "VERSION_ACTIVE",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 1
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves a single ZMDR BPMASTER.",
+        "tags": [
+          "ZMDR BPMASTER"
+        ],
+        "parameters": [
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_by",
+                  "updated_on",
+                  "updated_by",
+                  "OPERATIONTYPE",
+                  "BP_ID",
+                  "BP_TYPE",
+                  "BP_ROLE",
+                  "CUSTOMER_NO",
+                  "LEGAL_NAME",
+                  "TRADE_NAME",
+                  "INDUSTRY",
+                  "BP_CATEGORY",
+                  "COUNTRY",
+                  "REGION",
+                  "CITY",
+                  "POSTAL_CODE",
+                  "STREET",
+                  "PO_BOX",
+                  "LANGUAGE",
+                  "TEL_NO",
+                  "FAX_NO",
+                  "EMAIL",
+                  "WEBSITE",
+                  "CURRENCY",
+                  "CREDIT_LIMIT",
+                  "CREDIT_CTRL_AREA",
+                  "PAYMENT_TERMS",
+                  "INCOTERMS",
+                  "INCOTERMS2",
+                  "TAX_ID",
+                  "TAX_CATEGORY",
+                  "SALES_ORG",
+                  "DIST_CHANNEL",
+                  "DIVISION",
+                  "CUST_GRP",
+                  "PRICE_LIST",
+                  "BP_STATUS",
+                  "BLOCK_REASON",
+                  "VALID_FROM",
+                  "VALID_TO",
+                  "NOTES",
+                  "STATUS",
+                  "WORKFLOW_ID",
+                  "VERSION_ACTIVE",
+                  "VERSION_START_DATE",
+                  "VERSION_END_DATE"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved ZMDR BPMASTER",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkService.ZMDR_BPMASTER"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/ZMDR_BP_ROLE_REF": {
+      "get": {
+        "summary": "Retrieves a list of ZMDR BP ROLE REF.",
+        "tags": [
+          "ZMDR BP ROLE REF"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "name": "$filter",
+            "description": "Filter items by property values, see [Filtering](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionfilter)",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "name": "$orderby",
+            "description": "Order items by property values, see [Sorting](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionorderby)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_on desc",
+                  "created_by",
+                  "created_by desc",
+                  "updated_on",
+                  "updated_on desc",
+                  "updated_by",
+                  "updated_by desc",
+                  "OPERATIONTYPE",
+                  "OPERATIONTYPE desc",
+                  "BP_ROLE",
+                  "BP_ROLE desc",
+                  "VERSION_ACTIVE",
+                  "VERSION_ACTIVE desc"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_by",
+                  "updated_on",
+                  "updated_by",
+                  "OPERATIONTYPE",
+                  "BP_ROLE",
+                  "VERSION_ACTIVE"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved ZMDR BP ROLE REF",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of ZMDR_BP_ROLE_REF",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BulkService.ZMDR_BP_ROLE_REF"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/ZMDR_BP_ROLE_REF(BP_ROLE='{BP_ROLE}',VERSION_ACTIVE='{VERSION_ACTIVE}')": {
+      "parameters": [
+        {
+          "description": "key: BP_ROLE",
+          "in": "path",
+          "name": "BP_ROLE",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 10
+          }
+        },
+        {
+          "description": "key: VERSION_ACTIVE",
+          "in": "path",
+          "name": "VERSION_ACTIVE",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 1
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves a single ZMDR BP ROLE REF.",
+        "tags": [
+          "ZMDR BP ROLE REF"
+        ],
+        "parameters": [
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_by",
+                  "updated_on",
+                  "updated_by",
+                  "OPERATIONTYPE",
+                  "BP_ROLE",
+                  "VERSION_ACTIVE"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved ZMDR BP ROLE REF",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkService.ZMDR_BP_ROLE_REF"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/ZMDR_BP_STATUS": {
+      "get": {
+        "summary": "Retrieves a list of ZMDR BP STATUS.",
+        "tags": [
+          "ZMDR BP STATUS"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "name": "$filter",
+            "description": "Filter items by property values, see [Filtering](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionfilter)",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "name": "$orderby",
+            "description": "Order items by property values, see [Sorting](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionorderby)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_on desc",
+                  "created_by",
+                  "created_by desc",
+                  "updated_on",
+                  "updated_on desc",
+                  "updated_by",
+                  "updated_by desc",
+                  "OPERATIONTYPE",
+                  "OPERATIONTYPE desc",
+                  "STATUS",
+                  "STATUS desc",
+                  "VERSION_ACTIVE",
+                  "VERSION_ACTIVE desc"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_by",
+                  "updated_on",
+                  "updated_by",
+                  "OPERATIONTYPE",
+                  "STATUS",
+                  "VERSION_ACTIVE"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved ZMDR BP STATUS",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of ZMDR_BP_STATUS",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BulkService.ZMDR_BP_STATUS"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/ZMDR_BP_STATUS(STATUS='{STATUS}',VERSION_ACTIVE='{VERSION_ACTIVE}')": {
+      "parameters": [
+        {
+          "description": "key: STATUS",
+          "in": "path",
+          "name": "STATUS",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 10
+          }
+        },
+        {
+          "description": "key: VERSION_ACTIVE",
+          "in": "path",
+          "name": "VERSION_ACTIVE",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 1
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves a single ZMDR BP STATUS.",
+        "tags": [
+          "ZMDR BP STATUS"
+        ],
+        "parameters": [
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_by",
+                  "updated_on",
+                  "updated_by",
+                  "OPERATIONTYPE",
+                  "STATUS",
+                  "VERSION_ACTIVE"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved ZMDR BP STATUS",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkService.ZMDR_BP_STATUS"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/ZMDR_EMPLOYEES": {
+      "get": {
+        "summary": "Retrieves a list of ZMDR EMPLOYEES.",
+        "tags": [
+          "ZMDR EMPLOYEES"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "name": "$filter",
+            "description": "Filter items by property values, see [Filtering](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionfilter)",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "name": "$orderby",
+            "description": "Order items by property values, see [Sorting](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionorderby)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_on desc",
+                  "created_by",
+                  "created_by desc",
+                  "updated_on",
+                  "updated_on desc",
+                  "updated_by",
+                  "updated_by desc",
+                  "OPERATIONTYPE",
+                  "OPERATIONTYPE desc",
+                  "EMP_ID",
+                  "EMP_ID desc",
+                  "FIRST_NAME",
+                  "FIRST_NAME desc",
+                  "LAST_NAME",
+                  "LAST_NAME desc",
+                  "DEPARTMENT",
+                  "DEPARTMENT desc",
+                  "DESIGNATION",
+                  "DESIGNATION desc",
+                  "STATUS",
+                  "STATUS desc",
+                  "WORKFLOW_ID",
+                  "WORKFLOW_ID desc",
+                  "VERSION_ACTIVE",
+                  "VERSION_ACTIVE desc",
+                  "VERSION_START_DATE",
+                  "VERSION_START_DATE desc",
+                  "VERSION_END_DATE",
+                  "VERSION_END_DATE desc"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_by",
+                  "updated_on",
+                  "updated_by",
+                  "OPERATIONTYPE",
+                  "EMP_ID",
+                  "FIRST_NAME",
+                  "LAST_NAME",
+                  "DEPARTMENT",
+                  "DESIGNATION",
+                  "STATUS",
+                  "WORKFLOW_ID",
+                  "VERSION_ACTIVE",
+                  "VERSION_START_DATE",
+                  "VERSION_END_DATE"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved ZMDR EMPLOYEES",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of ZMDR_EMPLOYEES",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BulkService.ZMDR_EMPLOYEES"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/ZMDR_EMPLOYEES(EMP_ID='{EMP_ID}',VERSION_ACTIVE='{VERSION_ACTIVE}')": {
+      "parameters": [
+        {
+          "description": "key: EMP_ID",
+          "in": "path",
+          "name": "EMP_ID",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 8
+          }
+        },
+        {
+          "description": "key: VERSION_ACTIVE",
+          "in": "path",
+          "name": "VERSION_ACTIVE",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 1
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves a single ZMDR EMPLOYEE.",
+        "tags": [
+          "ZMDR EMPLOYEES"
+        ],
+        "parameters": [
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_by",
+                  "updated_on",
+                  "updated_by",
+                  "OPERATIONTYPE",
+                  "EMP_ID",
+                  "FIRST_NAME",
+                  "LAST_NAME",
+                  "DEPARTMENT",
+                  "DESIGNATION",
+                  "STATUS",
+                  "WORKFLOW_ID",
+                  "VERSION_ACTIVE",
+                  "VERSION_START_DATE",
+                  "VERSION_END_DATE"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved ZMDR EMPLOYEE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkService.ZMDR_EMPLOYEES"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/ZMDR_GLACCOUNT": {
+      "get": {
+        "summary": "Retrieves a list of ZMDR GLACCOUNT.",
+        "tags": [
+          "ZMDR GLACCOUNT"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "name": "$filter",
+            "description": "Filter items by property values, see [Filtering](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionfilter)",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "name": "$orderby",
+            "description": "Order items by property values, see [Sorting](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionorderby)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_on desc",
+                  "created_by",
+                  "created_by desc",
+                  "updated_on",
+                  "updated_on desc",
+                  "updated_by",
+                  "updated_by desc",
+                  "OPERATIONTYPE",
+                  "OPERATIONTYPE desc",
+                  "GL_ACCOUNT",
+                  "GL_ACCOUNT desc",
+                  "COMPANY_CODE",
+                  "COMPANY_CODE desc",
+                  "ACCOUNT_DESC",
+                  "ACCOUNT_DESC desc",
+                  "ACCOUNT_TYPE",
+                  "ACCOUNT_TYPE desc",
+                  "CURRENCY",
+                  "CURRENCY desc",
+                  "STATUS",
+                  "STATUS desc",
+                  "WORKFLOW_ID",
+                  "WORKFLOW_ID desc",
+                  "VERSION_ACTIVE",
+                  "VERSION_ACTIVE desc",
+                  "VERSION_START_DATE",
+                  "VERSION_START_DATE desc",
+                  "VERSION_END_DATE",
+                  "VERSION_END_DATE desc"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_by",
+                  "updated_on",
+                  "updated_by",
+                  "OPERATIONTYPE",
+                  "GL_ACCOUNT",
+                  "COMPANY_CODE",
+                  "ACCOUNT_DESC",
+                  "ACCOUNT_TYPE",
+                  "CURRENCY",
+                  "STATUS",
+                  "WORKFLOW_ID",
+                  "VERSION_ACTIVE",
+                  "VERSION_START_DATE",
+                  "VERSION_END_DATE"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved ZMDR GLACCOUNT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of ZMDR_GLACCOUNT",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BulkService.ZMDR_GLACCOUNT"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/ZMDR_GLACCOUNT(GL_ACCOUNT='{GL_ACCOUNT}',VERSION_ACTIVE='{VERSION_ACTIVE}')": {
+      "parameters": [
+        {
+          "description": "key: GL_ACCOUNT",
+          "in": "path",
+          "name": "GL_ACCOUNT",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 10
+          }
+        },
+        {
+          "description": "key: VERSION_ACTIVE",
+          "in": "path",
+          "name": "VERSION_ACTIVE",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 1
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves a single ZMDR GLACCOUNT.",
+        "tags": [
+          "ZMDR GLACCOUNT"
+        ],
+        "parameters": [
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_by",
+                  "updated_on",
+                  "updated_by",
+                  "OPERATIONTYPE",
+                  "GL_ACCOUNT",
+                  "COMPANY_CODE",
+                  "ACCOUNT_DESC",
+                  "ACCOUNT_TYPE",
+                  "CURRENCY",
+                  "STATUS",
+                  "WORKFLOW_ID",
+                  "VERSION_ACTIVE",
+                  "VERSION_START_DATE",
+                  "VERSION_END_DATE"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved ZMDR GLACCOUNT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkService.ZMDR_GLACCOUNT"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/ZMDR_VENDORS": {
+      "get": {
+        "summary": "Retrieves a list of ZMDR VENDORS.",
+        "tags": [
+          "ZMDR VENDORS"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "name": "$filter",
+            "description": "Filter items by property values, see [Filtering](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionfilter)",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "name": "$orderby",
+            "description": "Order items by property values, see [Sorting](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionorderby)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_on desc",
+                  "created_by",
+                  "created_by desc",
+                  "updated_on",
+                  "updated_on desc",
+                  "updated_by",
+                  "updated_by desc",
+                  "OPERATIONTYPE",
+                  "OPERATIONTYPE desc",
+                  "VENDOR_ID",
+                  "VENDOR_ID desc",
+                  "VENDOR_NAME",
+                  "VENDOR_NAME desc",
+                  "COUNTRY",
+                  "COUNTRY desc",
+                  "PAYMENT_TERMS",
+                  "PAYMENT_TERMS desc",
+                  "CURRENCY",
+                  "CURRENCY desc",
+                  "STATUS",
+                  "STATUS desc",
+                  "WORKFLOW_ID",
+                  "WORKFLOW_ID desc",
+                  "VERSION_ACTIVE",
+                  "VERSION_ACTIVE desc",
+                  "VERSION_START_DATE",
+                  "VERSION_START_DATE desc",
+                  "VERSION_END_DATE",
+                  "VERSION_END_DATE desc"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_by",
+                  "updated_on",
+                  "updated_by",
+                  "OPERATIONTYPE",
+                  "VENDOR_ID",
+                  "VENDOR_NAME",
+                  "COUNTRY",
+                  "PAYMENT_TERMS",
+                  "CURRENCY",
+                  "STATUS",
+                  "WORKFLOW_ID",
+                  "VERSION_ACTIVE",
+                  "VERSION_START_DATE",
+                  "VERSION_END_DATE"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved ZMDR VENDORS",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of ZMDR_VENDORS",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BulkService.ZMDR_VENDORS"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/ZMDR_VENDORS(VENDOR_ID='{VENDOR_ID}',VERSION_ACTIVE='{VERSION_ACTIVE}')": {
+      "parameters": [
+        {
+          "description": "key: VENDOR_ID",
+          "in": "path",
+          "name": "VENDOR_ID",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 10
+          }
+        },
+        {
+          "description": "key: VERSION_ACTIVE",
+          "in": "path",
+          "name": "VERSION_ACTIVE",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 1
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves a single ZMDR VENDOR.",
+        "tags": [
+          "ZMDR VENDORS"
+        ],
+        "parameters": [
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_by",
+                  "updated_on",
+                  "updated_by",
+                  "OPERATIONTYPE",
+                  "VENDOR_ID",
+                  "VENDOR_NAME",
+                  "COUNTRY",
+                  "PAYMENT_TERMS",
+                  "CURRENCY",
+                  "STATUS",
+                  "WORKFLOW_ID",
+                  "VERSION_ACTIVE",
+                  "VERSION_START_DATE",
+                  "VERSION_END_DATE"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved ZMDR VENDOR",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkService.ZMDR_VENDORS"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/ZMDXCNAPPSTATS01": {
+      "get": {
+        "summary": "Retrieves a list of ZMDXCNAPPSTATS01.",
+        "tags": [
+          "ZMDXCNAPPSTATS01"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "name": "$filter",
+            "description": "Filter items by property values, see [Filtering](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionfilter)",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "name": "$orderby",
+            "description": "Order items by property values, see [Sorting](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionorderby)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_on desc",
+                  "created_by",
+                  "created_by desc",
+                  "updated_on",
+                  "updated_on desc",
+                  "updated_by",
+                  "updated_by desc",
+                  "OPERATIONTYPE",
+                  "OPERATIONTYPE desc",
+                  "CODE",
+                  "CODE desc",
+                  "VERSION_ACTIVE",
+                  "VERSION_ACTIVE desc",
+                  "DESCRIPTION",
+                  "DESCRIPTION desc"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_by",
+                  "updated_on",
+                  "updated_by",
+                  "OPERATIONTYPE",
+                  "CODE",
+                  "VERSION_ACTIVE",
+                  "DESCRIPTION"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved ZMDXCNAPPSTATS01",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of ZMDXCNAPPSTATS01",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BulkService.ZMDXCNAPPSTATS01"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/ZMDXCNAPPSTATS01(CODE='{CODE}',VERSION_ACTIVE='{VERSION_ACTIVE}')": {
+      "parameters": [
+        {
+          "description": "key: CODE",
+          "in": "path",
+          "name": "CODE",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 10
+          }
+        },
+        {
+          "description": "key: VERSION_ACTIVE",
+          "in": "path",
+          "name": "VERSION_ACTIVE",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 1
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves a single ZMDXCNAPPSTATS01.",
+        "tags": [
+          "ZMDXCNAPPSTATS01"
+        ],
+        "parameters": [
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "created_on",
+                  "created_by",
+                  "updated_on",
+                  "updated_by",
+                  "OPERATIONTYPE",
+                  "CODE",
+                  "VERSION_ACTIVE",
+                  "DESCRIPTION"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved ZMDXCNAPPSTATS01",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkService.ZMDXCNAPPSTATS01"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/generateWorkflowId": {
+      "post": {
+        "summary": "Invokes action generateWorkflowId",
+        "tags": [
+          "Service Operations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BulkService.return_BulkService_generateWorkflowId"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "requestBody": {
+          "description": "Action parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "appname": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/getApprovers": {
+      "post": {
+        "summary": "Invokes action getApprovers",
+        "tags": [
+          "Service Operations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BulkService.return_BulkService_getApprovers"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "requestBody": {
+          "description": "Action parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "appidentifier": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "system": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "subclass": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "hierarchy": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "requesterid": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "processid": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "tablename": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "saprole": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/getBulkRequestData": {
+      "post": {
+        "summary": "Invokes action getBulkRequestData",
+        "tags": [
+          "Service Operations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BulkService.return_BulkService_getBulkRequestData"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "requestBody": {
+          "description": "Action parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tablename": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "workflowid": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "versionactive": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "wfstage": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "action": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "uniquewf": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "requesterrole": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/insertWFAudit": {
+      "post": {
+        "summary": "Invokes action insertWFAudit",
+        "tags": [
+          "Service Operations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BulkService.return_BulkService_insertWFAudit"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "requestBody": {
+          "description": "Action parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "audit": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/BulkService.ap_BulkService_insertWFAudit_audit"
+                      }
+                    ],
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/submitBulkData": {
+      "post": {
+        "summary": "Invokes action submitBulkData",
+        "tags": [
+          "Service Operations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BulkService.return_BulkService_submitBulkData"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "requestBody": {
+          "description": "Action parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tablename": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "requesterrole": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "validData": {
+                    "type": "array",
+                    "items": {
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/BulkService.ap_BulkService_submitBulkData_validData"
+                        }
+                      ],
+                      "nullable": true
+                    }
+                  },
+                  "overwriteWithNull": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "futureVersion": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "workflowid": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "remarks": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/takeActionBulk": {
+      "post": {
+        "summary": "Invokes action takeActionBulk",
+        "tags": [
+          "Service Operations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BulkService.return_BulkService_takeActionBulk"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "requestBody": {
+          "description": "Action parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tablename": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "workflowid": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "wfstage": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "action": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "version": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "requesterrole": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "bpaInstanceId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "approverremarks": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "isOverwriteNull": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/triggerBulkWorkflow": {
+      "post": {
+        "summary": "Invokes action triggerBulkWorkflow",
+        "tags": [
+          "Service Operations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BulkService.return_BulkService_triggerBulkWorkflow"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "requestBody": {
+          "description": "Action parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "workflowid": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "tablename": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "entityname": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "requestorid": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "requestoremail": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "operationtype": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "approverstage": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "apprclass": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "validrecordcount": {
+                    "type": "integer",
+                    "format": "int32",
+                    "nullable": true
+                  },
+                  "requesterrole": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/validateBulkData": {
+      "post": {
+        "summary": "Invokes action validateBulkData",
+        "tags": [
+          "Service Operations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BulkService.return_BulkService_validateBulkData"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "requestBody": {
+          "description": "Action parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tablename": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "requesterrole": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "rowData": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "nullable": true
+                    }
+                  },
+                  "overwriteWithNull": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "futureVersion": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "workflowid": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BulkService.BulkHdrConfig": {
+        "title": "BulkHdrConfig",
+        "type": "object",
+        "properties": {
+          "created_on": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "created_by": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true
+          },
+          "updated_on": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "updated_by": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true
+          },
+          "OPERATIONTYPE": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "TableName": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "RequesterRole": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "TableDescription": {
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "ApprClass": {
+            "type": "string",
+            "maxLength": 60,
+            "nullable": true
+          },
+          "Category": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          },
+          "Versioned": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "IsFutureVersionAllowed": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "IsTableLevelApproval": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "IsOverwrireWithNull": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "IsWorkflowVisible": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "IsUpdateZTableOnly": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          }
+        }
+      },
+      "BulkService.BulkItmConfig": {
+        "title": "BulkItmConfig",
+        "type": "object",
+        "properties": {
+          "created_on": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "created_by": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true
+          },
+          "updated_on": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "updated_by": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true
+          },
+          "OPERATIONTYPE": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "Tablename": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "Columnname": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "RequesterRole": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "Colseqno": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "IsLookup": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "LookupTablename": {
+            "type": "string",
+            "maxLength": 30,
+            "nullable": true
+          },
+          "LookupField": {
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "IsMatching": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "IsDateField": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "ValidationIndex": {
+            "type": "string",
+            "maxLength": 50,
+            "nullable": true
+          }
+        }
+      },
+      "BulkService.BulkTemp": {
+        "title": "BulkTemp",
+        "type": "object",
+        "properties": {
+          "BulkNumber": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef"
+          },
+          "Tablename": {
+            "type": "string",
+            "maxLength": 30,
+            "nullable": true
+          },
+          "BulkData": {
+            "type": "string",
+            "nullable": true
+          },
+          "WorkflowId": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "ActionType": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          },
+          "InitiationDate": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "RequestStatus": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          }
+        }
+      },
+      "BulkService.BulkTemp-create": {
+        "title": "BulkTemp (for create)",
+        "type": "object",
+        "properties": {
+          "BulkNumber": {
+            "type": "string",
+            "format": "uuid",
+            "example": "01234567-89ab-cdef-0123-456789abcdef"
+          },
+          "Tablename": {
+            "type": "string",
+            "maxLength": 30,
+            "nullable": true
+          },
+          "BulkData": {
+            "type": "string",
+            "nullable": true
+          },
+          "WorkflowId": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "ActionType": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          },
+          "InitiationDate": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "RequestStatus": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          }
+        }
+      },
+      "BulkService.BulkTemp-update": {
+        "title": "BulkTemp (for update)",
+        "type": "object",
+        "properties": {
+          "Tablename": {
+            "type": "string",
+            "maxLength": 30,
+            "nullable": true
+          },
+          "BulkData": {
+            "type": "string",
+            "nullable": true
+          },
+          "WorkflowId": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "ActionType": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          },
+          "InitiationDate": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "RequestStatus": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          }
+        }
+      },
+      "BulkService.T002": {
+        "title": "T002",
+        "type": "object",
+        "properties": {
+          "created_on": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "created_by": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true
+          },
+          "updated_on": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "updated_by": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true
+          },
+          "OPERATIONTYPE": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "SPRAS": {
+            "type": "string",
+            "maxLength": 2
+          },
+          "VERSION_ACTIVE": {
+            "type": "string",
+            "maxLength": 1
+          }
+        }
+      },
+      "BulkService.T005": {
+        "title": "T005",
+        "type": "object",
+        "properties": {
+          "created_on": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "created_by": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true
+          },
+          "updated_on": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "updated_by": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true
+          },
+          "OPERATIONTYPE": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "LAND1": {
+            "type": "string",
+            "maxLength": 3
+          },
+          "VERSION_ACTIVE": {
+            "type": "string",
+            "maxLength": 1
+          }
+        }
+      },
+      "BulkService.T052": {
+        "title": "T052",
+        "type": "object",
+        "properties": {
+          "created_on": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "created_by": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true
+          },
+          "updated_on": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "updated_by": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true
+          },
+          "OPERATIONTYPE": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "ZTERM": {
+            "type": "string",
+            "maxLength": 4
+          },
+          "VERSION_ACTIVE": {
+            "type": "string",
+            "maxLength": 1
+          }
+        }
+      },
+      "BulkService.TCURC": {
+        "title": "TCURC",
+        "type": "object",
+        "properties": {
+          "created_on": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "created_by": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true
+          },
+          "updated_on": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "updated_by": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true
+          },
+          "OPERATIONTYPE": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "WAERS": {
+            "type": "string",
+            "maxLength": 5
+          },
+          "VERSION_ACTIVE": {
+            "type": "string",
+            "maxLength": 1
+          }
+        }
+      },
+      "BulkService.TINC": {
+        "title": "TINC",
+        "type": "object",
+        "properties": {
+          "created_on": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "created_by": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true
+          },
+          "updated_on": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "updated_by": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true
+          },
+          "OPERATIONTYPE": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "INCO1": {
+            "type": "string",
+            "maxLength": 3
+          },
+          "VERSION_ACTIVE": {
+            "type": "string",
+            "maxLength": 1
+          }
+        }
+      },
+      "BulkService.ZMDR_BPMASTER": {
+        "title": "ZMDR_BPMASTER",
+        "type": "object",
+        "properties": {
+          "created_on": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "created_by": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true
+          },
+          "updated_on": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "updated_by": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true
+          },
+          "OPERATIONTYPE": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "BP_ID": {
+            "type": "string",
+            "maxLength": 20
+          },
+          "BP_TYPE": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "BP_ROLE": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "CUSTOMER_NO": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          },
+          "LEGAL_NAME": {
+            "type": "string",
+            "maxLength": 80,
+            "nullable": true
+          },
+          "TRADE_NAME": {
+            "type": "string",
+            "maxLength": 80,
+            "nullable": true
+          },
+          "INDUSTRY": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          },
+          "BP_CATEGORY": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "COUNTRY": {
+            "type": "string",
+            "maxLength": 3,
+            "nullable": true
+          },
+          "REGION": {
+            "type": "string",
+            "maxLength": 3,
+            "nullable": true
+          },
+          "CITY": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "POSTAL_CODE": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "STREET": {
+            "type": "string",
+            "maxLength": 60,
+            "nullable": true
+          },
+          "PO_BOX": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "LANGUAGE": {
+            "type": "string",
+            "maxLength": 2,
+            "nullable": true
+          },
+          "TEL_NO": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          },
+          "FAX_NO": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          },
+          "EMAIL": {
+            "type": "string",
+            "maxLength": 80,
+            "nullable": true
+          },
+          "WEBSITE": {
+            "type": "string",
+            "maxLength": 80,
+            "nullable": true
+          },
+          "CURRENCY": {
+            "type": "string",
+            "maxLength": 5,
+            "nullable": true
+          },
+          "CREDIT_LIMIT": {
+            "anyOf": [
+              {
+                "type": "number",
+                "format": "decimal",
+                "multipleOf": 0.01,
+                "maximum": 9999999999999.99,
+                "minimum": -9999999999999.99
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "example": 0,
+            "x-sap-precision": 15,
+            "x-sap-scale": 2,
+            "nullable": true
+          },
+          "CREDIT_CTRL_AREA": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "PAYMENT_TERMS": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "INCOTERMS": {
+            "type": "string",
+            "maxLength": 3,
+            "nullable": true
+          },
+          "INCOTERMS2": {
+            "type": "string",
+            "maxLength": 28,
+            "nullable": true
+          },
+          "TAX_ID": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          },
+          "TAX_CATEGORY": {
+            "type": "string",
+            "maxLength": 4,
+            "nullable": true
+          },
+          "SALES_ORG": {
+            "type": "string",
+            "maxLength": 4,
+            "nullable": true
+          },
+          "DIST_CHANNEL": {
+            "type": "string",
+            "maxLength": 2,
+            "nullable": true
+          },
+          "DIVISION": {
+            "type": "string",
+            "maxLength": 2,
+            "nullable": true
+          },
+          "CUST_GRP": {
+            "type": "string",
+            "maxLength": 2,
+            "nullable": true
+          },
+          "PRICE_LIST": {
+            "type": "string",
+            "maxLength": 2,
+            "nullable": true
+          },
+          "BP_STATUS": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "BLOCK_REASON": {
+            "type": "string",
+            "maxLength": 2,
+            "nullable": true
+          },
+          "VALID_FROM": {
+            "type": "string",
+            "format": "date",
+            "example": "2017-04-13",
+            "nullable": true
+          },
+          "VALID_TO": {
+            "type": "string",
+            "format": "date",
+            "example": "2017-04-13",
+            "nullable": true
+          },
+          "NOTES": {
+            "type": "string",
+            "maxLength": 255,
+            "nullable": true
+          },
+          "STATUS": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "WORKFLOW_ID": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "VERSION_ACTIVE": {
+            "type": "string",
+            "maxLength": 1
+          },
+          "VERSION_START_DATE": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "VERSION_END_DATE": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          }
+        }
+      },
+      "BulkService.ZMDR_BP_ROLE_REF": {
+        "title": "ZMDR_BP_ROLE_REF",
+        "type": "object",
+        "properties": {
+          "created_on": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "created_by": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true
+          },
+          "updated_on": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "updated_by": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true
+          },
+          "OPERATIONTYPE": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "BP_ROLE": {
+            "type": "string",
+            "maxLength": 10
+          },
+          "VERSION_ACTIVE": {
+            "type": "string",
+            "maxLength": 1
+          }
+        }
+      },
+      "BulkService.ZMDR_BP_STATUS": {
+        "title": "ZMDR_BP_STATUS",
+        "type": "object",
+        "properties": {
+          "created_on": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "created_by": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true
+          },
+          "updated_on": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "updated_by": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true
+          },
+          "OPERATIONTYPE": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "STATUS": {
+            "type": "string",
+            "maxLength": 10
+          },
+          "VERSION_ACTIVE": {
+            "type": "string",
+            "maxLength": 1
+          }
+        }
+      },
+      "BulkService.ZMDR_EMPLOYEES": {
+        "title": "ZMDR_EMPLOYEES",
+        "type": "object",
+        "properties": {
+          "created_on": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "created_by": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true
+          },
+          "updated_on": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "updated_by": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true
+          },
+          "OPERATIONTYPE": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "EMP_ID": {
+            "type": "string",
+            "maxLength": 8
+          },
+          "FIRST_NAME": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "LAST_NAME": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "DEPARTMENT": {
+            "type": "string",
+            "maxLength": 30,
+            "nullable": true
+          },
+          "DESIGNATION": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "STATUS": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "WORKFLOW_ID": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "VERSION_ACTIVE": {
+            "type": "string",
+            "maxLength": 1
+          },
+          "VERSION_START_DATE": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "VERSION_END_DATE": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          }
+        }
+      },
+      "BulkService.ZMDR_GLACCOUNT": {
+        "title": "ZMDR_GLACCOUNT",
+        "type": "object",
+        "properties": {
+          "created_on": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "created_by": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true
+          },
+          "updated_on": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "updated_by": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true
+          },
+          "OPERATIONTYPE": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "GL_ACCOUNT": {
+            "type": "string",
+            "maxLength": 10
+          },
+          "COMPANY_CODE": {
+            "type": "string",
+            "maxLength": 4,
+            "nullable": true
+          },
+          "ACCOUNT_DESC": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "ACCOUNT_TYPE": {
+            "type": "string",
+            "maxLength": 2,
+            "nullable": true
+          },
+          "CURRENCY": {
+            "type": "string",
+            "maxLength": 5,
+            "nullable": true
+          },
+          "STATUS": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "WORKFLOW_ID": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "VERSION_ACTIVE": {
+            "type": "string",
+            "maxLength": 1
+          },
+          "VERSION_START_DATE": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "VERSION_END_DATE": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          }
+        }
+      },
+      "BulkService.ZMDR_VENDORS": {
+        "title": "ZMDR_VENDORS",
+        "type": "object",
+        "properties": {
+          "created_on": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "created_by": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true
+          },
+          "updated_on": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "updated_by": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true
+          },
+          "OPERATIONTYPE": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "VENDOR_ID": {
+            "type": "string",
+            "maxLength": 10
+          },
+          "VENDOR_NAME": {
+            "type": "string",
+            "maxLength": 80,
+            "nullable": true
+          },
+          "COUNTRY": {
+            "type": "string",
+            "maxLength": 3,
+            "nullable": true
+          },
+          "PAYMENT_TERMS": {
+            "type": "string",
+            "maxLength": 4,
+            "nullable": true
+          },
+          "CURRENCY": {
+            "type": "string",
+            "maxLength": 5,
+            "nullable": true
+          },
+          "STATUS": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "WORKFLOW_ID": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "VERSION_ACTIVE": {
+            "type": "string",
+            "maxLength": 1
+          },
+          "VERSION_START_DATE": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "VERSION_END_DATE": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          }
+        }
+      },
+      "BulkService.ZMDXCNAPPSTATS01": {
+        "title": "ZMDXCNAPPSTATS01",
+        "type": "object",
+        "properties": {
+          "created_on": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "created_by": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true
+          },
+          "updated_on": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "updated_by": {
+            "type": "string",
+            "maxLength": 12,
+            "nullable": true
+          },
+          "OPERATIONTYPE": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "CODE": {
+            "type": "string",
+            "maxLength": 10
+          },
+          "VERSION_ACTIVE": {
+            "type": "string",
+            "maxLength": 1
+          },
+          "DESCRIPTION": {
+            "type": "string",
+            "maxLength": 50,
+            "nullable": true
+          }
+        }
+      },
+      "BulkService.ap_BulkService_insertWFAudit_audit": {
+        "title": "ap_BulkService_insertWFAudit_audit",
+        "type": "object",
+        "properties": {
+          "workflowid": {
+            "type": "string",
+            "nullable": true
+          },
+          "entityid": {
+            "type": "string",
+            "nullable": true
+          },
+          "entityname": {
+            "type": "string",
+            "nullable": true
+          },
+          "operationtype": {
+            "type": "string",
+            "nullable": true
+          },
+          "wfstage": {
+            "type": "string",
+            "nullable": true
+          },
+          "action": {
+            "type": "string",
+            "nullable": true
+          },
+          "userremarks": {
+            "type": "string",
+            "nullable": true
+          },
+          "actioninguser": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "BulkService.ap_BulkService_submitBulkData_validData": {
+        "title": "ap_BulkService_submitBulkData_validData",
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "BulkService.return_BulkService_generateWorkflowId": {
+        "title": "return_BulkService_generateWorkflowId",
+        "type": "object",
+        "properties": {
+          "workflowid": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "BulkService.return_BulkService_getApprovers": {
+        "title": "return_BulkService_getApprovers",
+        "type": "object",
+        "properties": {
+          "approvers": {
+            "type": "array",
+            "items": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/BulkService.return_BulkService_getApprovers_approvers"
+                }
+              ],
+              "nullable": true
+            }
+          },
+          "nextstage": {
+            "type": "string",
+            "nullable": true
+          },
+          "agent": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "BulkService.return_BulkService_getApprovers_approvers": {
+        "title": "return_BulkService_getApprovers_approvers",
+        "type": "object",
+        "properties": {
+          "approverid": {
+            "type": "string",
+            "nullable": true
+          },
+          "approveremail": {
+            "type": "string",
+            "nullable": true
+          },
+          "approvername": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "BulkService.return_BulkService_getBulkRequestData": {
+        "title": "return_BulkService_getBulkRequestData",
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/BulkService.return_BulkService_getBulkRequestData_data"
+                }
+              ],
+              "nullable": true
+            }
+          },
+          "olddata": {
+            "type": "array",
+            "items": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/BulkService.return_BulkService_getBulkRequestData_olddata"
+                }
+              ],
+              "nullable": true
+            }
+          },
+          "wfids": {
+            "type": "array",
+            "items": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/BulkService.return_BulkService_getBulkRequestData_wfids"
+                }
+              ],
+              "nullable": true
+            }
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "BulkService.return_BulkService_getBulkRequestData_data": {
+        "title": "return_BulkService_getBulkRequestData_data",
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "BulkService.return_BulkService_getBulkRequestData_olddata": {
+        "title": "return_BulkService_getBulkRequestData_olddata",
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "BulkService.return_BulkService_getBulkRequestData_wfids": {
+        "title": "return_BulkService_getBulkRequestData_wfids",
+        "type": "object",
+        "properties": {
+          "workflowid": {
+            "type": "string",
+            "nullable": true
+          },
+          "remarks": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "BulkService.return_BulkService_insertWFAudit": {
+        "title": "return_BulkService_insertWFAudit",
+        "type": "object",
+        "properties": {
+          "sequenceid": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "BulkService.return_BulkService_submitBulkData": {
+        "title": "return_BulkService_submitBulkData",
+        "type": "object",
+        "properties": {
+          "workflowid": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "BulkService.return_BulkService_takeActionBulk": {
+        "title": "return_BulkService_takeActionBulk",
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "BulkService.return_BulkService_triggerBulkWorkflow": {
+        "title": "return_BulkService_triggerBulkWorkflow",
+        "type": "object",
+        "properties": {
+          "bpaInstanceId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "BulkService.return_BulkService_validateBulkData": {
+        "title": "return_BulkService_validateBulkData",
+        "type": "object",
+        "properties": {
+          "validCount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "invalidCount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "createCount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "updateCount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "workflowid": {
+            "type": "string",
+            "nullable": true
+          },
+          "validData": {
+            "type": "array",
+            "items": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/BulkService.return_BulkService_validateBulkData_validData"
+                }
+              ],
+              "nullable": true
+            }
+          },
+          "invalidData": {
+            "type": "array",
+            "items": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/BulkService.return_BulkService_validateBulkData_invalidData"
+                }
+              ],
+              "nullable": true
+            }
+          }
+        }
+      },
+      "BulkService.return_BulkService_validateBulkData_invalidData": {
+        "title": "return_BulkService_validateBulkData_invalidData",
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "rownumber": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        }
+      },
+      "BulkService.return_BulkService_validateBulkData_validData": {
+        "title": "return_BulkService_validateBulkData_validData",
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "count": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string"
+          }
+        ],
+        "description": "The number of entities in the collection. Available when using the [$count](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptioncount) query option."
+      },
+      "error": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": [
+              "code",
+              "message"
+            ],
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "target": {
+                "type": "string"
+              },
+              "details": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "target": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "innererror": {
+                "type": "object",
+                "description": "The structure of this object is service-specific"
+              }
+            }
+          }
+        }
+      }
+    },
+    "parameters": {
+      "top": {
+        "name": "$top",
+        "in": "query",
+        "description": "Show only the first n items, see [Paging - Top](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptiontop)",
+        "schema": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "example": 50
+      },
+      "skip": {
+        "name": "$skip",
+        "in": "query",
+        "description": "Skip the first n items, see [Paging - Skip](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionskip)",
+        "schema": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "count": {
+        "name": "$count",
+        "in": "query",
+        "description": "Include count of items, see [Count](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptioncount)",
+        "schema": {
+          "type": "boolean"
+        }
+      },
+      "search": {
+        "name": "$search",
+        "in": "query",
+        "description": "Search items by search phrases, see [Searching](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionsearch)",
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "error": {
+        "description": "Error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/error"
+            }
+          }
+        }
+      }
+    }
+  }
+}

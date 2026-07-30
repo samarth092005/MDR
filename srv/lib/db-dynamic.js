@@ -62,10 +62,6 @@ function getEntityDef(tablename) {
 }
 
 // getSqlTableName: resolve the physical SQL table name for raw DDL/DML.
-// Priority:
-//  1. @cds.persistence.table annotation (explicit override, e.g. 'ZMDR_BPMASTER')
-//  2. entity.name with dots → underscores (CAP SQLite convention, preserves case)
-//  3. Pass-through: tablename as-is (HANA uses CDS-generated names)
 function getSqlTableName(db, tablename) {
   const entity = getEntityDef(tablename);
   if (entity) {
@@ -73,34 +69,24 @@ function getSqlTableName(db, tablename) {
     if (persistenceTable && typeof persistenceTable === 'string') {
       return persistenceTable;
     }
-    if (db.kind === 'sqlite') {
-      return entity.name.replace(/\./g, '_');
-    }
+    // CAP HDI generator by default replaces dots in namespace with underscores
+    const name = entity.name.replace(/\./g, '_');
+    return db.kind === 'hana' ? name.toUpperCase() : name;
   }
   return tablename;
 }
 
 // checkExists: returns true if at least one row matches the WHERE clause.
-// Uses CAP ORM SELECT.from() so CAP resolves the physical table name internally —
-// this avoids all manual table-name mapping issues across SQLite and HANA.
-// Falls back to raw SQL only when the entity is not found in the CDS model
-// (e.g. legacy HANA tables not defined in CDS).
 async function checkExists(db, tablename, whereClause, values) {
   const entity = getEntityDef(tablename);
   if (entity) {
-    // CAP ORM path — let the DB service handle table name resolution.
-    // We convert the raw "COL = ? AND COL2 = ?" + values into a cds.ql WHERE object.
-    // Because cds.ql doesn't easily accept parameterised raw strings, we use a
-    // lightweight approach: build a cqn filter directly via db.run with a count query.
     try {
-      // Use cds.ql: SELECT count(*) from entity where <raw clause>
-      // cds supports: SELECT.from(entity).where(`${clause}`, ...values)
+      const whereObj = sqlToObject(entity, whereClause, values);
       const rows = await db.run(
-        SELECT.from(entity).where(whereClause, ...values).limit(1)
+        SELECT.from(entity).where(whereObj).limit(1)
       );
       return rows.length > 0;
     } catch (e) {
-      // If ORM path fails (e.g. clause uses quoted column names), fall back to raw SQL
       console.warn(`[checkExists] ORM path failed for ${tablename}, trying raw SQL:`, e.message);
     }
   }
@@ -111,8 +97,19 @@ async function checkExists(db, tablename, whereClause, values) {
   return (r[0]?.CNT || r[0]?.cnt || 0) > 0;
 }
 
+// Convert an object with uppercase keys into the exact keys defined in the CDS entity
+function mapToEntityElements(entity, obj) {
+  if (!entity || !entity.elements) return obj;
+  const mapped = {};
+  for (const [k, v] of Object.entries(obj)) {
+    const elName = Object.keys(entity.elements).find(e => e.toUpperCase() === k.toUpperCase());
+    mapped[elName || k] = v;
+  }
+  return mapped;
+}
+
 // Convert simple parameterised WHERE clause to an object for CAP ORM
-function sqlToObject(whereClause, values) {
+function sqlToObject(entity, whereClause, values) {
   const obj = {};
   const regex = /"?([a-zA-Z0-9_]+)"?\s*=\s*\?/g;
   let match;
@@ -122,7 +119,7 @@ function sqlToObject(whereClause, values) {
       obj[match[1]] = values[i++];
     }
   }
-  return obj;
+  return mapToEntityElements(entity, obj);
 }
 
 // readRows: SELECT * FROM <tablename> WHERE <parameterised>
@@ -131,7 +128,7 @@ async function readRows(db, tablename, whereClause, values) {
   const entity = getEntityDef(tablename);
   if (entity) {
     try {
-      const whereObj = sqlToObject(whereClause, values);
+      const whereObj = sqlToObject(entity, whereClause, values);
       return await db.run(SELECT.from(entity).where(whereObj));
     } catch (e) {
       console.warn(`[readRows] ORM failed for ${tablename}, fallback to raw:`, e.message);
@@ -147,7 +144,8 @@ async function insertRow(db, tablename, rowObject) {
   const entity = getEntityDef(tablename);
   if (entity) {
     try {
-      await db.run(INSERT.into(entity).entries(rowObject));
+      const mappedRow = mapToEntityElements(entity, rowObject);
+      await db.run(INSERT.into(entity).entries(mappedRow));
       return;
     } catch (e) {
       console.warn(`[insertRow] ORM failed for ${tablename}, fallback to raw:`, e.message);
@@ -167,8 +165,9 @@ async function updateRow(db, tablename, setObject, whereClause, whereValues) {
   const entity = getEntityDef(tablename);
   if (entity) {
     try {
-      const whereObj = sqlToObject(whereClause, whereValues);
-      await db.run(UPDATE(entity).set(setObject).where(whereObj));
+      const mappedSet = mapToEntityElements(entity, setObject);
+      const whereObj = sqlToObject(entity, whereClause, whereValues);
+      await db.run(UPDATE(entity).set(mappedSet).where(whereObj));
       return;
     } catch (e) {
       console.warn(`[updateRow] ORM failed for ${tablename}, fallback to raw:`, e.message);
@@ -188,7 +187,7 @@ async function deleteRows(db, tablename, whereClause, values) {
   const entity = getEntityDef(tablename);
   if (entity) {
     try {
-      const whereObj = sqlToObject(whereClause, values);
+      const whereObj = sqlToObject(entity, whereClause, values);
       await db.run(DELETE.from(entity).where(whereObj));
       return;
     } catch (e) {
@@ -201,5 +200,5 @@ async function deleteRows(db, tablename, whereClause, values) {
 
 module.exports = {
   parseDate, buildRowFromSplit, buildKeyWhere, getEntityDef,
-  checkExists, readRows, insertRow, updateRow, deleteRows
+  checkExists, readRows, insertRow, updateRow, deleteRows, mapToEntityElements
 };

@@ -80,23 +80,23 @@ module.exports = cds.service.impl(async function (srv) {
         const userId = req.user.id;
 
         // Config reads — CAP ORM
-        const hdr = await db.run(SELECT.one.from(BulkHdrConfig).where({ tablename, requesterrole }));
-        const lineitemConfig = await db.run(SELECT.from(BulkItmConfig).where({ tablename, requesterrole }).orderBy('colseqno'));
-        const keyFields = lineitemConfig.filter(c => c.ismatching === 'Y').map(c => c.columnname);
+        const hdr = await db.run(SELECT.one.from(BulkHdrConfig).where({ TableName: tablename, RequesterRole: requesterrole }));
+        const lineitemConfig = await db.run(SELECT.from(BulkItmConfig).where({ Tablename: tablename, RequesterRole: requesterrole }).orderBy('Colseqno'));
+        const keyFields = lineitemConfig.filter(c => c.IsMatching === 'Y').map(c => c.Columnname);
 
         if (action === 'APPROVED') {
-            if (hdr?.isversioned === 'Y')
+            if (hdr?.Versioned === 'Y')
                 await approveVersionedTable({ tablename, workflowid, keyFields, lineitemConfig, userId });  // raw SQL
             else
                 await applyBulkTempApproved({
                     tablename, workflowid, lineitemConfig, keyFields,
-                    isOverwriteNull: hdr?.isoverwritewithnull || isOverwriteNull, userId
+                    isOverwriteNull: hdr?.IsOverwrireWithNull || isOverwriteNull, userId
                 });  // mixed
         } else if (action === 'REJECTED') {
-            if (hdr?.isversioned === 'Y')
+            if (hdr?.Versioned === 'Y')
                 await rejectVersionedTable({ tablename, workflowid });  // raw SQL
             else
-                await db.run(UPDATE(BulkTemp).set({ requeststatus: 'REJECTED' }).where({ workflowid, tablename }));  // CAP ORM
+                await db.run(UPDATE(BulkTemp).set({ RequestStatus: 'REJECTED' }).where({ WorkflowId: workflowid, Tablename: tablename }));  // CAP ORM
         }
 
         await insertWFAudit({

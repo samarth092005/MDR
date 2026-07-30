@@ -11,7 +11,9 @@ sap.ui.define([
     "sap/m/Input",
     "sap/m/Text",
     "sap/m/DatePicker",
-    "sap/m/HBox"
+    "sap/m/HBox",
+    "sap/ushell/services/CrossApplicationNavigation",
+    "sap/ushell/services/appstate/AppState"
 ], function (BaseController, JSONModel, Filter, FilterOperator, ODataModel, Fragment, Message, coreLibrary, Label, Input, Text, DatePicker, HBox) {
     "use strict";
 
@@ -1693,14 +1695,14 @@ sap.ui.define([
 
                     if (this.iWorkitemID) {
                         // Claim the task
-                        this._fn_claimApproverTask();
+                        // this._fn_claimApproverTask();
 
                         if (this.sSelectedTableName) {
                             // Clear any previous filters
                             aFilters = [];
 
                             // Prepare the filter
-                            aFilters.push(new Filter("Tablename", FilterOperator.EQ, this.sSelectedTableName));
+                            aFilters.push(new Filter("tablename", FilterOperator.EQ, this.sSelectedTableName));
 
                             // Get table fields data
                             var oListBinding = oCntrlUiConfigModel.bindList("/UIConfigSet", null, null, aFilters);
@@ -3857,10 +3859,9 @@ sap.ui.define([
             // Remove all existing messages from message manager
             sap.ui.getCore().getMessageManager().removeAllMessages();
 
-            // Odata model of selected table
-            oTableModel = new ODataModel({
-                serviceUrl: this.sTableServiceUrl
-            }).getNativeModel();
+            // [FIXED] Reuse global OData model (which already has a valid CSRF token from App startup)
+            // instead of instantiating a new one which fails on POST due to missing CSRF token!
+            oTableModel = this.getOwnerComponent().getModel();
 
             // Create data at backend system
             var oListBinding = oTableModel.bindList("/" + this.sTableEntitySet);
@@ -3957,65 +3958,85 @@ sap.ui.define([
                 OperationType: this.sActionType,
                 UserRemarks: this.sUserRemarks,
                 WorkflowIdentifier: "CENTRAL"
-            };
+            };            // [FIXED] Use fetch() instead of OData V4 bindContext/batch to avoid 403 errors
+            var that = this;
+            var sServiceUrl = sap.ui.require.toUrl("com/intapptics/zmdrcntrlcmn") + "/api/workflow/";
+            var sTriggerUrl = sServiceUrl + "TriggerWorkflowSet";
 
-            // TODO: Migrate to native V4 once TriggerWorkflowSet is mapped in backend
-            // Trigger workflow
-            oWorkflowModel.create("/TriggerWorkflowSet", oWorkflowData, {
-                method: "POST",
-                success: function (oData) {
-                    // Close the user comments dialog
-                    this.byId("dlgComment").close();
+            fetch(sServiceUrl, {
+                method: "GET",
+                headers: {
+                    "X-CSRF-Token": "Fetch",
+                    "Accept": "application/json"
+                }
+            }).then(function (oTokenResponse) {
+                var sCsrfToken = oTokenResponse.headers.get("X-CSRF-Token") || "";
+                
+                return fetch(sTriggerUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json",
+                        "X-CSRF-Token": sCsrfToken
+                    },
+                    body: JSON.stringify(oWorkflowData)
+                });
+            }).then(function (oResponse) {
+                return oResponse.text().then(function (sText) {
+                    if (!oResponse.ok) {
+                        throw new Error("Trigger failed: " + oResponse.status + " " + sText);
+                    }
+                    return JSON.parse(sText);
+                });
+            }).then(function (oResult) {
+                // Close the user comments dialog
+                that.byId("dlgComment").close();
 
-                    // Set the message
-                    oMessage = new Message({
-                        id: "triggerWorkflow",
-                        message: "Workflow triggered successfully",
-                        type: MessageType.Success,
-                        additionalText: sWorkflowId,
-                        description: this.sActionType + " request for table " + this.sTableLabel + " is successfully submitted for approval process with process reference number " + sWorkflowId,
-                        target: "/TriggerWF",
-                        processor: this.fn_getLocalModel("messageModel")
+                // Set the message
+                oMessage = new Message({
+                    id: "triggerWorkflow",
+                    message: "Workflow triggered successfully",
+                    type: MessageType.Success,
+                    additionalText: sWorkflowId,
+                    description: that.sActionType + " request for table " + that.sTableLabel + " is successfully submitted for approval process with process reference number " + sWorkflowId,
+                    target: "/TriggerWF",
+                    processor: that.fn_getLocalModel("messageModel")
+                });
+                sap.ui.getCore().getMessageManager().addMessages(oMessage);
+
+                // Set message to message strip
+                that.byId("msgStripMainScreen").setText("<strong>Success: </strong><em>Workflow </em><strong>" + sWorkflowId + "</strong><em> is initiated successfully. For more info </em>");
+                that.byId("msgStripMainScreen").setType("Success");
+                that.byId("msgStripMainScreen").setVisible(true);
+
+                // Disable the form (if it exists)
+                if (oForm) {
+                    oForm.getContent().forEach(function (oItem) {
+                        if (oItem.getId().includes("inp")) {
+                            oItem.setEditable(false);
+                        }
                     });
-                    sap.ui.getCore().getMessageManager().addMessages(oMessage);
+                }
 
-                    // Set message to message strip
-                    this.byId("msgStripMainScreen").setText("<strong>Success: </strong><em>Workflow </em><strong>" + sWorkflowId + "</strong><em> is initiated successfully. For more info </em>");
-                    this.byId("msgStripMainScreen").setType("Success");
-                    this.byId("msgStripMainScreen").setVisible(true);
+                // Disable the submit button and enable create button only for create scenario
+                that.byId("btnSubmit").setVisible(false);
+                if (that.sActionType === "Create") {
+                    that.byId("btnCreate").setVisible(true);
+                } else {
+                    that.byId("btnCreate").setVisible(false);
+                }
 
-                    // Disable the form (if it exists)
-                    if (oForm) {
-                        oForm.getContent().forEach(function (oItem) {
-                            if (oItem.getId().includes("inp")) {
-                                oItem.setEditable(false);
-                            }
-                        });
-                    }
+                // Close busy dialog
+                that.fn_closeBusyDialog();
+            }).catch(function (oError) {
+                // Set error in message strip
+                that.byId("msgStripMainScreen").setText("<strong>Error: </strong><em>Error while processing. " + oError.message + "</em>");
+                that.byId("msgStripMainScreen").setType("Error");
+                that.byId("msgStripMainScreen").setVisible(true);
 
-                    // Disable the submit button and enable create button only for create scenario
-                    this.byId("btnSubmit").setVisible(false);
-                    if (this.sActionType === "Create") {
-                        this.byId("btnCreate").setVisible(true);
-                    } else {
-                        this.byId("btnCreate").setVisible(false);
-                    }
-
-                    // Close busy dialog
-                    this.fn_closeBusyDialog();
-                }.bind(this),
-                error: function (oError) {
-                    // Set error in message strip
-                    this.byId("msgStripMainScreen").setText("<strong>Error: </strong><em>Error while processing. For more info </em>");
-                    this.byId("msgStripMainScreen").setType("Error");
-                    this.byId("msgStripMainScreen").setVisible(true);
-
-                    this.fn_showServiceError(oError);
-
-                    // Close busy dialog
-                    this.fn_closeBusyDialog();
-                }.bind(this)
-            })
+                // Close busy dialog
+                that.fn_closeBusyDialog();
+            });
 
             // Log info
             this.fn_getLogReference().info("Main Screen Controller: Exiting _fn_triggerWorkflow method");
