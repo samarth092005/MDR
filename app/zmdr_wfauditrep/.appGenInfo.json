@@ -1,0 +1,28 @@
+{
+  "generationParameters": {
+    "generationDate": "Fri Jul 31 2026 07:55:05 GMT+0000 (Coordinated Universal Time)",
+    "generatorPlatform": "SAP Business Application Studio",
+    "serviceType": "Local CAP",
+    "metadataFilename": "",
+    "serviceUrl": "http://localhost:4004/api/reporting/",
+    "appName": "zmdr_wfauditrep",
+    "appTitle": "Workflow Audit Report",
+    "appDescription": "Workflow Audit Report",
+    "appNamespace": "com.intapptics",
+    "ui5Theme": "sap_horizon",
+    "ui5Version": "1.150.1",
+    "enableEslint": true,
+    "enableTypeScript": false,
+    "showMockDataInfo": false,
+    "generatorVersion": "1.29.0",
+    "template": "List Report Page V4",
+    "generatorName": "SAP Fiori Application Generator",
+    "entityRelatedConfig": [
+      {
+        "type": "Main Entity",
+        "value": "WFAuditReport"
+      }
+    ],
+    "launchText": "To launch the generated app, start your CAP project:  and navigate to the following location in your browser:\n\nhttp://localhost:4004/com.intapptics.zmdrwfauditrep/index.html"
+  }
+}

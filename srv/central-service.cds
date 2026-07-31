@@ -9,7 +9,8 @@ service CentralService @(
   @readonly
   entity CntrlUIConfig as projection on zmdr.CntrlUIConfig;
   entity CntrlUIUrl    as projection on zmdr.CntrlUIUrl;
-
+  @readonly
+  entity CntrlUIVis  as projection on zmdr.CntrlUIVis;
   @readonly
   entity UIConfigSet as projection on zmdr.CntrlUIConfig;
 

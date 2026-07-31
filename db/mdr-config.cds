@@ -2,14 +2,10 @@
 namespace zmdr;
 
 aspect Auditable {
-  @cds.on.insert: $now
-  created_on : Timestamp;
-  @cds.on.insert: $user
-  created_by : String(12);
-  @cds.on.insert: $now  @cds.on.update: $now
-  updated_on : Timestamp;
-  @cds.on.insert: $user @cds.on.update: $user
-  updated_by : String(12);
+  created_on : Timestamp;  
+  created_by : String(50);
+  updated_on : Timestamp;  
+  updated_by : String(50);
   virtual OPERATIONTYPE : String(40);
 }
 
@@ -38,7 +34,7 @@ entity WFAudit {
       wfstage       : String(20);
       action        : String(20);  // INITIATED | APPROVED | REJECTED | COMPLETED
       userremarks   : String(300);
-      actioninguser : String(255);
+      actioninguser : String(50);
 }
 
 // Replaces ZMDR_MDRABAPWF  (MDR WF ID <-> BPA instance ID)
@@ -66,9 +62,9 @@ entity BulkHdrConfig : Auditable {
 // Replaces ZMDR_BULKITMCNFG
 entity BulkItmConfig : Auditable {
   key Tablename       : String(30);
-  key Columnname      : String(30);  // MUST be UPPERCASE matching .hdbtable column
+  key columnname      : String(30);  // MUST be UPPERCASE matching .hdbtable column
   key RequesterRole   : String(30);
-      Colseqno        : Integer;
+      columnseqno     : Integer;
       IsLookup        : String(1);
       LookupTablename : String(30);
       LookupField     : String(100);  // 'FIELD1' or 'F1|:|F2' for composite
@@ -104,9 +100,12 @@ entity BulkDataValidation : Auditable {
 entity ApproverClass : Versionable, Auditable {
   key approver_class_lineid : Integer;
   key version_start_date    : Timestamp;
-      system     : String(10);
-      hierarchy  : String(30);
-      subclass   : String(30);
+      system      : String(10);
+      hierarchy   : String(30);
+      subclass    : String(30);
+      userorgroup : String(12);   // ZMDR_USERORGRP
+      classtype   : String(10);   // ZMDR_CLASSTYPE
+      status      : String(3);    // ZMDR_STATUS
 }
 
 // Replaces ZMDR_APPROVER
@@ -119,6 +118,7 @@ entity Approver : Versionable, Auditable {
       approver_validity_start_date : Date;
       approver_validity_end_date   : Date;
       ud1 : String(40);  ud2 : String(40);
+      attestation : String(1);     // ZMDR_ATTESTATION
       status : String(3);
 }
 
@@ -126,9 +126,11 @@ entity Approver : Versionable, Auditable {
 entity Policy : Versionable, Auditable {
   key policy_lineid      : Integer;
   key version_start_date : Timestamp;
-      system : String(10);  hierarchy : String(30);  subclass : String(30);
-      apprtype : String(10);  apprlevel : Integer;
-      moreapprover : String(1);  nextstage : String(20);  apprconstraint : String(40);
+      approver_class_lineid : Integer;  // ZMDR_APPRCLSLINEID - FK to ApproverClass
+      apprlevel : Integer;
+      apprconstraint : String(40);
+      sap_role : String(30);   // ZMDR_REQROLE
+      status : String(3);      // ZMDR_STATUS
 }
 
 // Replaces ZMDR_CNTRLUICNFG
@@ -146,21 +148,24 @@ entity CntrlUIConfig : Auditable {
       searchfieldflag : String(1);  resultsetfieldflag : String(1);
       itemdetailsflag : String(1);  primarykeyflag : String(1);
       parentfieldflag : String(1);  childfieldflag : String(1);
+      levelnumberfieldflag    : String(1);   // ZMDR_LVLNUMFLAG
+      childdescriptionflag   : String(1);   // ZMDR_CHLDDESCFLAG
+      levelapplicabilityflag : String(1);    // ZMDR_LVLAPPLFLAG
+      levelnumbervalfld      : String(30);   // ZMDR_LVLNUMVALFLD
       displayfieldflag : String(1);  displayfieldof : String(30);
 }
 
 // Replaces ZMDR_CNTRLUIURL
 entity CntrlUIUrl : Auditable {
-  key repository : String(20);  key tablename : String(30);
-      tablelabel : String(40);  processid : String(10);
-      ishierarchy : String(1);  iscreate : String(1);
-      isamend : String(1);  isclose : String(1);  isreopen : String(1);
+  key tablename : String(30);
+      odata_url : String(200);
+      column_count : Integer;
 }
 
 // Replaces ZMDR_CNTRLUIASTG
 entity CntrlUIApprStage : Auditable {
   key processnumber : String(10);  key currentstage : String(20);
-      nextstage : String(20);  stepnumber : Integer;  totalsteps : Integer;
+      nextstage : String(20);
 }
 
 // Replaces ZMDR_CNTRLUIVAL
@@ -168,6 +173,35 @@ entity CntrlUIVal : Auditable {
   key validationindex : Integer;  key tablename : String(30);  key sourcecolname : String(30);
       operation : String(20);  sourcecolvalue : String(200);
       destcolname : String(30);  destcolvalue : String(100);  errormessage : String(200);
+      reqinui5flag     : String(1);  // ZMDR_REQINUI5FLAG
+      reqincentralflag : String(1);  // ZMDR_REQINCNTRLFLAG
+      reqinbulkflag    : String(1);  // ZMDR_REQINBULKFLAG
+      reqingenflag     : String(1);  // ZMDR_REQINGENFLAG
+}
+
+// Replaces ZMDR_CNTRLUIVIS — Role-based table visibility configuration
+entity CntrlUIVis : Auditable {
+  key role              : String(30);   // ZMDR_REQROLE
+  key tablename         : String(30);   // ZMDR_TABLENAME
+      repository        : String(50);   // ZMDR_REPOSITORY
+      repositorylabel   : String(50);   // ZMDR_REPOSITORYLABEL
+      tablelabel        : String(100);  // ZMDR_TABLELABEL
+      approvaltype      : String(20);   // ZMDR_APPRTYPE
+      approvallevel     : String(10);   // ZMDR_APPRLEVEL
+      ishierarchy       : String(1);    // ZMDR_ISHIERARCHY
+      iscreateenabled   : String(1);    // ZMDR_ISCREATE
+      isamendenabled    : String(1);    // ZMDR_ISAMEND
+      iscloseenabled    : String(1);    // ZMDR_ISCLOSE
+      isreopenenabled   : String(1);    // ZMDR_ISREOPEN
+}
+
+// Replaces ZMDR_CNTRLUIPRC — Central App UI Process Details
+entity CntrlUIProcess : Auditable {
+  key processnumber : Integer;        // ZMDR_PROCESSNUMBER
+      repository    : String(50);     // ZMDR_REPOSITORY
+      tablename     : String(30);     // ZMDR_TABLENAME
+      fieldname     : String(30);     // ZMDR_FIELDNAME
+      fieldvalue    : String(100);    // ZMDR_FIELDVALUE
 }
 
 // Replaces ABAP domain fixed values (ZMDR_YESNO, ZMDR_VERSION etc.)

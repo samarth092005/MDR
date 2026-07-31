@@ -1,5 +1,0 @@
-approver_lineid,version_start_date,approver_class_lineid,node_name,approver_id,approver_validity_start_date,approver_validity_end_date,ud1,status,version_end_date,version_active
-1,2025-01-01T00:00:00Z,1,BP_CUST_REPO,SARA.JONES,2025-01-01,9999-12-31,BP Manager - EMEA,ACT,9999-12-31T00:00:00Z,X
-2,2025-01-01T00:00:00Z,1,BP_CUST_REPO,MIKE.PATEL,2025-01-01,9999-12-31,BP Steward - Global,ACT,9999-12-31T00:00:00Z,X
-3,2025-01-01T00:00:00Z,2,BP_CUST_REPO,SARA.JONES,2025-01-01,9999-12-31,BP Manager - EMEA,ACT,9999-12-31T00:00:00Z,X
-4,2025-01-01T00:00:00Z,2,BP_CUST_REPO,TOM.WALKER,2025-01-01,9999-12-31,BP Manager - APAC,ACT,9999-12-31T00:00:00Z,X

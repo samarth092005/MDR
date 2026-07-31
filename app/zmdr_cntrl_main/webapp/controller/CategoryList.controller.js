@@ -48,10 +48,10 @@ sap.ui.define([
 
                 // Get All Category and Table list
                 // [V4 MIGRATION] Replaced V2 oModel.read() with native OData V4 bindList().requestContexts().
-                // /CntrlUIUrl is a plain EntitySet (central-service.cds line 11). bindList() is correct.
+                // /CntrlUIVis is a plain EntitySet (central-service.cds line 11). bindList() is correct.
                 // The V2-only `async: true` parameter is removed (implicit in V4).
                 // Success/error logic is preserved exactly — data is mapped to plain objects via getObject().
-                oCntrlUiConfigOdataModel.bindList("/CntrlUIUrl").requestContexts(0, Infinity).then(function (aContexts) {
+                oCntrlUiConfigOdataModel.bindList("/CntrlUIVis").requestContexts(0, Infinity).then(function (aContexts) {
                     var aData = aContexts.map(function (oContext) { return oContext.getObject(); });
 
                     // Update the data to the model if it exists or set the model globally if does not exist

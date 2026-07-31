@@ -34,6 +34,8 @@ modules:
     path: gen/db
     parameters:
       buildpack: nodejs_buildpack
+      memory: 512M
+      disk-quota: 1024M
     properties:
       TARGET_CONTAINER: mdr-cap-manual-hdi
     requires:
@@ -47,10 +49,11 @@ modules:
         - "zmdr_bulkload/"
         - "zmdr_cntrl_main/"
         - "zmdr_cntrl_cmn/"
+        - "zmdr_wfauditrep/"
         - "node_modules/"
     parameters:
       keep-existing-routes: true
-      disk-quota: 256M
+      disk-quota: 512M
       memory: 256M
     properties: {}
     requires:
@@ -85,6 +88,10 @@ modules:
         - artifacts:
             - zmdr_bulkload.zip
           name: zmdr_bulkload
+          target-path: resources/
+        - artifacts:
+            - zmdr_wfauditrep.zip
+          name: zmdr_wfauditrep
           target-path: resources/
 
   - name: mdr-cap-btp-destinations
@@ -163,6 +170,18 @@ modules:
         - npm install --no-workspaces
         - npm run build
         - bash -c "cp xs-app.json dist/ && cd dist && zip -r zmdr_bulkload.zip *"
+      supported-platforms: []
+
+  - name: zmdr_wfauditrep
+    type: html5
+    path: app/zmdr_wfauditrep
+    build-parameters:
+      build-result: dist
+      builder: custom
+      commands:
+        - npm install --no-workspaces
+        - npm run build
+        - bash -c "cp xs-app.json dist/ && cd dist && zip -r zmdr_wfauditrep.zip *"
       supported-platforms: []
 
 resources:

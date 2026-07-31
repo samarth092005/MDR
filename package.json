@@ -18,8 +18,7 @@
     "express": "^4",
     "hdb": "^2.27.1",
     "nodemailer": "^6.10.1",
-    "passport": "^0.7.0",
-    "xlsx": "^0.18.5"
+    "passport": "^0.7.0"
   },
   "devDependencies": {
     "@cap-js/sqlite": "^1",
@@ -31,7 +30,8 @@
     "start": "cds-serve",
     "dev": "cds watch",
     "build": "cds build --production",
-    "watch-zmdr_bulkload": "cds watch --open com.intapptics.zmdrbulkload/index.html?sap-ui-xx-viewCache=false --livereload false"
+    "watch-zmdr_bulkload": "cds watch --open com.intapptics.zmdrbulkload/index.html?sap-ui-xx-viewCache=false --livereload false",
+    "watch-zmdr_wfauditrep": "cds watch --open com.intapptics.zmdrwfauditrep/index.html?sap-ui-xx-viewCache=false --livereload false"
   },
   "cds": {
     "odata": {
@@ -51,7 +51,10 @@
       },
       "[production]": {
         "auth": {
-          "kind": "mocked"
+          "kind": "xsuaa",
+          "vcap": {
+            "label": "xsuaa"
+          }
         },
         "db": {
           "kind": "hana",
@@ -77,5 +80,8 @@
   },
   "workspaces": [
     "app/*"
+  ],
+  "sapux": [
+    "app/zmdr_wfauditrep"
   ]
 }
