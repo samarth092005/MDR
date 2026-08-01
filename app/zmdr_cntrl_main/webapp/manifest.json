@@ -40,7 +40,7 @@
     },
     "dataSources": {
       "mainService": {
-        "uri": "/mdrapi/central/",
+        "uri": "mdrapi/central/",
         "type": "OData",
         "settings": {
           "annotations": [],

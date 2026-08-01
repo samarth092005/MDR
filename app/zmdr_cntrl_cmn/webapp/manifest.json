@@ -218,43 +218,43 @@
             "title": "input",
             "type": "object",
             "required": [
-                "customerName",
-                "orderNumber",
-                "orderAmount",
-                "orderDate",
-                "expectedDeliveryDate",
-                "shippingCountry"
+                "workflowId",
+                "entityName",
+                "tablename",
+                "operationType",
+                "requestorId",
+                "totalSteps"
             ],
             "properties": {
-                "customerName": {
+                "workflowId": {
                     "type": "string",
-                    "title": "Customer Name",
-                    "description": "Customer Name"
+                    "title": "Workflow ID",
+                    "description": "Workflow ID"
                 },
-                "orderNumber": {
+                "entityName": {
                     "type": "string",
-                    "title": "Order Number",
-                    "description": "Order Number"
+                    "title": "Entity Name",
+                    "description": "Entity Name"
                 },
-                "orderAmount": {
+                "tablename": {
+                    "type": "string",
+                    "title": "Table Name",
+                    "description": "Table Name"
+                },
+                "operationType": {
+                    "type": "string",
+                    "title": "Operation Type",
+                    "description": "Operation Type"
+                },
+                "requestorId": {
+                    "type": "string",
+                    "title": "Requestor ID",
+                    "description": "Requestor ID"
+                },
+                "totalSteps": {
                     "type": "number",
-                    "title": "Order Amount",
-                    "description": "Order Amount"
-                },
-                "orderDate": {
-                    "type": "string",
-                    "title": "Order Date",
-                    "description": "Order Date"
-                },
-                "expectedDeliveryDate": {
-                    "type": "string",
-                    "title": "Expected Delivery Date",
-                    "description": "End Date of the Vacation"
-                },
-                "shippingCountry": {
-                    "type": "string",
-                    "title": "Shipping Country",
-                    "description": "Shipping Country"
+                    "title": "Total Steps",
+                    "description": "Total Steps"
                 }
             }
         },
@@ -269,7 +269,7 @@
                 "comment": {
                     "type": "string",
                     "title": "Comment",
-                    "description": "Comment to buyer"
+                    "description": "Approver Comment"
                 }
             }
         },

@@ -63,9 +63,9 @@ entity CntrlUIUrl : Auditable {
 
 // Replaces ZMDR_CNTRLUIVAL
 entity CntrlUIVal : Auditable {
+  key ValidationIndex  : Integer;
   key TableName        : String(30);
   key SourceColName    : String(30);
-  key ValidationIndex  : Integer;
       SourceColValue   : String(200);
       DestColName      : String(30);
       DestColValue     : String(100);

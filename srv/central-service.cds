@@ -1,5 +1,5 @@
 using zmdr from '../db/mdr-central';
-using { zmdr as masterdata } from '../db/mdr-maintables';
+
 
 @impl: 'srv/central-handler.js'
 service CentralService @(
@@ -7,32 +7,36 @@ service CentralService @(
   // requires: 'authenticated-user'
 ) {
   @readonly
-  entity CntrlUIConfig as projection on zmdr.CntrlUIConfig;
-  entity CntrlUIUrl    as projection on zmdr.CntrlUIUrl;
-  @readonly
   entity CntrlUIVis  as projection on zmdr.CntrlUIVis;
   @readonly
-  entity UIConfigSet as projection on zmdr.CntrlUIConfig;
-
-  // Master Data Tables for the UI
-  entity ZMDR_GLACCOUNT as projection on masterdata.GLAccount;
-  entity ZMDR_BPMASTER  as projection on masterdata.BPMaster;
-
-  // Custom Validation OData Mock
+  entity CntrlUIConfig as projection on zmdr.CntrlUIConfig;
   @readonly
-  entity ZMDGCPCNTRLVAL01 {
-    key p_tabname : String(30);
-    Set : Association to many ZMDGCPCNTRLVAL01Set on Set.p_tabname = $self.p_tabname;
-  }
+  entity CntrlUIUrl as projection on zmdr.CntrlUIUrl;
+  
   @readonly
-  entity ZMDGCPCNTRLVAL01Set {
-    key p_tabname : String(30);
-  }
+  entity CntrlUIProcess as projection on zmdr.CntrlUIProcess;
+  
+  @readonly
+  entity CntrlUIApprStage as projection on zmdr.CntrlUIApprStage;
 
-  // Central Application Actions (Required for BPA Action Plugin)
+  // // Custom Validation OData Mock
+  // @readonly
+  // entity ZMDGCPCNTRLVAL01 {
+  //   key p_tabname : String(30);
+  //   Set : Association to many ZMDGCPCNTRLVAL01Set on Set.p_tabname = $self.p_tabname;
+  // }
+  // @readonly
+  // entity ZMDGCPCNTRLVAL01Set {
+  //   key p_tabname : String(30);
+  // }
+
+  // Central Application Actions
+  // Requestor Actions
   action validateCentralData(tablename: String, rowData: String) returns { message: String; type: String };
   action submitCentralData(tablename: String, rowData: String, operation: String) returns { workflowid: String; message: String; type: String };
   action triggerCentralWorkflow(workflowid: String, tablename: String) returns { bpaInstanceId: String; message: String };
+
+  // Approver Actions
   action getCentralRequestData(tablename: String, workflowid: String) returns { data: String; message: String; type: String };
   // @requires: 'any'
   action takeActionCentral(workflowid: String, action: String, remarks: String, bpaInstanceId: String) returns { message: String; type: String };

@@ -1698,7 +1698,7 @@ sap.ui.define([
                 /** Define Variables */
                 var oFieldsData = this.fn_getGlobalModel("oFieldsDataModel").getData()[0];
                 // Handle both lowercase (OData V2 proxy returns lowercase from CAP CDS) and PascalCase (legacy)
-                var oSelectedTablename = oFieldsData.tablename || oFieldsData.TableName;
+                var oSelectedTablename = oFieldsData.TableName;
                 var iLastIndex; // Stores the last index of '/' in the service URL
 
                 /** Method Implementation */
@@ -1707,7 +1707,15 @@ sap.ui.define([
 
                 // Set service URL and entity set
                 // The CentralService at /mdrapi/central is the correct CAP service for MDR Central data
-                this.sServiceUrl = "/mdrapi/central/";
+                var aFilters = [new sap.ui.model.Filter("TableName", sap.ui.model.FilterOperator.EQ, oSelectedTablename)];
+                this.fn_getGlobalModel().bindList("/CntrlUIUrl", null, null, aFilters).requestContexts(0, Infinity).then(function (aContexts) {
+                    var aUrlData = aContexts.map(function (oCtx) { return oCtx.getObject(); });
+                    aUrlData[0].OdataUrl;
+                }).catch(function (err) {
+                    that.fn_getLogReference().error("Table Result Controller: Backend error reading CntrlUIUrl");
+                    that.fn_closeBusyDialog();
+                });
+                this.sServiceUrl = "mdrapi/central/";
                 this.sEntitySet = "/" + oSelectedTablename;
 
                 // Log information
