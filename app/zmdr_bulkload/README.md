@@ -7,7 +7,7 @@
 |**Generation Platform**<br>Visual Studio Code|
 |**Template Used**<br>Basic V4|
 |**Service Type**<br>Local CAP|
-|**Service URL**<br>http://localhost:4004/api/bulk/|
+|**Service URL**<br>http://localhost:4004/mdrapi/bulk/|
 |**Module Name**<br>zmdr_bulkload|
 |**Application Title**<br>A bulk upload application|
 |**Namespace**<br>com.intapptics|

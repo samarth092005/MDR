@@ -10,7 +10,7 @@
   "x-sap-shortText": "Use the Core.Description annotation on your CDS service to provide a meaningful short text.",
   "servers": [
     {
-      "url": "/api/workflow"
+      "url": "/mdrapi/workflow"
     }
   ],
   "tags": [

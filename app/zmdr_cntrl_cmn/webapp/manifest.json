@@ -30,7 +30,7 @@
     },
     "dataSources": {
       "mainService": {
-        "uri": "api/central/",
+        "uri": "mdrapi/central/",
         "type": "OData",
         "settings": {
           "annotations": [],
@@ -39,7 +39,7 @@
         }
       },
       "ZMDGCPCNTRLVAL01_CDS": {
-        "uri": "api/central/",
+        "uri": "mdrapi/central/",
         "type": "OData",
         "settings": {
           "annotations": [],
@@ -48,7 +48,7 @@
         }
       },
       "ZMDR_UTILITY_WORKFLOW_SRV": {
-        "uri": "api/workflow/",
+        "uri": "mdrapi/workflow/",
         "type": "OData",
         "settings": {
           "annotations": [],
@@ -57,7 +57,7 @@
         }
       },
       "ZMDGCPCNTRLURL01_CDS": {
-        "uri": "api/central/",
+        "uri": "mdrapi/central/",
         "type": "OData",
         "settings": {
           "annotations": [],
@@ -200,5 +200,80 @@
   "sap.cloud": {
     "public": true,
     "service": "mdr.cap.btp"
-  }
+  },
+    "sap.bpa.task": {
+        "_version": "1.0.0",
+        "outcomes": [
+            {
+                "id": "approve",
+                "label": "Approve"
+            },
+            {
+                "id": "reject",
+                "label": "Reject"
+            }
+        ],
+        "inputs": {
+            "$schema": "http://json-schema.org/draft-07/schema",
+            "title": "input",
+            "type": "object",
+            "required": [
+                "customerName",
+                "orderNumber",
+                "orderAmount",
+                "orderDate",
+                "expectedDeliveryDate",
+                "shippingCountry"
+            ],
+            "properties": {
+                "customerName": {
+                    "type": "string",
+                    "title": "Customer Name",
+                    "description": "Customer Name"
+                },
+                "orderNumber": {
+                    "type": "string",
+                    "title": "Order Number",
+                    "description": "Order Number"
+                },
+                "orderAmount": {
+                    "type": "number",
+                    "title": "Order Amount",
+                    "description": "Order Amount"
+                },
+                "orderDate": {
+                    "type": "string",
+                    "title": "Order Date",
+                    "description": "Order Date"
+                },
+                "expectedDeliveryDate": {
+                    "type": "string",
+                    "title": "Expected Delivery Date",
+                    "description": "End Date of the Vacation"
+                },
+                "shippingCountry": {
+                    "type": "string",
+                    "title": "Shipping Country",
+                    "description": "Shipping Country"
+                }
+            }
+        },
+        "outputs": {
+            "$schema": "http://json-schema.org/draft-07/schema",
+            "title": "output",
+            "type": "object",
+            "required": [
+                "comment"
+            ],
+            "properties": {
+                "comment": {
+                    "type": "string",
+                    "title": "Comment",
+                    "description": "Comment to buyer"
+                }
+            }
+        },
+        "category": "approval"
+    }
+
 }

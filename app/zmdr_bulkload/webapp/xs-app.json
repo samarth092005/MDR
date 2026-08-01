@@ -2,8 +2,8 @@
   "welcomeFile": "/index.html",
   "routes": [
     {
-      "source": "^/api/(.*)$",
-      "target": "/api/$1",
+      "source": "^/mdrapi/(.*)$",
+      "target": "/mdrapi/$1",
       "destination": "srv-api",
       "authenticationType": "xsuaa"
     },

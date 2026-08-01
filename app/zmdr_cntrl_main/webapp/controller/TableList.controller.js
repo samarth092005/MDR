@@ -205,7 +205,7 @@ sap.ui.define([
 
                 // If value entered in the search field add that into the filter
                 if (sValue && sValue.length > 0) {
-                    aFilter.push(new Filter("tableName", FilterOperator.Contains, sValue));
+                    aFilter.push(new Filter("TableName", FilterOperator.Contains, sValue));
                 }
 
                 // Bind the filter with the list
@@ -401,15 +401,6 @@ sap.ui.define([
 
                     // Log information
                     this.fn_getLogReference().info("Table List Controller: Selected repository - " + oSelectedRepository.repositoryName);
-
-                    // DEBUG: Log actual data keys to diagnose property casing
-                    if (oCntrlUiConfigData.length > 0) {
-                        console.log("=== DEBUG: oCntrlUiConfigData[0] keys ===", Object.keys(oCntrlUiConfigData[0]));
-                        console.log("=== DEBUG: oCntrlUiConfigData[0] full object ===", JSON.stringify(oCntrlUiConfigData[0]));
-                        console.log("=== DEBUG: oSelectedRepository ===", JSON.stringify(oSelectedRepository));
-                    } else {
-                        console.log("=== DEBUG: oCntrlUiConfigData is EMPTY ===");
-                    }
                     
                     // Filter the config model based on the selected repository
                     // Handle both lowercase (OData V4 / CAP default) and PascalCase (OData V2 proxy)
@@ -418,12 +409,10 @@ sap.ui.define([
                         return sRepo === oSelectedRepository.repositoryName;
                     });
 
-                    console.log("=== DEBUG: aFilteredTables count ===", aFilteredTables.length);
-
                     // Get unique tables from the above filtered data
                     aFilteredTables.forEach(function (oDupTable) {
-                        var sTableLabel = oDupTable.tablelabel || oDupTable.Tablelabel;
-                        var sTableName = oDupTable.tablename || oDupTable.Tablename;
+                        var sTableLabel = oDupTable.TableLabel || oDupTable.Tablelabel;
+                        var sTableName = oDupTable.TableName || oDupTable.Tablename;
                         if (aUniqueTables.filter(function (oUniqueTable) {
                             return oUniqueTable.tableName === sTableLabel;
                         }).length === 0) {
@@ -453,9 +442,6 @@ sap.ui.define([
 
                     // Clear any previous table selections
                     this.byId("tblTableList").removeSelections();
-
-                    // CLose the busy indicator
-                    // this.fn_closeBusyDialog(); // Removed synchronous busy dialog call
                 } else {
                     // Navigate to home page
                     this.fn_getRouter().navTo("category");

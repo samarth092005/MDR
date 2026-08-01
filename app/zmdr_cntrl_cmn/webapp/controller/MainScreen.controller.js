@@ -3960,7 +3960,7 @@ sap.ui.define([
                 WorkflowIdentifier: "CENTRAL"
             };            // [FIXED] Use fetch() instead of OData V4 bindContext/batch to avoid 403 errors
             var that = this;
-            var sServiceUrl = sap.ui.require.toUrl("com/intapptics/zmdrcntrlcmn") + "/api/workflow/";
+            var sServiceUrl = sap.ui.require.toUrl("com/intapptics/zmdrcntrlcmn") + "/mdrapi/workflow/";
             var sTriggerUrl = sServiceUrl + "TriggerWorkflowSet";
 
             fetch(sServiceUrl, {

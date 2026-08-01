@@ -31,7 +31,7 @@
     },    
     "dataSources": {
       "mainService": {
-        "uri": "api/bulk/",
+        "uri": "mdrapi/bulk/",
         "type": "OData",
         "settings": {
           "annotations": [],
@@ -39,7 +39,7 @@
         }
       },
       "adminService": {
-        "uri": "api/admin/",
+        "uri": "mdrapi/admin/",
         "type": "OData",
         "settings": {
           "annotations": [],

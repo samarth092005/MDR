@@ -845,7 +845,7 @@ sap.ui.define([
             // Use fetch() against the REST endpoint.
             // Rationale: CAP OData V4 returns HTTP 204 (no body) for actions whose
             // return type contains nested arrays of complex types. The REST endpoint
-            // at /api/bulk/rest/submitBulkData bypasses that limitation and returns
+            // at /mdrapi/bulk/rest/submitBulkData bypasses that limitation and returns
             // proper JSON.
             var that = this;
             var sServiceUrl = this.getOwnerComponent().getModel().getServiceUrl();

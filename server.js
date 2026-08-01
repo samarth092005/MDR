@@ -14,7 +14,7 @@ cds.on('bootstrap', (app) => {
     // --- VALIDATE ---
     // Validates uploaded rows against config + lookup tables. dataload='N' means
     // rows are NOT written to the DB — only validation results are returned.
-    app.post('/api/bulk/rest/validateBulkData', async (req, res) => {
+    app.post('/mdrapi/bulk/rest/validateBulkData', async (req, res) => {
         try {
             const { processBulkData } = require('./srv/lib/process-bulk');
             const {
@@ -38,7 +38,7 @@ cds.on('bootstrap', (app) => {
             const body = JSON.stringify(result ?? null);
             res.status(200).set('Content-Type', 'application/json').send(body);
         } catch (err) {
-            console.error('[REST /api/bulk/rest/validateBulkData] Error:', err);
+            console.error('[REST /mdrapi/bulk/rest/validateBulkData] Error:', err);
             res.status(500).json({ error: err.message });
         }
     });
@@ -46,7 +46,7 @@ cds.on('bootstrap', (app) => {
     // --- SUBMIT ---
     // Stages rows in the versioned table (VERSION_ACTIVE='G') or BulkTemp,
     // generates a workflow ID, and writes the initial WFAudit INITIATED entry.
-    app.post('/api/bulk/rest/submitBulkData', async (req, res) => {
+    app.post('/mdrapi/bulk/rest/submitBulkData', async (req, res) => {
         try {
             const { processBulkData } = require('./srv/lib/process-bulk');
             const { insertWFAudit } = require('./srv/lib/wf-utilities');
@@ -84,7 +84,7 @@ cds.on('bootstrap', (app) => {
             });
             res.status(200).set('Content-Type', 'application/json').send(body);
         } catch (err) {
-            console.error('[REST /api/bulk/rest/submitBulkData] Error:', err);
+            console.error('[REST /mdrapi/bulk/rest/submitBulkData] Error:', err);
             res.status(500).json({ error: err.message });
         }
     });
@@ -93,7 +93,7 @@ cds.on('bootstrap', (app) => {
     // Resolves approvers from config, starts a SAP BPA workflow instance
     // (with automatic mock fallback when BPA env vars are not set),
     // and persists the MDR ↔ BPA link in MDRWorkflowLink.
-    app.post('/api/bulk/rest/triggerBulkWorkflow', async (req, res) => {
+    app.post('/mdrapi/bulk/rest/triggerBulkWorkflow', async (req, res) => {
         try {
             const { startBulkApprovalWorkflow } = require('./srv/lib/bpa-client');
             const { saveMDRWorkflowLink, getApprovers } = require('./srv/lib/wf-utilities');
@@ -133,7 +133,7 @@ cds.on('bootstrap', (app) => {
             const body = JSON.stringify({ bpaInstanceId, message: 'Workflow triggered', type: 'S' });
             res.status(200).set('Content-Type', 'application/json').send(body);
         } catch (err) {
-            console.error('[REST /api/bulk/rest/triggerBulkWorkflow] Error:', err);
+            console.error('[REST /mdrapi/bulk/rest/triggerBulkWorkflow] Error:', err);
             res.status(500).json({ error: err.message });
         }
     });

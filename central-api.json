@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "Service for namespace CentralService",
-    "description": "This service is located at [/api/central/](/api/central/)",
+    "description": "This service is located at [/mdrapi/central/](/mdrapi/central/)",
     "version": ""
   },
   "x-sap-api-type": "ODATAV4",
@@ -10,7 +10,7 @@
   "x-sap-shortText": "Service for namespace CentralService",
   "servers": [
     {
-      "url": "/api/central"
+      "url": "/mdrapi/central"
     }
   ],
   "tags": [

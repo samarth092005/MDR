@@ -4,7 +4,7 @@
     "generatorPlatform": "SAP Business Application Studio",
     "serviceType": "Local CAP",
     "metadataFilename": "",
-    "serviceUrl": "http://localhost:4004/api/reporting/",
+    "serviceUrl": "http://localhost:4004/mdrapi/reporting/",
     "appName": "zmdr_wfauditrep",
     "appTitle": "Workflow Audit Report",
     "appDescription": "Workflow Audit Report",

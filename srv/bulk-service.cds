@@ -1,4 +1,4 @@
-using zmdr from '../db/mdr-bulk';
+using zmdr as db from '../db/mdr-bulk';
 using from '../db/mdr-maintables';
 
 service BulkService @(
@@ -8,26 +8,26 @@ service BulkService @(
 
   // Config tables via CAP ORM
   @readonly
-  entity BulkHdrConfig   as projection on zmdr.BulkHdrConfig;
+  entity BulkHdrConfig as projection on db.BulkHdrConfig;
 
   @readonly
-  entity BulkItmConfig   as projection on zmdr.BulkItmConfig;
+  entity BulkItmConfig as projection on db.BulkItmConfig;
 
-  entity BulkTemp        as projection on zmdr.BulkTemp;
+  entity BulkTemp as projection on db.BulkTemp;
 
   // Explicitly expose master data tables so they are definitively deployed
-  @readonly entity ZMDR_BPMASTER as projection on zmdr.BPMaster;
-  @readonly entity ZMDR_GLACCOUNT as projection on zmdr.GLAccount;
+  @readonly entity ZMDR_BPMASTER as projection on db.BPMaster;
+  @readonly entity ZMDR_GLACCOUNT as projection on db.GLAccount;
 
   // Explicitly expose lookup tables
-  @readonly entity ZMDXCNAPPSTATS01 as projection on zmdr.ApprovalStatus;
-  // @readonly entity ZMDR_BP_ROLE_REF as projection on zmdr.ZMDR_BP_ROLE_REF;
-  // @readonly entity T005             as projection on zmdr.T005;
-  // @readonly entity T002             as projection on zmdr.T002;
-  // @readonly entity TCURC            as projection on zmdr.TCURC;
-  // @readonly entity T052             as projection on zmdr.T052;
-  // @readonly entity TINC             as projection on zmdr.TINC;
-  // @readonly entity ZMDR_BP_STATUS   as projection on zmdr.ZMDR_BP_STATUS;
+  @readonly entity ZMDXCNAPPSTATS01 as projection on db.ApprovalStatus;
+  // @readonly entity ZMDR_BP_ROLE_REF as projection on db.ZMDR_BP_ROLE_REF;
+  // @readonly entity T005             as projection on db.T005;
+  // @readonly entity T002             as projection on db.T002;
+  // @readonly entity TCURC            as projection on db.TCURC;
+  // @readonly entity T052             as projection on db.T052;
+  // @readonly entity TINC             as projection on db.TINC;
+  // @readonly entity ZMDR_BP_STATUS   as projection on db.ZMDR_BP_STATUS;
 
   // Actions — dynamic tables handled inside handlers via raw parameterised SQL
 

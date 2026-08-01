@@ -1178,46 +1178,46 @@ sap.ui.define([
                             oNavServiceToCommonApp = oService;
                             // Create an application state
                             oAppState = oNavServiceToCommonApp.createEmptyAppStateAsync(_oSelf.getOwnerComponent())
-                            .then(function (oAppState) {
-                                // Set the parameters into the app state
-                                oAppState.setData(oStateToSave);
+                                .then(function (oAppState) {
+                                    // Set the parameters into the app state
+                                    oAppState.setData(oStateToSave);
 
-                                // Save the data
-                                oAppState.save();
+                                    // Save the data
+                                    oAppState.save();
 
-                                // Get reference of the hash changer service
-                                oHashChanger = sap.ui.core.routing.HashChanger.getInstance();
+                                    // Get reference of the hash changer service
+                                    oHashChanger = sap.ui.core.routing.HashChanger.getInstance();
 
-                                // Get the current hash
-                                sCurrentHash = oHashChanger.getHash();
+                                    // Get the current hash
+                                    sCurrentHash = oHashChanger.getHash();
 
-                                // Check if any app state is already present in the current hash using regex
-                                aAppStateKeys = /(?:sap-iapp-state=)([^&=]+)/.exec(sCurrentHash);
-                                    
-                                if (aAppStateKeys) {
-                                    // Split the current hash and remove the current app state
-                                    sCurrentHash = sCurrentHash.split("?")[0];
-                                }
+                                    // Check if any app state is already present in the current hash using regex
+                                    aAppStateKeys = /(?:sap-iapp-state=)([^&=]+)/.exec(sCurrentHash);
 
-                                // Prepare the new hash by adding the new app state
-                                sNewHash = sCurrentHash + "?sap-iapp-state=" + oAppState.getKey();
+                                    if (aAppStateKeys) {
+                                        // Split the current hash and remove the current app state
+                                        sCurrentHash = sCurrentHash.split("?")[0];
+                                    }
 
-                                // Replace hash
-                                oHashChanger.replaceHash(sNewHash);
+                                    // Prepare the new hash by adding the new app state
+                                    sNewHash = sCurrentHash + "?sap-iapp-state=" + oAppState.getKey();
 
-                                // Navigate to the child app
-                                oNavServiceToCommonApp.toExternal({
-                                    target: {
-                                        semanticObject: "zmdr_central_cmn",
-                                        action: "manage"
-                                    },
-                                    params: {
-                                        sActionedBy: "Requestor",
-                                        sActionType: sBtnText
-                                    },
-                                    appStateKey: oAppState.getKey()
-                                });                            
-                            })
+                                    // Replace hash
+                                    oHashChanger.replaceHash(sNewHash);
+
+                                    // Navigate to the child app
+                                    oNavServiceToCommonApp.toExternal({
+                                        target: {
+                                            semanticObject: "zmdr_central_cmn",
+                                            action: "manage"
+                                        },
+                                        params: {
+                                            sActionedBy: "Requestor",
+                                            sActionType: sBtnText
+                                        },
+                                        appStateKey: oAppState.getKey()
+                                    });
+                                })
 
                         });
                 } else {
@@ -1353,13 +1353,13 @@ sap.ui.define([
                                     // /CntrlUIConfig is a @readonly EntitySet (central-service.cds line 14). bindList() is correct.
                                     // Filter on tablename is preserved. All downstream logic is unchanged.
                                     var that = this;
-                                    var aConfigFilters = [new sap.ui.model.Filter("tablename", sap.ui.model.FilterOperator.EQ, oSelectedTableData.tableId)];
+                                    var aConfigFilters = [new sap.ui.model.Filter("TableName", sap.ui.model.FilterOperator.EQ, oSelectedTableData.tableId)];
                                     this.fn_getGlobalModel().bindList("/CntrlUIConfig", null, null, aConfigFilters).requestContexts(0, Infinity).then(function (aContexts) {
                                         var aFieldsData = aContexts.map(function (oCtx) { return oCtx.getObject(); });
                                         if (aFieldsData.length !== 0) {
                                             aFieldsData.sort(function (a, b) {
-                                                var aSeq = a.columnseqno !== undefined ? a.columnseqno : a.Columnseqno;
-                                                var bSeq = b.columnseqno !== undefined ? b.columnseqno : b.Columnseqno;
+                                                var aSeq = a.ColumnSeqNo !== undefined ? a.ColumnSeqNo : a.ColumnSeqNo;
+                                                var bSeq = b.ColumnSeqNo !== undefined ? b.ColumnSeqNo : b.ColumnSeqNo;
                                                 return aSeq - bSeq;
                                             });
                                             oCompleteFieldsModel.setData(aFieldsData);
@@ -1417,13 +1417,13 @@ sap.ui.define([
                             // /CntrlUIConfig is a @readonly EntitySet (central-service.cds line 14). bindList() is correct.
                             // Filter on tablename is preserved. All downstream logic is unchanged.
                             var that = this;
-                            var aConfigFilters = [new sap.ui.model.Filter("tablename", sap.ui.model.FilterOperator.EQ, oSelectedTableData.tableId)];
+                            var aConfigFilters = [new sap.ui.model.Filter("TableName", sap.ui.model.FilterOperator.EQ, oSelectedTableData.tableId)];
                             this.fn_getGlobalModel().bindList("/CntrlUIConfig", null, null, aConfigFilters).requestContexts(0, Infinity).then(function (aContexts) {
                                 var aFieldsData = aContexts.map(function (oCtx) { return oCtx.getObject(); });
                                 if (aFieldsData.length !== 0) {
                                     aFieldsData.sort(function (a, b) {
-                                        var aSeq = a.columnseqno !== undefined ? a.columnseqno : a.Columnseqno;
-                                        var bSeq = b.columnseqno !== undefined ? b.columnseqno : b.Columnseqno;
+                                        var aSeq = a.ColumnSeqNo !== undefined ? a.ColumnSeqNo : a.ColumnSeqNo;
+                                        var bSeq = b.ColumnSeqNo !== undefined ? b.ColumnSeqNo : b.ColumnSeqNo;
                                         return aSeq - bSeq;
                                     });
                                     oCompleteFieldsModel.setData(aFieldsData);
@@ -1496,7 +1496,7 @@ sap.ui.define([
 
                 // Get the search field details from the fields data
                 aSearchFields = aFieldsData.filter(function (oField) {
-                    return oField.searchfieldflag === "Y";
+                    return oField.SearchFieldFlag === "Y";
                 });
 
                 // Loop into search fields and add the search fields in the filter bar
@@ -1505,10 +1505,10 @@ sap.ui.define([
                     sInpSrchFld = "inpSrchFld";
 
                     // Prepare the column name in camel casing format with the help of regex
-                    sTemp = oSearchField.columnname.replace(/./g, function (word, index) {
+                    sTemp = oSearchField.ColumnName.replace(/./g, function (word, index) {
                         if (index === 0) {
                             return word.toUpperCase();
-                        } else if (oSearchField.columnname.slice(index - 1, index) === "_") {
+                        } else if (oSearchField.ColumnName.slice(index - 1, index) === "_") {
                             return word.toUpperCase();
                         } else {
                             return word.toLowerCase();
@@ -1523,12 +1523,12 @@ sap.ui.define([
                         if (this.aSearchParameters.filter(function (oSearchParam) {
                             return oSearchParam.sSrchFldId === sInpSrchFld;
                         }).length !== 0) {
-                            if (oSearchField.columnname.toLowerCase().includes("status")) {
+                            if (oSearchField.ColumnName.toLowerCase().includes("status")) {
                                 // Place the search field in the filter bar with dropdown option
                                 oDynamicPage.getHeader().getContent()[0].addFilterGroupItem(new FilterGroupItem({
                                     groupName: "filters",
-                                    name: oSearchField.columnname,
-                                    label: oSearchField.columnlabel,
+                                    name: oSearchField.ColumnName,
+                                    label: oSearchField.ColumnLabel,
                                     partOfCurrentVariant: true,
                                     visibleInFilterBar: true,
                                     control: new ComboBox({
@@ -1562,8 +1562,8 @@ sap.ui.define([
                                 // Place the search field in the filter bar with input field and value present
                                 oDynamicPage.getHeader().getContent()[0].addFilterGroupItem(new FilterGroupItem({
                                     groupName: "filters",
-                                    name: oSearchField.columnname,
-                                    label: oSearchField.columnlabel,
+                                    name: oSearchField.ColumnName,
+                                    label: oSearchField.ColumnLabel,
                                     partOfCurrentVariant: true,
                                     visibleInFilterBar: true,
                                     control: new Input({
@@ -1582,12 +1582,12 @@ sap.ui.define([
                                     })
                                 }));
                             }
-                        } else if (oSearchField.columnname.toLowerCase().includes("status")) {
+                        } else if (oSearchField.ColumnName.toLowerCase().includes("status")) {
                             // Place the search field in the filter bar with dropdown option
                             oDynamicPage.getHeader().getContent()[0].addFilterGroupItem(new FilterGroupItem({
                                 groupName: "filters",
-                                name: oSearchField.columnname,
-                                label: oSearchField.columnlabel,
+                                name: oSearchField.ColumnName,
+                                label: oSearchField.ColumnLabel,
                                 partOfCurrentVariant: true,
                                 visibleInFilterBar: true,
                                 control: new ComboBox({
@@ -1616,8 +1616,8 @@ sap.ui.define([
                             // Place the search field in the filter bar with empty input field
                             oDynamicPage.getHeader().getContent()[0].addFilterGroupItem(new FilterGroupItem({
                                 groupName: "filters",
-                                name: oSearchField.columnname,
-                                label: oSearchField.columnlabel,
+                                name: oSearchField.ColumnName,
+                                label: oSearchField.ColumnLabel,
                                 partOfCurrentVariant: true,
                                 visibleInFilterBar: true,
                                 control: new Input({
@@ -1630,12 +1630,12 @@ sap.ui.define([
                                 })
                             }));
                         }
-                    } else if (oSearchField.columnname.toLowerCase().includes("status")) {
+                    } else if (oSearchField.ColumnName.toLowerCase().includes("status")) {
                         // Place the search field in the filter bar with dropdown option
                         oDynamicPage.getHeader().getContent()[0].addFilterGroupItem(new FilterGroupItem({
                             groupName: "filters",
-                            name: oSearchField.columnname,
-                            label: oSearchField.columnlabel,
+                            name: oSearchField.ColumnName,
+                            label: oSearchField.ColumnLabel,
                             partOfCurrentVariant: true,
                             visibleInFilterBar: true,
                             control: new ComboBox({
@@ -1664,8 +1664,8 @@ sap.ui.define([
                         // Place the search field in the filter bar with empty input field
                         oDynamicPage.getHeader().getContent()[0].addFilterGroupItem(new FilterGroupItem({
                             groupName: "filters",
-                            name: oSearchField.columnname,
-                            label: oSearchField.columnlabel,
+                            name: oSearchField.ColumnName,
+                            label: oSearchField.ColumnLabel,
                             partOfCurrentVariant: true,
                             visibleInFilterBar: true,
                             control: new Input({
@@ -1698,7 +1698,7 @@ sap.ui.define([
                 /** Define Variables */
                 var oFieldsData = this.fn_getGlobalModel("oFieldsDataModel").getData()[0];
                 // Handle both lowercase (OData V2 proxy returns lowercase from CAP CDS) and PascalCase (legacy)
-                var oSelectedTablename = oFieldsData.tablename || oFieldsData.Tablename;
+                var oSelectedTablename = oFieldsData.tablename || oFieldsData.TableName;
                 var iLastIndex; // Stores the last index of '/' in the service URL
 
                 /** Method Implementation */
@@ -1706,8 +1706,8 @@ sap.ui.define([
                 this.fn_openBusyDialog();
 
                 // Set service URL and entity set
-                // The CentralService at /api/central is the correct CAP service for MDR Central data
-                this.sServiceUrl = "/api/central/";
+                // The CentralService at /mdrapi/central is the correct CAP service for MDR Central data
+                this.sServiceUrl = "/mdrapi/central/";
                 this.sEntitySet = "/" + oSelectedTablename;
 
                 // Log information
@@ -1752,7 +1752,7 @@ sap.ui.define([
                 }
 
                 // Add filter of version active
-                aFilters.push(new Filter("VERSION_ACTIVE", FilterOperator.EQ, "Y"));
+                aFilters.push(new Filter("VersionActive", FilterOperator.EQ, "Y"));
 
                 // Reset the pagination toolbar fields
                 this.byId("btnFirstPage").setEnabled(false);
@@ -1763,7 +1763,7 @@ sap.ui.define([
 
                 // Set the page size value globally
                 this.iPageSize = iNum;
-                
+
                 // If page number is set to more than 1 while navigationg to child app
                 if (this.sPageNumber > 1) {
                     // Set the page number to the input field
@@ -1799,61 +1799,61 @@ sap.ui.define([
                         // Protect against component destruction
                         if (!this.getOwnerComponent()) { return; }
 
-                    // Get the total count
-                    this.iRecordCount = oListBinding.getLength() || 0;
+                        // Get the total count
+                        this.iRecordCount = oListBinding.getLength() || 0;
 
-                    // Set the record count globally
-                    this.fn_getLocalModel("tableResultViewModel").setProperty("/tableHeaderText", this.fn_getResourceBundle().getText("tableHeaderTextWithCount", [this.iRecordCount]));
+                        // Set the record count globally
+                        this.fn_getLocalModel("tableResultViewModel").setProperty("/tableHeaderText", this.fn_getResourceBundle().getText("tableHeaderTextWithCount", [this.iRecordCount]));
 
-                    // Check record count
-                    if (this.iRecordCount === 0) {
-                        if (this.byId("inpPageNum")) this.byId("inpPageNum").setValue(0);
-                        if (this.byId("btnNextPage")) this.byId("btnNextPage").setEnabled(false);
-                        if (this.byId("btnLastPage")) this.byId("btnLastPage").setEnabled(false);
-                        iMaxPageNum = 1;
-                    } else {
-                        // Calculate the maximum page number
-                        iMaxPageNum = Math.ceil(this.iRecordCount / this.iPageSize);
-                        if (iMaxPageNum === 0) iMaxPageNum = 1;
+                        // Check record count
+                        if (this.iRecordCount === 0) {
+                            if (this.byId("inpPageNum")) this.byId("inpPageNum").setValue(0);
+                            if (this.byId("btnNextPage")) this.byId("btnNextPage").setEnabled(false);
+                            if (this.byId("btnLastPage")) this.byId("btnLastPage").setEnabled(false);
+                            iMaxPageNum = 1;
+                        } else {
+                            // Calculate the maximum page number
+                            iMaxPageNum = Math.ceil(this.iRecordCount / this.iPageSize);
+                            if (iMaxPageNum === 0) iMaxPageNum = 1;
 
-                        if (iMaxPageNum === 1) {
-                            this.byId("btnNextPage").setEnabled(false);
-                            this.byId("btnLastPage").setEnabled(false);
+                            if (iMaxPageNum === 1) {
+                                this.byId("btnNextPage").setEnabled(false);
+                                this.byId("btnLastPage").setEnabled(false);
+                            }
                         }
-                    }
 
-                    // Assign max page size
-                    this.byId("lblMaxPageNum").setText("/" + iMaxPageNum);
+                        // Assign max page size
+                        this.byId("lblMaxPageNum").setText("/" + iMaxPageNum);
 
-                    // Map V4 contexts back to plain JS objects for the JSONModel
-                    var aData = aContexts.map(function (oContext) {
-                        return oContext.getObject();
-                    });
+                        // Map V4 contexts back to plain JS objects for the JSONModel
+                        var aData = aContexts.map(function (oContext) {
+                            return oContext.getObject();
+                        });
 
-                    oCurrentTableBoundModel.setData(aData);
+                        oCurrentTableBoundModel.setData(aData);
 
-                    // Set the model globally or update the data
-                    if (!this.fn_getGlobalModel("oCurrentTableBoundModel")) {
-                        this.fn_setGlobalModel(oCurrentTableBoundModel, "oCurrentTableBoundModel");
-                    } else {
-                        this.fn_getGlobalModel("oCurrentTableBoundModel").setData(aData);
-                    }
+                        // Set the model globally or update the data
+                        if (!this.fn_getGlobalModel("oCurrentTableBoundModel")) {
+                            this.fn_setGlobalModel(oCurrentTableBoundModel, "oCurrentTableBoundModel");
+                        } else {
+                            this.fn_getGlobalModel("oCurrentTableBoundModel").setData(aData);
+                        }
 
-                    // Prepare the result set of the table
-                    this._fn_prepareResultSet();
-                    
-                    // Close busy dialog
-                    this.fn_closeBusyDialog();
+                        // Prepare the result set of the table
+                        this._fn_prepareResultSet();
 
-                }.bind(this)).catch(function (oError) {
-                    // Protect against component destruction
-                    if (!this.getOwnerComponent()) { return; }
+                        // Close busy dialog
+                        this.fn_closeBusyDialog();
 
-                    // Show error message
-                    this.fn_showServiceError(oError);
-                    this.fn_closeBusyDialog();
-                }.bind(this));
-                
+                    }.bind(this)).catch(function (oError) {
+                        // Protect against component destruction
+                        if (!this.getOwnerComponent()) { return; }
+
+                        // Show error message
+                        this.fn_showServiceError(oError);
+                        this.fn_closeBusyDialog();
+                    }.bind(this));
+
                 } catch (e) {
                     this.fn_getLogReference().error("Table Result Controller: Error in requestContexts - " + e.message);
                     console.error("Error in requestContexts:", e);
@@ -1948,7 +1948,7 @@ sap.ui.define([
                                     }
                                 }
                             });
-                        } else if(oField.columnname === "WORKFLOW_ID") {
+                        } else if (oField.columnname === "WORKFLOW_ID") {
                             oCell = new sap.m.Text({
                                 text: {
                                     path: "oCurrentTableBoundModel>" + oField.columnname,
@@ -1968,7 +1968,7 @@ sap.ui.define([
                                 }
                             });
                         }
-                        
+
                         // Push the cell data in an array
                         aCells.push(oCell);
                     }
@@ -1978,7 +1978,7 @@ sap.ui.define([
                 oTable.bindAggregation("items", "oCurrentTableBoundModel>/", new sap.m.ColumnListItem("colListItem", {
                     cells: aCells
                 }));
-                
+
                 // Log information
                 this.fn_getLogReference().info("Table Result Controller: Exiting _fn_prepareResultSet method");
             }

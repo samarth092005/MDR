@@ -7,7 +7,7 @@
 |**Generation Platform**<br>SAP Business Application Studio|
 |**Template Used**<br>List Report Page V4|
 |**Service Type**<br>Local CAP|
-|**Service URL**<br>http://localhost:4004/api/reporting/|
+|**Service URL**<br>http://localhost:4004/mdrapi/reporting/|
 |**Module Name**<br>zmdr_wfauditrep|
 |**Application Title**<br>Workflow Audit Report|
 |**Namespace**<br>com.intapptics|

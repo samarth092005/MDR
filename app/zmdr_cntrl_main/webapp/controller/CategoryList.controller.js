@@ -289,8 +289,8 @@ sap.ui.define([
                 if (aCntrlConfigData.length !== 0) {
                     // Sort the array based on category
                     aCntrlConfigData.sort(function (oVal1, oVal2) {
-                        sTemp1 = oVal1.repository.toLowerCase();
-                        sTemp2 = oVal2.repository.toLowerCase();
+                        sTemp1 = oVal1.Repository.toLowerCase();
+                        sTemp2 = oVal2.Repository.toLowerCase();
 
                         if (sTemp1 !== undefined && sTemp2 !== undefined) {
                             if (sTemp1 < sTemp2) {
@@ -309,11 +309,11 @@ sap.ui.define([
                     aCntrlConfigData.forEach(function (oCntrlConfigData) {
                         // Check if already added into the array
                         if (aUniqueRepositories.filter(function (oUniqueRepositories) {
-                            return oUniqueRepositories.repositoryName === oCntrlConfigData.repository
+                            return oUniqueRepositories.repositoryName === oCntrlConfigData.Repository
                         }).length === 0) {
                             aUniqueRepositories.push({
-                                "repositoryName": oCntrlConfigData.repository,
-                                "repositoryLabel": oCntrlConfigData.repository // Fallback to repository id since label is not present in new model
+                                "repositoryName": oCntrlConfigData.Repository,
+                                "repositoryLabel": oCntrlConfigData.RepositoryLabel // Fallback to repository id since label is not present in new model
                             });
                         }
                     });

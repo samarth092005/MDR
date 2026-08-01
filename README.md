@@ -116,14 +116,14 @@ User (Browser)
   → Approuter (validates XSUAA token)
   → HTML5 App Repo (serves UI5 bundle)
   → User uploads Excel file in the UI
-  → UI calls POST /api/bulk/rest/validateBulkData
+  → UI calls POST /mdrapi/bulk/rest/validateBulkData
   → Approuter forwards to CAP srv
   → CAP srv validates data against HANA config tables
   → Returns { validData[], invalidData[] }
   → User clicks Submit
-  → UI calls POST /api/bulk/rest/submitBulkData
+  → UI calls POST /mdrapi/bulk/rest/submitBulkData
   → CAP srv writes to HANA, creates Workflow ID
-  → UI calls POST /api/bulk/rest/triggerBulkWorkflow
+  → UI calls POST /mdrapi/bulk/rest/triggerBulkWorkflow
   → CAP srv calls SAP BPA API → Approval task created
   → Approver receives notification in BPA Inbox
   → Approver approves/rejects
@@ -158,7 +158,7 @@ mdr-cap-btp/
 │       ├── xs-app.json              # ⚠️ Must have html5-apps-repo-rt catch-all route
 │       ├── ui5.yaml
 │       └── webapp/
-│           ├── manifest.json        # Points to /api/bulk/ OData service
+│           ├── manifest.json        # Points to /mdrapi/bulk/ OData service
 │           └── controller/
 │               └── BulkLoad.controller.js  # Core upload/validate/submit logic
 │
@@ -209,7 +209,7 @@ mdr-cap-btp/
 - Navigate to create, amend, close, or reopen a record
 - Track workflow status of pending changes
 
-**OData Service:** `CentralService` → `/api/central/`
+**OData Service:** `CentralService` → `/mdrapi/central/`
 
 ---
 
@@ -221,7 +221,7 @@ mdr-cap-btp/
 - Supports lookup fields (dropdown from reference tables)
 - Triggers single-record approval workflow via BPA
 
-**OData Service:** `CentralService` → `/api/central/`
+**OData Service:** `CentralService` → `/mdrapi/central/`
 
 ---
 
@@ -234,7 +234,7 @@ mdr-cap-btp/
 - Submits valid rows to HANA with versioning and workflow tracking
 - Triggers a bulk approval workflow in SAP BPA
 
-**REST Endpoints:** `/api/bulk/rest/validateBulkData`, `submitBulkData`, `triggerBulkWorkflow`
+**REST Endpoints:** `/mdrapi/bulk/rest/validateBulkData`, `submitBulkData`, `triggerBulkWorkflow`
 
 ---
 
@@ -304,10 +304,10 @@ aspect Versionable {
 
 | Service | Base URL | Description |
 |---|---|---|
-| `BulkService` | `/api/bulk/` | Bulk upload entities, config reads, WF actions |
-| `CentralService` | `/api/central/` | Central master data CRUD + approval actions |
-| `AdminService` | `/api/admin/` | Config table management (restricted to admin role) |
-| `WorkflowService` | `/api/workflow/` | Cross-cutting workflow actions |
+| `BulkService` | `/mdrapi/bulk/` | Bulk upload entities, config reads, WF actions |
+| `CentralService` | `/mdrapi/central/` | Central master data CRUD + approval actions |
+| `AdminService` | `/mdrapi/admin/` | Config table management (restricted to admin role) |
+| `WorkflowService` | `/mdrapi/workflow/` | Cross-cutting workflow actions |
 
 ### Custom REST Endpoints (in `server.js`)
 
@@ -315,9 +315,9 @@ These bypass OData serialization for operations that need full control over the 
 
 | Method | Endpoint | Purpose |
 |---|---|---|
-| `POST` | `/api/bulk/rest/validateBulkData` | Validate uploaded rows, returns `{validData[], invalidData[]}` |
-| `POST` | `/api/bulk/rest/submitBulkData` | Write valid rows to HANA + create workflow ID |
-| `POST` | `/api/bulk/rest/triggerBulkWorkflow` | Start BPA approval workflow instance |
+| `POST` | `/mdrapi/bulk/rest/validateBulkData` | Validate uploaded rows, returns `{validData[], invalidData[]}` |
+| `POST` | `/mdrapi/bulk/rest/submitBulkData` | Write valid rows to HANA + create workflow ID |
+| `POST` | `/mdrapi/bulk/rest/triggerBulkWorkflow` | Start BPA approval workflow instance |
 
 **Why custom REST?** CAP OData V4 returns `HTTP 204 No Content` when an action's return type contains
 anonymous inline complex types with nested arrays. The REST endpoints bypass this limitation and return
@@ -353,7 +353,7 @@ clean JSON directly.
 │          → Column count validated vs BulkItmConfig          │
 │          → Lookup values validated (e.g. STATUS → ZMDX...) │
 │          → Key fields checked: CREATE (new) vs UPDATE       │
-│          POST /api/bulk/rest/validateBulkData (dataload='N') │
+│          POST /mdrapi/bulk/rest/validateBulkData (dataload='N') │
 └─────────────────────────┬───────────────────────────────────┘
                           │
                           ▼
@@ -369,7 +369,7 @@ clean JSON directly.
 │          → Rows written to HANA (version_active = 'G')      │
 │          → Workflow ID generated (BULK-<timestamp>-<seq>)   │
 │          → WFAudit row: stage=INITIATOR, action=INITIATED   │
-│          POST /api/bulk/rest/submitBulkData (dataload='Y')  │
+│          POST /mdrapi/bulk/rest/submitBulkData (dataload='Y')  │
 └─────────────────────────┬───────────────────────────────────┘
                           │
                           ▼
@@ -379,7 +379,7 @@ clean JSON directly.
 │          → Resolves Approver list from ApproverClass table  │
 │          → Calls BPA API: POST /workflow-instances          │
 │          → Saves MDRWorkflowLink (MDR ID ↔ BPA Instance ID) │
-│          POST /api/bulk/rest/triggerBulkWorkflow            │
+│          POST /mdrapi/bulk/rest/triggerBulkWorkflow            │
 └─────────────────────────┬───────────────────────────────────┘
                           │
                           ▼
@@ -483,7 +483,7 @@ npx cds watch
 ```
 
 The server starts at `http://localhost:4004`. You will see:
-- Links to all OData services (`/api/bulk/`, `/api/central/`, etc.)
+- Links to all OData services (`/mdrapi/bulk/`, `/mdrapi/central/`, etc.)
 - Links to all UI5 apps (`/zmdr_bulkload/webapp/`, etc.)
 
 ### Opening Apps Locally

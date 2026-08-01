@@ -10,9 +10,10 @@ entity ApproverClass : Auditable, Versionable {
       System              : String(10);
       Hierarchy           : String(30);
       SubClass            : String(30);
-      UserOrGroup         : String(12); // ZMDR_USERORGRP
-      ClassType           : String(10); // ZMDR_CLASSTYPE
-      Status              : String(3); // ZMDR_STATUS
+      UserOrGroup         : String(12); 
+      ClassType           : String(10);
+      WorkflowId          : String(10);
+      Status              : String(3);
 }
 
 // Replaces ZMDR_POLICY
