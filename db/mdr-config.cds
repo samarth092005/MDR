@@ -2,9 +2,13 @@
 namespace zmdr;
 
 aspect Auditable {
-  created_on : Timestamp;  
+  @cds.on.insert: $now
+  created_on : Timestamp; 
+  @cds.on.insert: $user
   created_by : String(50);
-  updated_on : Timestamp;  
+  @cds.on.insert: $now  @cds.on.update: $now
+  updated_on : Timestamp; 
+  @cds.on.insert: $user @cds.on.update: $user
   updated_by : String(50);
   virtual OPERATIONTYPE : String(40);
 }

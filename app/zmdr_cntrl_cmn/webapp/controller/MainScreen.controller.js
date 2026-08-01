@@ -2366,8 +2366,8 @@ sap.ui.define([
                                 placeholder: "Enter/Select the Date - DD.MM.YYYY",
                                 required: bMandatory,
                                 editable: bEditable,
-                                value: sValue.slice(0, 10),
-                                tooltip: sValue.slice(0, 10),
+                                value: sValue ? sValue.slice(0, 10) : sValue,
+                                tooltip: sValue ? sValue.slice(0, 10) : sValue,
                                 change: this.onChange_sfrmItemDetailsFieldData.bind(this),
                                 width: "25rem"
                             }));
@@ -2430,8 +2430,8 @@ sap.ui.define([
                                 placeholder: "Enter/Select the Date - DD.MM.YYYY",
                                 required: bMandatory,
                                 editable: bEditable,
-                                value: sValue.slice(0, 10),
-                                tooltip: sValue.slice(0, 10),
+                                value: sValue ? sValue.slice(0, 10) : sValue,
+                                tooltip: sValue ? sValue.slice(0, 10) : sValue,
                                 change: this.onChange_sfrmItemDetailsFieldData.bind(this),
                                 width: "25rem"
                             }));
@@ -2442,8 +2442,8 @@ sap.ui.define([
                             displayFormat: "dd.MM.yyyy",
                             valueFormat: "yyyy-MM-dd",
                             editable: false,
-                            value: sValue.slice(0, 10),
-                            tooltip: sValue.slice(0, 10),
+                            value: sValue ? sValue.slice(0, 10) : sValue,
+                            tooltip: sValue ? sValue.slice(0, 10) : sValue,
                             width: "25rem"
                         }));
                     } else {
@@ -2457,8 +2457,8 @@ sap.ui.define([
                             displayFormat: "dd.MM.yyyy",
                             valueFormat: "yyyy-MM-dd",
                             editable: false,
-                            value: sValue.slice(0, 10),
-                            tooltip: sValue.slice(0, 10),
+                            value: sValue ? sValue.slice(0, 10) : sValue,
+                            tooltip: sValue ? sValue.slice(0, 10) : sValue,
                             width: "25rem"
                         }));
                     } else {
@@ -2467,8 +2467,8 @@ sap.ui.define([
                             displayFormat: "dd.MM.yyyy",
                             valueFormat: "yyyy-MM-dd",
                             editable: false,
-                            value: sValue,
-                            tooltip: sValue,
+                            value: sValue ? sValue.slice(0, 10) : sValue,
+                            tooltip: sValue ? sValue.slice(0, 10) : sValue,
                             width: "25rem"
                         }));
                     }

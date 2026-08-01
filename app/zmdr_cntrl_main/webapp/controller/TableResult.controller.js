@@ -885,7 +885,7 @@ sap.ui.define([
                             this.fn_getLogReference().info("Table Result Controller: No in-progress record exists for the selected entry");
 
                             // Check status — seed data uses "ACT" for active/approved and "CLO" for closed
-                            if (this.oSelectedTableData.STATUS === "ACT" || this.oSelectedTableData.STATUS === "Approved") {
+                            if (this.oSelectedTableData.STATUS === "510" || this.oSelectedTableData.STATUS === "Approved") {
                                 // Enable Amend and close button
                                 this.byId("btnAmend").setVisible(true);
                                 this.byId("btnReopen").setVisible(false);
@@ -894,7 +894,7 @@ sap.ui.define([
                                 // Show below information in the message strip area
                                 this.byId("msgStripTableResult").setText("<strong>Success:</strong><em> Record is valid for modification </em>");
                                 this.byId("msgStripTableResult").setType("Success");
-                            } else if (this.oSelectedTableData.STATUS === "CLO" || this.oSelectedTableData.STATUS === "Closed") {
+                            } else if (this.oSelectedTableData.STATUS === "590" || this.oSelectedTableData.STATUS === "Closed") {
                                 // Enable Reopen button
                                 this.byId("btnAmend").setVisible(false);
                                 this.byId("btnReopen").setVisible(true);
