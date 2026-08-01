@@ -1,7 +1,7 @@
 namespace zmdr;
 
-using zmdr.Auditable from './mdr-config';
-using zmdr.Versionable from './mdr-config';
+using zmdr.Auditable from './mdr-common';
+using zmdr.Versionable from './mdr-common';
 
 // GL Account Master Data
 @cds.persistence.table: 'GLAccount'

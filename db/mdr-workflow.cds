@@ -1,11 +1,38 @@
 namespace zmdr;
 
-using zmdr.WFAudit from '../db/mdr-config';
-using zmdr.CntrlUIVis from '../db/mdr-config';
-using zmdr.BulkHdrConfig from '../db/mdr-config';
+using zmdr.CntrlUIVis from './mdr-central';
+using zmdr.BulkHdrConfig from './mdr-bulk';
 
-// using zmdr.SomeOtherEntity from '../db/mdr-config'; // e.g., Company or Approval log
+// Replaces ZMDR_NR_WF number range object
+entity WFSequence {
+  key AppName : String(10); // BULK | CENTRAL | ORG
+      LastNum : Integer;
+      Prefix  : String(4);
+}
 
+// Replaces ZMDR_WFAUDIT
+entity WFAudit {
+  key SequenceId    : String(20);
+      WorkflowId    : String(10);
+      EntityId      : String(100);
+      ActionTime    : Timestamp;
+      OperationType : String(40);
+      EntityName    : String(40);
+      WfStage       : String(20);
+      Action        : String(20); // INITIATED | APPROVED | REJECTED | COMPLETED
+      UserRemarks   : String(300);
+      ActioningUser : String(50);
+}
+
+// Replaces ZMDR_MDRABAPWF  (MDR WF ID <-> BPA instance ID)
+entity MDRWorkflowLink {
+  key MdrWorkflowId : String(10);
+  key TableName     : String(30);
+      BpaInstanceId : String(100);
+}
+
+
+// Base view version 01 of WFAudit
 entity WFAuditReport01 as
     select from zmdr.WFAudit as wfaudit {
         key wfaudit.SequenceId    as SequenceId,

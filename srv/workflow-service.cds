@@ -1,4 +1,4 @@
-using zmdr from '../db/mdr-config';
+using zmdr from '../db/mdr-dad';
 
 service WorkflowService @(
   path    : '/api/workflow',

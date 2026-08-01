@@ -1,5 +1,5 @@
-using zmdr from '../db/mdr-config';
-using { zmdr as masterdata } from '../db/mdr-master-data';
+using zmdr from '../db/mdr-dad';
+using { zmdr as masterdata } from '../db/mdr-maintables';
 
 @impl: 'srv/central-handler.js'
 service CentralService @(

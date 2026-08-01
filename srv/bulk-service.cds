@@ -1,5 +1,5 @@
-using zmdr from '../db/mdr-config';
-using from '../db/mdr-master-data';
+using zmdr from '../db/mdr-dad';
+using from '../db/mdr-maintables';
 
 service BulkService @(
   path    : '/api/bulk',

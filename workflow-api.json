@@ -1,0 +1,2097 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Use the title annotation on your CDS service to provide a meaningful title.",
+    "description": "Use the Core.LongDescription or Core.Description annotation on your CDS service to provide a meaningful description.",
+    "version": ""
+  },
+  "x-sap-api-type": "ODATAV4",
+  "x-odata-version": "4.01",
+  "x-sap-shortText": "Use the Core.Description annotation on your CDS service to provide a meaningful short text.",
+  "servers": [
+    {
+      "url": "/api/workflow"
+    }
+  ],
+  "tags": [
+    {
+      "name": "MDRWorkflow Link"
+    },
+    {
+      "name": "Trigger Workflow Set"
+    },
+    {
+      "name": "WFAudit"
+    }
+  ],
+  "paths": {
+    "/$batch": {
+      "post": {
+        "summary": "Sends a group of requests",
+        "description": "Group multiple requests into a single request payload, see [Batch Requests](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_BatchRequests).\n\n*Please note that \"Try it out\" is not supported for this request.*",
+        "tags": [
+          "Batch Requests"
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Batch request",
+          "content": {
+            "multipart/mixed;boundary=request-separator": {
+              "schema": {
+                "type": "string"
+              },
+              "example": "--request-separator\nContent-Type: application/http\nContent-Transfer-Encoding: binary\n\nGET WFAudit HTTP/1.1\nAccept: application/json\n\n\n--request-separator--"
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Batch response",
+            "content": {
+              "multipart/mixed": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "--response-separator\nContent-Type: application/http\n\nHTTP/1.1 200 OK\nContent-Type: application/json\n\n{...}\n--response-separator--"
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/MDRWorkflowLink": {
+      "get": {
+        "summary": "Retrieves a list of MDR workflow link.",
+        "tags": [
+          "MDRWorkflow Link"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "name": "$filter",
+            "description": "Filter items by property values, see [Filtering](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionfilter)",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "name": "$orderby",
+            "description": "Order items by property values, see [Sorting](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionorderby)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "MdrWorkflowId",
+                  "MdrWorkflowId desc",
+                  "TableName",
+                  "TableName desc",
+                  "BpaInstanceId",
+                  "BpaInstanceId desc"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "MdrWorkflowId",
+                  "TableName",
+                  "BpaInstanceId"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved MDR workflow link",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of MDRWorkflowLink",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/WorkflowService.MDRWorkflowLink"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/MDRWorkflowLink(MdrWorkflowId='{MdrWorkflowId}',TableName='{TableName}')": {
+      "parameters": [
+        {
+          "description": "key: MdrWorkflowId",
+          "in": "path",
+          "name": "MdrWorkflowId",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 10
+          }
+        },
+        {
+          "description": "key: TableName",
+          "in": "path",
+          "name": "TableName",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 30
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves a single MDR workflow link.",
+        "tags": [
+          "MDRWorkflow Link"
+        ],
+        "parameters": [
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "MdrWorkflowId",
+                  "TableName",
+                  "BpaInstanceId"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved MDR workflow link",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkflowService.MDRWorkflowLink"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/TriggerWorkflowSet": {
+      "get": {
+        "summary": "Retrieves a list of trigger workflow set.",
+        "tags": [
+          "Trigger Workflow Set"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "name": "$filter",
+            "description": "Filter items by property values, see [Filtering](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionfilter)",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "name": "$orderby",
+            "description": "Order items by property values, see [Sorting](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionorderby)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "WorkflowId",
+                  "WorkflowId desc",
+                  "EntityName",
+                  "EntityName desc",
+                  "EntityId",
+                  "EntityId desc",
+                  "Tablename",
+                  "Tablename desc",
+                  "OperationType",
+                  "OperationType desc",
+                  "UserRemarks",
+                  "UserRemarks desc",
+                  "WorkflowIdentifier",
+                  "WorkflowIdentifier desc"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "WorkflowId",
+                  "EntityName",
+                  "EntityId",
+                  "Tablename",
+                  "OperationType",
+                  "UserRemarks",
+                  "WorkflowIdentifier"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved trigger workflow set",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of TriggerWorkflowSet",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/WorkflowService.TriggerWorkflowSet"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      },
+      "post": {
+        "summary": "Creates a single trigger workflow set.",
+        "tags": [
+          "Trigger Workflow Set"
+        ],
+        "requestBody": {
+          "description": "New trigger workflow set",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkflowService.TriggerWorkflowSet-create"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created trigger workflow set",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkflowService.TriggerWorkflowSet"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/TriggerWorkflowSet('{WorkflowId}')": {
+      "parameters": [
+        {
+          "description": "key: WorkflowId",
+          "in": "path",
+          "name": "WorkflowId",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 10
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves a single trigger workflow set.",
+        "tags": [
+          "Trigger Workflow Set"
+        ],
+        "parameters": [
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "WorkflowId",
+                  "EntityName",
+                  "EntityId",
+                  "Tablename",
+                  "OperationType",
+                  "UserRemarks",
+                  "WorkflowIdentifier"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved trigger workflow set",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkflowService.TriggerWorkflowSet"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Changes a single trigger workflow set.",
+        "tags": [
+          "Trigger Workflow Set"
+        ],
+        "requestBody": {
+          "description": "New property values",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkflowService.TriggerWorkflowSet-update"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Success"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Deletes a single trigger workflow set.",
+        "tags": [
+          "Trigger Workflow Set"
+        ],
+        "responses": {
+          "204": {
+            "description": "Success"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/WFAudit": {
+      "get": {
+        "summary": "Retrieves a list of WF audit.",
+        "tags": [
+          "WFAudit"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "name": "$filter",
+            "description": "Filter items by property values, see [Filtering](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionfilter)",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "name": "$orderby",
+            "description": "Order items by property values, see [Sorting](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionorderby)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "SequenceId",
+                  "SequenceId desc",
+                  "WorkflowId",
+                  "WorkflowId desc",
+                  "EntityId",
+                  "EntityId desc",
+                  "ActionTime",
+                  "ActionTime desc",
+                  "OperationType",
+                  "OperationType desc",
+                  "EntityName",
+                  "EntityName desc",
+                  "WfStage",
+                  "WfStage desc",
+                  "Action",
+                  "Action desc",
+                  "UserRemarks",
+                  "UserRemarks desc",
+                  "ActioningUser",
+                  "ActioningUser desc"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "SequenceId",
+                  "WorkflowId",
+                  "EntityId",
+                  "ActionTime",
+                  "OperationType",
+                  "EntityName",
+                  "WfStage",
+                  "Action",
+                  "UserRemarks",
+                  "ActioningUser"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved WF audit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of WFAudit",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/WorkflowService.WFAudit"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/WFAudit('{SequenceId}')": {
+      "parameters": [
+        {
+          "description": "key: SequenceId",
+          "in": "path",
+          "name": "SequenceId",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 20
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves a single WF audit.",
+        "tags": [
+          "WFAudit"
+        ],
+        "parameters": [
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "SequenceId",
+                  "WorkflowId",
+                  "EntityId",
+                  "ActionTime",
+                  "OperationType",
+                  "EntityName",
+                  "WfStage",
+                  "Action",
+                  "UserRemarks",
+                  "ActioningUser"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved WF audit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkflowService.WFAudit"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/cancelWorkflow": {
+      "post": {
+        "summary": "Invokes action cancelWorkflow",
+        "tags": [
+          "Service Operations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/WorkflowService.return_WorkflowService_cancelWorkflow"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "requestBody": {
+          "description": "Action parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "bpaInstanceId": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/claimWorkflowTask": {
+      "post": {
+        "summary": "Invokes action claimWorkflowTask",
+        "tags": [
+          "Service Operations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/WorkflowService.return_WorkflowService_claimWorkflowTask"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "requestBody": {
+          "description": "Action parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "bpaInstanceId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "taskId": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/completeWFAudit": {
+      "post": {
+        "summary": "Invokes action completeWFAudit",
+        "tags": [
+          "Service Operations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/WorkflowService.return_WorkflowService_completeWFAudit"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "requestBody": {
+          "description": "Action parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "workflowId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "entityId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "entityName": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/initiatedWFAudit": {
+      "post": {
+        "summary": "Invokes action initiatedWFAudit",
+        "tags": [
+          "Service Operations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/WorkflowService.return_WorkflowService_initiatedWFAudit"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "requestBody": {
+          "description": "Action parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "workflowId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "entityId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "entityName": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "operationType": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "requestorId": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/insertWFAudit": {
+      "post": {
+        "summary": "Invokes action insertWFAudit",
+        "tags": [
+          "Service Operations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/WorkflowService.return_WorkflowService_insertWFAudit"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "requestBody": {
+          "description": "Action parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "workflowId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "entityId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "entityName": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "operationType": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "wfStage": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "action": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "userRemarks": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "actioningUser": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pushApprovedAudit": {
+      "post": {
+        "summary": "Invokes action pushApprovedAudit",
+        "tags": [
+          "Service Operations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/WorkflowService.return_WorkflowService_pushApprovedAudit"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "requestBody": {
+          "description": "Action parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "workflowId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "currentStage": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "approverId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "approverRemarks": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pushInprogressAudit": {
+      "post": {
+        "summary": "Invokes action pushInprogressAudit",
+        "tags": [
+          "Service Operations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/WorkflowService.return_WorkflowService_pushInprogressAudit"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "requestBody": {
+          "description": "Action parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "workflowId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "currentStage": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "approverId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "tablename": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pushRejectedAudit": {
+      "post": {
+        "summary": "Invokes action pushRejectedAudit",
+        "tags": [
+          "Service Operations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/WorkflowService.return_WorkflowService_pushRejectedAudit"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "requestBody": {
+          "description": "Action parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "workflowId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "currentStage": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "approverId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "approverRemarks": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "action": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/putBackWorkflowTask": {
+      "post": {
+        "summary": "Invokes action putBackWorkflowTask",
+        "tags": [
+          "Service Operations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/WorkflowService.return_WorkflowService_putBackWorkflowTask"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "requestBody": {
+          "description": "Action parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "bpaInstanceId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "taskId": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/resolveApprovers": {
+      "post": {
+        "summary": "Invokes action resolveApprovers",
+        "tags": [
+          "Service Operations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/WorkflowService.return_WorkflowService_resolveApprovers"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "requestBody": {
+          "description": "Action parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tablename": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "currentStage": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "processId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "requesterRole": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "requestorId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "apprClass": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/saveBPALinkage": {
+      "post": {
+        "summary": "Invokes action saveBPALinkage",
+        "tags": [
+          "Service Operations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/WorkflowService.return_WorkflowService_saveBPALinkage"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "requestBody": {
+          "description": "Action parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "mdrWorkflowId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "bpaInstanceId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "tablename": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sendEmailToApprover": {
+      "post": {
+        "summary": "Invokes action sendEmailToApprover",
+        "tags": [
+          "Service Operations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/WorkflowService.return_WorkflowService_sendEmailToApprover"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "requestBody": {
+          "description": "Action parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "workflowId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "approverEmail": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "entityName": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "operationType": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "currentStage": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "userRemarks": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "recordCount": {
+                    "type": "integer",
+                    "format": "int32",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sendEmailToRequestor": {
+      "post": {
+        "summary": "Invokes action sendEmailToRequestor",
+        "tags": [
+          "Service Operations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/WorkflowService.return_WorkflowService_sendEmailToRequestor"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "requestBody": {
+          "description": "Action parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "workflowId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "requestorEmail": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "entityName": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "operationType": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "tablename": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "type": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sendEscalationEmail": {
+      "post": {
+        "summary": "Invokes action sendEscalationEmail",
+        "tags": [
+          "Service Operations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/WorkflowService.return_WorkflowService_sendEscalationEmail"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "requestBody": {
+          "description": "Action parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "workflowId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "currentStage": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "entityName": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "stepNumber": {
+                    "type": "integer",
+                    "format": "int32",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sendReminderEmail": {
+      "post": {
+        "summary": "Invokes action sendReminderEmail",
+        "tags": [
+          "Service Operations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/WorkflowService.return_WorkflowService_sendReminderEmail"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "requestBody": {
+          "description": "Action parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "workflowId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "approverEmail": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "entityName": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sendReminderEmailRequester": {
+      "post": {
+        "summary": "Invokes action sendReminderEmailRequester",
+        "tags": [
+          "Service Operations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/WorkflowService.return_WorkflowService_sendReminderEmailRequester"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "requestBody": {
+          "description": "Action parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "workflowId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "requestorEmail": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "entityName": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/syncToS4HANA": {
+      "post": {
+        "summary": "Invokes action syncToS4HANA",
+        "tags": [
+          "Service Operations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/WorkflowService.return_WorkflowService_syncToS4HANA"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "requestBody": {
+          "description": "Action parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "workflowId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "tablename": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "entityId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "operationType": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "WorkflowService.MDRWorkflowLink": {
+        "title": "MDRWorkflowLink",
+        "type": "object",
+        "properties": {
+          "MdrWorkflowId": {
+            "type": "string",
+            "maxLength": 10
+          },
+          "TableName": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "BpaInstanceId": {
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          }
+        }
+      },
+      "WorkflowService.TriggerWorkflowSet": {
+        "title": "TriggerWorkflowSet",
+        "type": "object",
+        "properties": {
+          "WorkflowId": {
+            "type": "string",
+            "maxLength": 10
+          },
+          "EntityName": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "EntityId": {
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "Tablename": {
+            "type": "string",
+            "maxLength": 30,
+            "nullable": true
+          },
+          "OperationType": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "UserRemarks": {
+            "type": "string",
+            "maxLength": 300,
+            "nullable": true
+          },
+          "WorkflowIdentifier": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          }
+        }
+      },
+      "WorkflowService.TriggerWorkflowSet-create": {
+        "title": "TriggerWorkflowSet (for create)",
+        "type": "object",
+        "properties": {
+          "WorkflowId": {
+            "type": "string",
+            "maxLength": 10
+          },
+          "EntityName": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "EntityId": {
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "Tablename": {
+            "type": "string",
+            "maxLength": 30,
+            "nullable": true
+          },
+          "OperationType": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "UserRemarks": {
+            "type": "string",
+            "maxLength": 300,
+            "nullable": true
+          },
+          "WorkflowIdentifier": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          }
+        },
+        "required": [
+          "WorkflowId"
+        ]
+      },
+      "WorkflowService.TriggerWorkflowSet-update": {
+        "title": "TriggerWorkflowSet (for update)",
+        "type": "object",
+        "properties": {
+          "EntityName": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "EntityId": {
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "Tablename": {
+            "type": "string",
+            "maxLength": 30,
+            "nullable": true
+          },
+          "OperationType": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "UserRemarks": {
+            "type": "string",
+            "maxLength": 300,
+            "nullable": true
+          },
+          "WorkflowIdentifier": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          }
+        }
+      },
+      "WorkflowService.WFAudit": {
+        "title": "WFAudit",
+        "type": "object",
+        "properties": {
+          "SequenceId": {
+            "type": "string",
+            "maxLength": 20
+          },
+          "WorkflowId": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "EntityId": {
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "ActionTime": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "OperationType": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "EntityName": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "WfStage": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          },
+          "Action": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          },
+          "UserRemarks": {
+            "type": "string",
+            "maxLength": 300,
+            "nullable": true
+          },
+          "ActioningUser": {
+            "type": "string",
+            "maxLength": 50,
+            "nullable": true
+          }
+        }
+      },
+      "WorkflowService.return_WorkflowService_cancelWorkflow": {
+        "title": "return_WorkflowService_cancelWorkflow",
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "WorkflowService.return_WorkflowService_claimWorkflowTask": {
+        "title": "return_WorkflowService_claimWorkflowTask",
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "WorkflowService.return_WorkflowService_completeWFAudit": {
+        "title": "return_WorkflowService_completeWFAudit",
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "nullable": true
+          }
+        }
+      },
+      "WorkflowService.return_WorkflowService_initiatedWFAudit": {
+        "title": "return_WorkflowService_initiatedWFAudit",
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "nullable": true
+          }
+        }
+      },
+      "WorkflowService.return_WorkflowService_insertWFAudit": {
+        "title": "return_WorkflowService_insertWFAudit",
+        "type": "object",
+        "properties": {
+          "sequenceid": {
+            "type": "string",
+            "nullable": true
+          },
+          "success": {
+            "type": "boolean",
+            "nullable": true
+          }
+        }
+      },
+      "WorkflowService.return_WorkflowService_pushApprovedAudit": {
+        "title": "return_WorkflowService_pushApprovedAudit",
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "nullable": true
+          }
+        }
+      },
+      "WorkflowService.return_WorkflowService_pushInprogressAudit": {
+        "title": "return_WorkflowService_pushInprogressAudit",
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "nullable": true
+          }
+        }
+      },
+      "WorkflowService.return_WorkflowService_pushRejectedAudit": {
+        "title": "return_WorkflowService_pushRejectedAudit",
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "nullable": true
+          }
+        }
+      },
+      "WorkflowService.return_WorkflowService_putBackWorkflowTask": {
+        "title": "return_WorkflowService_putBackWorkflowTask",
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "WorkflowService.return_WorkflowService_resolveApprovers": {
+        "title": "return_WorkflowService_resolveApprovers",
+        "type": "object",
+        "properties": {
+          "approverEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "approverId": {
+            "type": "string",
+            "nullable": true
+          },
+          "nextStage": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "WorkflowService.return_WorkflowService_saveBPALinkage": {
+        "title": "return_WorkflowService_saveBPALinkage",
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "nullable": true
+          }
+        }
+      },
+      "WorkflowService.return_WorkflowService_sendEmailToApprover": {
+        "title": "return_WorkflowService_sendEmailToApprover",
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "nullable": true
+          }
+        }
+      },
+      "WorkflowService.return_WorkflowService_sendEmailToRequestor": {
+        "title": "return_WorkflowService_sendEmailToRequestor",
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "nullable": true
+          }
+        }
+      },
+      "WorkflowService.return_WorkflowService_sendEscalationEmail": {
+        "title": "return_WorkflowService_sendEscalationEmail",
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "nullable": true
+          }
+        }
+      },
+      "WorkflowService.return_WorkflowService_sendReminderEmail": {
+        "title": "return_WorkflowService_sendReminderEmail",
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "nullable": true
+          }
+        }
+      },
+      "WorkflowService.return_WorkflowService_sendReminderEmailRequester": {
+        "title": "return_WorkflowService_sendReminderEmailRequester",
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "nullable": true
+          }
+        }
+      },
+      "WorkflowService.return_WorkflowService_syncToS4HANA": {
+        "title": "return_WorkflowService_syncToS4HANA",
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "nullable": true
+          }
+        }
+      },
+      "count": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string"
+          }
+        ],
+        "description": "The number of entities in the collection. Available when using the [$count](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptioncount) query option."
+      },
+      "error": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": [
+              "code",
+              "message"
+            ],
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "target": {
+                "type": "string"
+              },
+              "details": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "target": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "innererror": {
+                "type": "object",
+                "description": "The structure of this object is service-specific"
+              }
+            }
+          }
+        }
+      }
+    },
+    "parameters": {
+      "top": {
+        "name": "$top",
+        "in": "query",
+        "description": "Show only the first n items, see [Paging - Top](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptiontop)",
+        "schema": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "example": 50
+      },
+      "skip": {
+        "name": "$skip",
+        "in": "query",
+        "description": "Skip the first n items, see [Paging - Skip](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionskip)",
+        "schema": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "count": {
+        "name": "$count",
+        "in": "query",
+        "description": "Include count of items, see [Count](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptioncount)",
+        "schema": {
+          "type": "boolean"
+        }
+      },
+      "search": {
+        "name": "$search",
+        "in": "query",
+        "description": "Search items by search phrases, see [Searching](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionsearch)",
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "error": {
+        "description": "Error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/error"
+            }
+          }
+        }
+      }
+    }
+  }
+}
