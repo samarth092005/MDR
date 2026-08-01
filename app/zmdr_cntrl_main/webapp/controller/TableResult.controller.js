@@ -371,7 +371,7 @@ sap.ui.define([
                 }
 
                 // Add version active filter
-                aFilters.push(new Filter("VERSION_ACTIVE", FilterOperator.EQ, "Y"));
+                aFilters.push(new Filter("VersionActive", FilterOperator.EQ, "Y"));
 
                 // [V4 MIGRATION] Replaced V2 oModel.read() with native OData V4 bindList().requestContexts().
                 // this.sEntitySet is a plain EntitySet path (e.g. "/ZMDR_GLACCOUNT").
@@ -459,10 +459,10 @@ sap.ui.define([
                     sIdInpSrchFld = "inpSrchFld";
 
                     // Prepare the search field id using regex in camel case format
-                    sTemp = oSearchField.columnname.replace(/./g, function (word, index) {
+                    sTemp = oSearchField.ColumnName.replace(/./g, function (word, index) {
                         if (index === 0) {
                             return word.toUpperCase();
-                        } else if (oSearchField.columnname.slice(index - 1, index) === "_") {
+                        } else if (oSearchField.ColumnName.slice(index - 1, index) === "_") {
                             return word.toUpperCase();
                         } else {
                             return word.toLowerCase();
@@ -485,7 +485,7 @@ sap.ui.define([
                     });
 
                     // Set the filter operator
-                    if (oSearchField.columndatatype.indexOf("CHAR") === -1) {
+                    if (oSearchField.ColumnDataType.indexOf("CHAR") === -1) {
                         sFilter = FilterOperator.Contains;
                     } else {
                         sFilter = FilterOperator.EQ;
@@ -493,12 +493,12 @@ sap.ui.define([
 
                     // Check if the value is not empty
                     if (sValue && sValue !== "") {
-                        if (sValue.indexOf("*") !== -1 && oSearchField.columndatatype.indexOf("CHAR") === -1) {
+                        if (sValue.indexOf("*") !== -1 && oSearchField.ColumnDataType.indexOf("CHAR") === -1) {
                             MessageToast.show("Cannot do a fuzzy search for this field. Please enter a valid value for search");
                         } else {
                             oSearchParam = {
                                 sSrchFldId: sIdInpSrchFld,
-                                sPath: oSearchField.columnname,
+                                sPath: oSearchField.ColumnName,
                                 sFilter: sFilter,
                                 sValue: sValue
                             };
@@ -570,7 +570,7 @@ sap.ui.define([
                         // Reset the tooltip info
                         if (oControl.getId().includes("inpSrchFldStatus")) {
                             aFields.forEach(function (oField) {
-                                if (oControl.getId().includes(oField.columnname)) {
+                                if (oControl.getId().includes(oField.ColumnName)) {
                                     oControl.setTooltip("Select from dropdown");
                                 } else {
                                     oControl.setTooltip("Enter search text");
@@ -647,7 +647,7 @@ sap.ui.define([
                 /** Method Implementation */
                 // Filter with result set fields
                 aResultSetCols = aFieldsData.filter(function (oField) {
-                    return oField.resultsetfieldflag === "Y";
+                    return oField.ResultSetFieldFlag === "Y";
                 });
 
                 // Prepare the view settings dialog
@@ -667,14 +667,14 @@ sap.ui.define([
                     aResultSetCols.forEach(function (oResultSetcol, index) {
                         if (index === 0) {
                             this.oVSDSort.addSortItem(new ViewSettingsItem({
-                                text: oResultSetcol.columnlabel,
-                                key: oResultSetcol.columnname,
+                                text: oResultSetcol.ColumnLabel,
+                                key: oResultSetcol.ColumnName,
                                 selected: true
                             }));
                         } else {
                             this.oVSDSort.addSortItem(new ViewSettingsItem({
-                                text: oResultSetcol.columnlabel,
-                                key: oResultSetcol.columnname
+                                text: oResultSetcol.ColumnLabel,
+                                key: oResultSetcol.ColumnName
                             }));
                         }
                     }, this);
@@ -766,22 +766,22 @@ sap.ui.define([
 
                 // Filter the total fields with only table result set fields
                 aResultSetCols = aFieldData.filter(function (oFieldData) {
-                    return oFieldData.resultsetfieldflag === "Y";
+                    return oFieldData.ResultSetFieldFlag === "Y";
                 });
 
                 // Prepare the export sheet columns
                 aResultSetCols.forEach(function (oResultSetCol) {
-                    if ((oResultSetCol.columndatatype || "").toUpperCase().includes("INT")) {
+                    if ((oResultSetCol.ColumnDataType || "").toUpperCase().includes("INT")) {
                         sType = sap.ui.export.EdmType.Number;
-                    } else if ((oResultSetCol.columndatatype || "").toUpperCase().includes("DATS")) {
+                    } else if ((oResultSetCol.ColumnDataType || "").toUpperCase().includes("DATS")) {
                         sType = sap.ui.export.EdmType.Date;
                     } else {
                         sType = sap.ui.export.EdmType.String;
                     }
 
                     aExportSheetCols.push({
-                        label: oResultSetCol.columnlabel,
-                        property: oResultSetCol.columnname,
+                        label: oResultSetCol.ColumnLabel,
+                        property: oResultSetCol.ColumnName,
                         type: sType,
                         wrap: true
                     });
@@ -855,25 +855,25 @@ sap.ui.define([
 
                     // Get the primary key details of the table
                     aPrimaryKeys = aFieldsData.filter(function (oField) {
-                        return oField.primarykeyflag === "Y";
+                        return oField.PrimaryKeyFlag === "Y";
                     });
 
                     // Prepare the filter to check any in-progress record
                     aPrimaryKeys.forEach(function (oPrimaryKey) {
-                        var sColName = oPrimaryKey.columnname || oPrimaryKey.Columnname;
+                        var sColName = oPrimaryKey.ColumnName;
                         aFilters.push(new Filter(sColName, FilterOperator.EQ, this.oSelectedTableData[sColName]));
                     }, this);
 
                     aFilters.push(new Filter({
                         filters: [
-                            new Filter("VERSION_ACTIVE", FilterOperator.EQ, "I"),
-                            new Filter("VERSION_ACTIVE", FilterOperator.EQ, "G")
+                            new Filter("VersionActive", FilterOperator.EQ, "I"),
+                            new Filter("VersionActive", FilterOperator.EQ, "G")
                         ],
                         and: false
                     }));
 
                     // [V4 MIGRATION] Replaced V2 oModel.read() with native OData V4 bindList().requestContexts().
-                    // this.sEntitySet is a plain EntitySet. Filters for VERSION_ACTIVE = I or G check in-progress records.
+                    // this.sEntitySet is a plain EntitySet. Filters for VersionActive = I or G check in-progress records.
                     // The V2-only async:true is removed. All success/error logic preserved via .then()/.catch().
                     this.oTableModel.bindList(this.sEntitySet, null, null, aFilters).requestContexts(0, Infinity).then(function (aContexts) {
                         // Map V4 contexts to plain JS objects for downstream logic
@@ -943,31 +943,31 @@ sap.ui.define([
 
                     // Get the item details fields of the table
                     aItemDetails = aFieldsData.filter(function (oField) {
-                        return oField.itemdetailsflag === "Y";
+                        return oField.ItemDetailsFlag === "Y";
                     });
 
                     // Add the selected row details into the form
                     aItemDetails.forEach(function (oItemDetail) {
                         // Add label
                         ofrmItemDetails.addContent(new Label({
-                            text: oItemDetail.columnlabel,
-                            tooltip: oItemDetail.columnlabel
+                            text: oItemDetail.ColumnLabel,
+                            tooltip: oItemDetail.ColumnLabel
                         }));
 
                         // Add field
-                        if (oItemDetail.columndatatype.includes("DATS")) {
+                        if (oItemDetail.ColumnDataType.includes("DATS")) {
                             ofrmItemDetails.addContent(new DatePicker({
                                 displayFormat: "dd.MM.yyyy",
                                 valueFormat: "yyyy-MM-dd",
-                                value: this.oSelectedTableData[oItemDetail.columnname].toJSON().slice(0, 10),
-                                tooltip: this.oSelectedTableData[oItemDetail.columnname],
+                                value: this.oSelectedTableData[oItemDetail.ColumnName].toJSON().slice(0, 10),
+                                tooltip: this.oSelectedTableData[oItemDetail.ColumnName],
                                 editable: false,
                                 width: "25rem"
                             }));
                         } else {
                             ofrmItemDetails.addContent(new Input({
-                                value: this.oSelectedTableData[oItemDetail.columnname],
-                                tooltip: this.oSelectedTableData[oItemDetail.columnname],
+                                value: this.oSelectedTableData[oItemDetail.ColumnName],
+                                tooltip: this.oSelectedTableData[oItemDetail.ColumnName],
                                 editable: false,
                                 width: "25rem"
                             }));
@@ -1710,23 +1710,48 @@ sap.ui.define([
                 var aFilters = [new sap.ui.model.Filter("TableName", sap.ui.model.FilterOperator.EQ, oSelectedTablename)];
                 this.fn_getGlobalModel().bindList("/CntrlUIUrl", null, null, aFilters).requestContexts(0, Infinity).then(function (aContexts) {
                     var aUrlData = aContexts.map(function (oCtx) { return oCtx.getObject(); });
-                    aUrlData[0].OdataUrl;
-                }).catch(function (err) {
-                    that.fn_getLogReference().error("Table Result Controller: Backend error reading CntrlUIUrl");
-                    that.fn_closeBusyDialog();
-                });
-                this.sServiceUrl = "mdrapi/central/";
-                this.sEntitySet = "/" + oSelectedTablename;
 
-                // Log information
-                this.fn_getLogReference().info("Table Result Controller: Service URL - " + this.sServiceUrl);
-                this.fn_getLogReference().info("Table Result Controller: Entity Set - " + this.sEntitySet);
+                    // Check if the service URL starts with a forward slash
+                    if (this.fn_getGlobalModel().getServiceUrl().startsWith("/")) {
+                        aUrlData[0].OdataUrl.split("/").forEach(function (sUrlPart, index) {
+                            if (index === aUrlData[0].OdataUrl.split("/").length - 1) {
+                                this.sEntitySet = "/" + sUrlPart;
+                            } else if (index === 0) {
+                                this.sServiceUrl = "/";
+                            } else {
+                                this.sServiceUrl = this.sServiceUrl + sUrlPart + "/";
+                            }
+                        }.bind(this));
+                    } else {
+                        aUrlData[0].OdataUrl.split("/").forEach(function (sUrlPart, index) {
+                            if (index === aUrlData[0].OdataUrl.split("/").length - 1) {
+                                this.sEntitySet = "/" + sUrlPart;
+                            } else if (index === 0) {
+                                this.sServiceUrl = "";
+                            } else {
+                                this.sServiceUrl = this.sServiceUrl + sUrlPart + "/";
+                            }
+                        }.bind(this));
+                    }
 
-                // Odata model of the selected table - use the global model which has proper authentication context
-                this.oTableModel = this.fn_getGlobalModel();
+                    // Log information
+                    this.fn_getLogReference().info("Table Result Controller: Service URL - " + this.sServiceUrl);
+                    this.fn_getLogReference().info("Table Result Controller: Entity Set - " + this.sEntitySet);
 
-                // Read data of the selected table
-                this._fn_readTableData();
+                    // Odata model of the selected table - use the global model which has proper authentication context
+                    this.oTableModel = new ODataModel({
+                        serviceUrl: this.sServiceUrl,
+                        synchronizationMode: "None",   // required for OData V4
+                        autoExpandSelect: true,
+                        operationMode: "Server"
+                    });
+
+                    // Read data of the selected table
+                    this._fn_readTableData();
+                }.bind(this)).catch(function (err) {
+                    this.fn_getLogReference().error("Table Result Controller: Backend error reading CntrlUIUrl");
+                    this.fn_closeBusyDialog();
+                }.bind(this));
 
                 // Log information
                 this.fn_getLogReference().info("Table Result Controller: Exiting _fn_readTableUrl method");
@@ -1902,14 +1927,14 @@ sap.ui.define([
 
                 // Add columns and rows
                 aFieldsData.forEach(function (oField, index) {
-                    if (oField.resultsetfieldflag === "Y") {
-                        if (oField.primarykeyflag === "Y") {
+                    if (oField.ResultSetFieldFlag === "Y") {
+                        if (oField.PrimaryKeyFlag === "Y") {
                             oColumn = new sap.m.Column("col" + index, {
                                 hAlign: "Center",
                                 demandPopin: false,
                                 header: new sap.m.Label({
-                                    text: oField.columnlabel,
-                                    tooltip: oField.columnlabel,
+                                    text: oField.ColumnLabel,
+                                    tooltip: oField.ColumnLabel,
                                     wrapping: true
                                 })
                             });
@@ -1918,8 +1943,8 @@ sap.ui.define([
                                 hAlign: "Center",
                                 demandPopin: true,
                                 header: new sap.m.Label({
-                                    text: oField.columnlabel,
-                                    tooltip: oField.columnlabel,
+                                    text: oField.ColumnLabel,
+                                    tooltip: oField.ColumnLabel,
                                     wrapping: true
                                 })
                             });
@@ -1929,50 +1954,50 @@ sap.ui.define([
                         oTable.addColumn(oColumn);
 
                         // Bind path to the cells
-                        if (oField.columndatatype === "DATS") {
+                        if (oField.ColumnDataType === "DATS") {
                             oCell = new sap.m.Text({
                                 text: {
-                                    path: "oCurrentTableBoundModel>" + oField.columnname,
+                                    path: "oCurrentTableBoundModel>" + oField.ColumnName,
                                     type: new sap.ui.model.type.Date({
                                         pattern: "dd.MM.yyyy"
                                     })
                                 },
                                 tooltip: {
-                                    path: "oCurrentTableBoundModel>" + oField.columnname,
+                                    path: "oCurrentTableBoundModel>" + oField.ColumnName,
                                     type: new sap.ui.model.type.Date({
                                         pattern: "dd.MM.yyyy"
                                     })
                                 }
                             });
-                        } else if (oField.columndatatype === "INTEGER") {
+                        } else if (oField.ColumnDataType === "INTEGER") {
                             oCell = new sap.m.Text({
                                 text: {
-                                    path: "oCurrentTableBoundModel>" + oField.columnname,
+                                    path: "oCurrentTableBoundModel>" + oField.ColumnName,
                                 },
                                 tooltip: {
-                                    path: "oCurrentTableBoundModel>" + oField.columnname,
+                                    path: "oCurrentTableBoundModel>" + oField.ColumnName,
                                     formatter: function (sValue) {
                                         return sValue + "";
                                     }
                                 }
                             });
-                        } else if (oField.columnname === "WORKFLOW_ID") {
+                        } else if (oField.ColumnName === "WORKFLOW_ID") {
                             oCell = new sap.m.Text({
                                 text: {
-                                    path: "oCurrentTableBoundModel>" + oField.columnname,
+                                    path: "oCurrentTableBoundModel>" + oField.ColumnName,
                                 },
                                 tooltip: {
-                                    path: "oCurrentTableBoundModel>" + oField.columnname,
+                                    path: "oCurrentTableBoundModel>" + oField.ColumnName,
                                 } //, 
                                 // press: this.onPress_lnkWorkflowId.bind(this)
                             });
                         } else {
                             oCell = new sap.m.Text({
                                 text: {
-                                    path: "oCurrentTableBoundModel>" + oField.columnname,
+                                    path: "oCurrentTableBoundModel>" + oField.ColumnName,
                                 },
                                 tooltip: {
-                                    path: "oCurrentTableBoundModel>" + oField.columnname,
+                                    path: "oCurrentTableBoundModel>" + oField.ColumnName,
                                 }
                             });
                         }
