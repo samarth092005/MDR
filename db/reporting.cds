@@ -8,157 +8,157 @@ using zmdr.BulkHdrConfig from '../db/mdr-config';
 
 entity WFAuditReport01 as
     select from zmdr.WFAudit as wfaudit {
-        key wfaudit.sequenceid    as Sequenceid,
-            wfaudit.workflowid    as Workflowid,
-            wfaudit.entityid      as Entityid,
-            wfaudit.actiontime    as Actiontime,
-            wfaudit.operationtype as Operationtype,
-            wfaudit.entityname    as Entityname,
-            wfaudit.wfstage       as Wfstage,
-            wfaudit.action        as Action,
-            wfaudit.userremarks   as Userremarks,
-            wfaudit.actioninguser as Actioninguser
+        key wfaudit.SequenceId    as SequenceId,
+            wfaudit.WorkflowId    as WorkflowId,
+            wfaudit.EntityId      as EntityId,
+            wfaudit.ActionTime    as ActionTime,
+            wfaudit.OperationType as OperationType,
+            wfaudit.EntityName    as EntityName,
+            wfaudit.WfStage       as WfStage,
+            wfaudit.Action        as Action,
+            wfaudit.UserRemarks   as UserRemarks,
+            wfaudit.ActioningUser as ActioningUser
     };
 
 
 entity WFAuditReport02 as
         select from zmdr.WFAuditReport01 as A1 {
-            key A1.Sequenceid    as Sequenceid,
-                A1.Workflowid    as Workflowid,
-                A1.Entityid      as Entityid,
-                A1.Actiontime    as Actiontime,
-                A1.Operationtype as Operationtype,
-                A1.Entityname    as Entityname,
-                A1.Wfstage       as Wfstage,
+            key A1.SequenceId    as SequenceId,
+                A1.WorkflowId    as WorkflowId,
+                A1.EntityId      as EntityId,
+                A1.ActionTime    as ActionTime,
+                A1.OperationType as OperationType,
+                A1.EntityName    as EntityName,
+                A1.WfStage       as WfStage,
                 A1.Action        as Action,
-                A1.Userremarks   as Userremarks,
-                A1.Actioninguser as Actioninguser
+                A1.UserRemarks   as UserRemarks,
+                A1.ActioningUser as ActioningUser
         }
         where
             A1.Action != 'INPROGRESS'
     union
         select from zmdr.WFAuditReport01 as A1
         left outer join zmdr.WFAuditReport01 as A2
-            on  A1.Workflowid =  A2.Workflowid
-            and A1.Entityid   =  A2.Entityid
-            and A1.Wfstage    =  A2.Wfstage
-            and A1.Entityname =  A2.Entityname
+            on  A1.WorkflowId =  A2.WorkflowId
+            and A1.EntityId   =  A2.EntityId
+            and A1.WfStage    =  A2.WfStage
+            and A1.EntityName =  A2.EntityName
             and A2.Action     != 'INPROGRESS'
         {
-            key A1.Sequenceid    as Sequenceid,
-                A1.Workflowid    as Workflowid,
-                A1.Entityid      as Entityid,
-                A1.Actiontime    as Actiontime,
-                A1.Operationtype as Operationtype,
-                A1.Entityname    as Entityname,
-                A1.Wfstage       as Wfstage,
+            key A1.SequenceId    as SequenceId,
+                A1.WorkflowId    as WorkflowId,
+                A1.EntityId      as EntityId,
+                A1.ActionTime    as ActionTime,
+                A1.OperationType as OperationType,
+                A1.EntityName    as EntityName,
+                A1.WfStage       as WfStage,
                 A1.Action        as Action,
-                A1.Userremarks   as Userremarks,
-                A1.Actioninguser as Actioninguser
+                A1.UserRemarks   as UserRemarks,
+                A1.ActioningUser as ActioningUser
         }
         where
                 A1.Action     =  'INPROGRESS'
-            and A2.Sequenceid is null;
+            and A2.SequenceId is null;
 
 entity WFAuditReport03 as
         select from zmdr.WFAuditReport02 as WFAUDIT
         left outer join zmdr.CntrlUIVis as UIVIS
-            on UIVIS.tablename = WFAUDIT.Entityname
+            on UIVIS.TableName = WFAUDIT.EntityName
         {
-            key WFAUDIT.Sequenceid    as Sequenceid,
-                WFAUDIT.Workflowid    as Workflowid,
-                WFAUDIT.Entityid      as Entityid,
-                WFAUDIT.Actiontime    as Actiontime,
-                WFAUDIT.Operationtype as Operationtype,
-                WFAUDIT.Entityname    as Entityname,
+            key WFAUDIT.SequenceId    as SequenceId,
+                WFAUDIT.WorkflowId    as WorkflowId,
+                WFAUDIT.EntityId      as EntityId,
+                WFAUDIT.ActionTime    as ActionTime,
+                WFAUDIT.OperationType as OperationType,
+                WFAUDIT.EntityName    as EntityName,
                 cast(
                     case
-                        when UIVIS.tablelabel is null
-                             then WFAUDIT.Entityname
-                        else UIVIS.tablelabel
+                        when UIVIS.TableLabel is null
+                             then WFAUDIT.EntityName
+                        else UIVIS.TableLabel
                     end as String(40)
                 )                     as EntityDescription,
-                WFAUDIT.Wfstage       as Wfstage,
+                WFAUDIT.WfStage       as WfStage,
                 WFAUDIT.Action        as Action,
-                WFAUDIT.Userremarks   as Userremarks,
-                WFAUDIT.Actioninguser as Actioninguser
+                WFAUDIT.UserRemarks   as UserRemarks,
+                WFAUDIT.ActioningUser as ActioningUser
         }
         where
-            WFAUDIT.Operationtype like 'MDR Central%'
+            WFAUDIT.OperationType like 'MDR Central%'
     union
         select from zmdr.WFAuditReport02 as WFAUDIT
         left outer join zmdr.BulkHdrConfig as BULK
-            on BULK.TableName = WFAUDIT.Entityname
+            on BULK.TableName = WFAUDIT.EntityName
         {
-            key WFAUDIT.Sequenceid    as Sequenceid,
-                WFAUDIT.Workflowid    as Workflowid,
-                WFAUDIT.Entityid      as Entityid,
-                WFAUDIT.Actiontime    as Actiontime,
-                WFAUDIT.Operationtype as Operationtype,
-                WFAUDIT.Entityname    as Entityname,
+            key WFAUDIT.SequenceId    as SequenceId,
+                WFAUDIT.WorkflowId    as WorkflowId,
+                WFAUDIT.EntityId      as EntityId,
+                WFAUDIT.ActionTime    as ActionTime,
+                WFAUDIT.OperationType as OperationType,
+                WFAUDIT.EntityName    as EntityName,
                 cast(
                     case
                         when BULK.TableDescription is null
-                             then WFAUDIT.Entityname
+                             then WFAUDIT.EntityName
                         else BULK.TableDescription
                     end as String(40)
                 )                     as EntityDescription,
-                WFAUDIT.Wfstage       as Wfstage,
+                WFAUDIT.WfStage       as WfStage,
                 WFAUDIT.Action        as Action,
-                WFAUDIT.Userremarks   as Userremarks,
-                WFAUDIT.Actioninguser as Actioninguser
+                WFAUDIT.UserRemarks   as UserRemarks,
+                WFAUDIT.ActioningUser as ActioningUser
         }
         where
-            WFAUDIT.Operationtype like 'BULK%'
+            WFAUDIT.OperationType like 'BULK%'
     union
         select from zmdr.WFAuditReport02 as WFAUDIT {
-            key WFAUDIT.Sequenceid    as Sequenceid,
-                WFAUDIT.Workflowid    as Workflowid,
-                WFAUDIT.Entityid      as Entityid,
-                WFAUDIT.Actiontime    as Actiontime,
-                WFAUDIT.Operationtype as Operationtype,
-                WFAUDIT.Entityname    as Entityname,
-                WFAUDIT.Entityname    as EntityDescription,
-                WFAUDIT.Wfstage       as Wfstage,
+            key WFAUDIT.SequenceId    as SequenceId,
+                WFAUDIT.WorkflowId    as WorkflowId,
+                WFAUDIT.EntityId      as EntityId,
+                WFAUDIT.ActionTime    as ActionTime,
+                WFAUDIT.OperationType as OperationType,
+                WFAUDIT.EntityName    as EntityName,
+                WFAUDIT.EntityName    as EntityDescription,
+                WFAUDIT.WfStage       as WfStage,
                 WFAUDIT.Action        as Action,
-                WFAUDIT.Userremarks   as Userremarks,
-                WFAUDIT.Actioninguser as Actioninguser
+                WFAUDIT.UserRemarks   as UserRemarks,
+                WFAUDIT.ActioningUser as ActioningUser
         }
         where
-            not WFAUDIT.Operationtype like 'BULK%'
-            and                            not WFAUDIT.Operationtype like 'MDR Central%';
+            not WFAUDIT.OperationType like 'BULK%'
+            and                            not WFAUDIT.OperationType like 'MDR Central%';
 
 entity WFAuditReport04 as
     select from zmdr.WFAuditReport03 {
-        key Sequenceid,
-            Workflowid,
-            Entityid,
-            Actiontime,
-            Operationtype,
-            Entityname,
+        key SequenceId,
+            WorkflowId,
+            EntityId,
+            ActionTime,
+            OperationType,
+            EntityName,
             EntityDescription,
-            Wfstage,
+            WfStage,
             Action,
-            Userremarks,
-            Actioninguser
+            UserRemarks,
+            ActioningUser
     }
     where
-        Workflowid != '';
+        WorkflowId != '';
 
 entity WFAuditReport   as
     select from zmdr.WFAuditReport04 {
-        key Sequenceid,
-            Workflowid,
-            Entityid,
-            Actiontime,
-            Operationtype,
-            Entityname,
+        key SequenceId,
+            WorkflowId,
+            EntityId,
+            ActionTime,
+            OperationType,
+            EntityName,
             EntityDescription,
-            Wfstage,
+            WfStage,
             Action,
-            Userremarks,
-            Actioninguser
+            UserRemarks,
+            ActioningUser
     }
     order by
-        Workflowid asc,
-        Actiontime desc;
+        WorkflowId asc, 
+        ActionTime desc;

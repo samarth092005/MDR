@@ -100,11 +100,6 @@
           "pattern": ":?query:",
           "name": "WFAuditReportList",
           "target": "WFAuditReportList"
-        },
-        {
-          "pattern": "WFAuditReport({key}):?query:",
-          "name": "WFAuditReportObjectPage",
-          "target": "WFAuditReportObjectPage"
         }
       ],
       "targets": {
@@ -116,13 +111,6 @@
             "settings": {
               "contextPath": "/WFAuditReport",
               "variantManagement": "Page",
-              "navigation": {
-                "WFAuditReport": {
-                  "detail": {
-                    "route": "WFAuditReportObjectPage"
-                  }
-                }
-              },
               "controlConfiguration": {
                 "@com.sap.vocabularies.UI.v1.LineItem": {
                   "tableSettings": {
@@ -130,17 +118,6 @@
                   }
                 }
               }
-            }
-          }
-        },
-        "WFAuditReportObjectPage": {
-          "type": "Component",
-          "id": "WFAuditReportObjectPage",
-          "name": "sap.fe.templates.ObjectPage",
-          "options": {
-            "settings": {
-              "editableHeaderContent": false,
-              "contextPath": "/WFAuditReport"
             }
           }
         }
