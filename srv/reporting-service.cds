@@ -1,6 +1,6 @@
+using zmdr from '../db/mdr-workflow';
 
-
-service ReportingService @(path: '/api/reporting',
+service ReportingService @(path: '/mdrapi/reporting',
 // requires: 'authenticated-user'
 ) {
     @readonly

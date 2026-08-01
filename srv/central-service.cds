@@ -1,9 +1,9 @@
-using zmdr from '../db/mdr-dad';
+using zmdr from '../db/mdr-central';
 using { zmdr as masterdata } from '../db/mdr-maintables';
 
 @impl: 'srv/central-handler.js'
 service CentralService @(
-  path    : '/api/central',
+  path    : '/mdrapi/central',
   // requires: 'authenticated-user'
 ) {
   @readonly
@@ -15,10 +15,8 @@ service CentralService @(
   entity UIConfigSet as projection on zmdr.CntrlUIConfig;
 
   // Master Data Tables for the UI
-  entity ZMDR_GLACCOUNT as projection on masterdata.ZMDR_GLACCOUNT;
-  entity ZMDR_EMPLOYEES as projection on masterdata.ZMDR_EMPLOYEES;
-  entity ZMDR_VENDORS   as projection on masterdata.ZMDR_VENDORS;
-  entity ZMDR_BPMASTER  as projection on masterdata.ZMDR_BPMASTER;
+  entity ZMDR_GLACCOUNT as projection on masterdata.GLAccount;
+  entity ZMDR_BPMASTER  as projection on masterdata.BPMaster;
 
   // Custom Validation OData Mock
   @readonly

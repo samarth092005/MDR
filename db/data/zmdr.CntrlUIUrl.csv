@@ -1,4 +1,4 @@
-tablename,odata_url,column_count
+TableName,OdataUrl,ColumnCount
 ZMDR_BPMASTER,/sap/opu/odata/sap/ZMDR_CNTRL_BPMASTER_SRV/BPMasterSet,37
 ZMDR_MATERIAL,/sap/opu/odata/sap/ZMDR_CNTRL_MATERIAL_SRV/MaterialSet,12
 ZMDR_SERVCATALOG,/sap/opu/odata/sap/ZMDR_CNTRL_SERVICES_SRV/ServCatalogSet,10

@@ -1,7 +1,7 @@
-using zmdr from '../db/mdr-dad';
+using zmdr from '../db/mdr-workflow';
 
 service WorkflowService @(
-  path    : '/api/workflow',
+  path    : '/mdrapi/workflow',
   // requires: 'authenticated-user'
 ) {
   @readonly

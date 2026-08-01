@@ -50,8 +50,8 @@ entity BPStatus : Auditable {
 }
 
 // Table for Business Partner Master Data
-@cds.persistence.table: 'ZMDR_BPMASTER'
-entity ZMDR_BPMASTER : Auditable, Versionable {
+@cds.persistence.table: 'BPMaster'
+entity BPMaster : Auditable, Versionable {
   key BpId               : String(20);
   key VersionStartDate   : Timestamp;
       BpType             : String(10);
@@ -61,7 +61,7 @@ entity ZMDR_BPMASTER : Auditable, Versionable {
       TradeName          : String(80);
       Industry           : String(50);
       BpCategory         : String(10);
-      Country            : String(3);
+      Country            : String(2);
       Region             : String(3);
       City               : String(40);
       PostalCode         : String(10);

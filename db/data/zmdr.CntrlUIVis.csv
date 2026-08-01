@@ -1,4 +1,4 @@
-role,tablename,repository,repositorylabel,tablelabel,approvaltype,approvallevel,ishierarchy,iscreateenabled,isamendenabled,iscloseenabled,isreopenenabled
+Role,TableName,Repository,RepositoryLabel,TableLabel,ApprovalType,ApprovalLevel,IsHierarchy,IsCreateEnabled,IsAmendEnabled,IsCloseEnabled,IsReopenEnabled
 ZMDR_C_FIORI_ALL,ZMDR_BPMASTER,CUSTOMER,Customer,Business Partner,REPOSITORY,1,N,Y,Y,Y,Y
 ZMDR_C_FIORI_ALL,ZMDR_CONTRACT,SERVICES,Services,Contract,TABLE,3,N,Y,Y,Y,Y
 ZMDR_C_FIORI_ALL,ZMDR_CUST_SG_ELG,SERVICES,Services,Customer Segment Eligibility,TABLE,3,N,Y,Y,Y,Y

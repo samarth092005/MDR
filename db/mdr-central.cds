@@ -50,7 +50,7 @@ entity CntrlUIConfig : Auditable {
       ChildDescriptionFlag   : String(1); // ZMDR_CHLDDESCFLAG
       LevelApplicabilityFlag : String(1); // ZMDR_LVLAPPLFLAG
       LevelNumberValFld      : String(30); // ZMDR_LVLNUMVALFLD
-      DisplayFFieldFlag      : String(1);
+      DisplayFieldFlag      : String(1);
       DisplayFieldOf         : String(30);
 }
 
@@ -71,10 +71,8 @@ entity CntrlUIVal : Auditable {
       DestColValue     : String(100);
       Operation        : String(20);
       ErrorMessage     : String(200);
-      ReqInUI5Flag     : String(1); // ZMDR_REQINUI5FLAG
       ReqInCentralFlag : String(1); // ZMDR_REQINCNTRLFLAG
       ReqInBulkFlag    : String(1); // ZMDR_REQINBULKFLAG
-      ReqInGenFlag     : String(1); // ZMDR_REQINGENFLAG
 }
 
 
