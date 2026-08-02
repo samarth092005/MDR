@@ -50,6 +50,7 @@ sap.ui.define([
 
             // Attach pattern matched
             this.fn_getRouter().getRoute("mainscreen").attachPatternMatched(this._fn_onObjectMatched, this);
+            this.fn_getRouter().getRoute("approvaltask").attachPatternMatched(this._fn_onObjectMatched, this);
 
             // Set the message model
             this.fn_setLocalModel(oMessageManager.getMessageModel(), "messageModel");
@@ -140,7 +141,7 @@ sap.ui.define([
             // Get value of all fields
             this.aFieldDetails.forEach(function (oField) {
                 var sColName = oField.ColumnName;
-                
+
                 if (!sColName) return; // Skip if no column name
 
                 // Prepare input id
@@ -1536,7 +1537,7 @@ sap.ui.define([
                         this.sSelectedTableName = "ZMDR_GLACCOUNT";
                         this.sTableServiceUrl = "/v2/odata/v4/mdr/"; // Typical CAP OData v2 path
                         this.sTableEntitySet = "ZMDR_GLACCOUNT";
-                        
+
                         this.byId("obatHdr1").setText(this.sRepositoryName).setVisible(true);
                         this.byId("obatHdr2").setText(this.sTableLabel).setVisible(true);
                         return; // Bypass the getAppState block
@@ -1640,81 +1641,62 @@ sap.ui.define([
                     }
 
                     // Get previous stage
-                    this.sPreviousStage = oComponentData.startupParameters.sPrvStage[0];
-                    if (oComponentData.startupParameters.sNextStage[0] === "END") {
+                    this.sPreviousStage = oComponentData.startupParameters.sPrvStage ? oComponentData.startupParameters.sPrvStage[0] : "";
+                    if (oComponentData.startupParameters.sNextStage && oComponentData.startupParameters.sNextStage[0] === "END") {
                         this.sFinalApproval = "Y";
                     } else {
                         this.sFinalApproval = "N";
                     }
 
                     // Read table name
-                    this.sSelectedTableName = oComponentData.startupParameters.sTablename[0];
+                    this.sSelectedTableName = oComponentData.startupParameters.sTablename ? oComponentData.startupParameters.sTablename[0] : "";
 
                     // Set form title
                     this.fn_getLocalModel("mainScreenViewModel").setProperty("/formTitle", this.fn_getResourceBundle().getText("approverFormHeading"));
 
                     // Get workflow id and workitem id
-                    this.sWorkflowID = oComponentData.startupParameters.sWorkflowID[0];
-                    this.iWorkitemID = oComponentData.startupParameters.iWorkitemID[0];
+                    this.sWorkflowID = oComponentData.startupParameters.sWorkflowID ? oComponentData.startupParameters.sWorkflowID[0] : "";
+                    // this.iWorkitemID = oComponentData.startupParameters.iWorkitemID ? oComponentData.startupParameters.iWorkitemID[0] : 0;
 
-                    if (this.iWorkitemID) {
-                        // Claim the task
-                        // this._fn_claimApproverTask();
+                    // if (this.iWorkitemID) {
+                    // Claim the task
+                    // this._fn_claimApproverTask();
 
-                        if (this.sSelectedTableName) {
-                            // Clear any previous filters
-                            aFilters = [];
+                    if (this.sSelectedTableName) {
+                        // Clear any previous filters
+                        aFilters = [];
 
-                            // Prepare the filter
-                            aFilters.push(new Filter("TableName", FilterOperator.EQ, this.sSelectedTableName));
+                        // Prepare the filter
+                        aFilters.push(new Filter("TableName", FilterOperator.EQ, this.sSelectedTableName));
 
-                            // Get table fields data
-                            var oListBinding = oCntrlUiConfigModel.bindList("/CntrlUIConfig", null, null, aFilters);
-                            oListBinding.requestContexts(0, Infinity).then(function (aContexts) {
-                                // Get field details
-                                this.aFieldDetails = aContexts.map(function (oCtx) { return oCtx.getObject(); });
+                        // Get table fields data
+                        var oListBinding = oCntrlUiConfigModel.bindList("/CntrlUIConfig", null, null, aFilters);
+                        oListBinding.requestContexts(0, Infinity).then(function (aContexts) {
+                            // Get field details
+                            this.aFieldDetails = aContexts.map(function (oCtx) { return oCtx.getObject(); });
 
-                                // Get repository name and tablelabel
-                                this.sRepositoryName = this.aFieldDetails[0].RepositoryLabel;
-                                this.sTableLabel = this.aFieldDetails[0].TableLabel;
+                            // Get repository name and tablelabel
+                            this.sRepositoryName = this.aFieldDetails[0].RepositoryLabel;
+                            this.sTableLabel = this.aFieldDetails[0].TableLabel;
 
-                                // Set page title
-                                this.fn_getLocalModel("mainScreenViewModel").setProperty("/pageTitle", this.fn_getResourceBundle().getText("approverTitle", [sActionType, this.sRepositoryName, this.sTableLabel, this.sWorkflowID]));
+                            // Set page title
+                            this.fn_getLocalModel("mainScreenViewModel").setProperty("/pageTitle", this.fn_getResourceBundle().getText("approverTitle", [sActionType, this.sRepositoryName, this.sTableLabel, this.sWorkflowID]));
 
-                                // Sort fields data
-                                this.aFieldDetails.sort(function (oVal1, oVal2) {
-                                    return oVal1.ColumnSeqNo - oVal2.ColumnSeqNo;
-                                })
+                            // Sort fields data
+                            this.aFieldDetails.sort(function (oVal1, oVal2) {
+                                return oVal1.ColumnSeqNo - oVal2.ColumnSeqNo;
+                            })
 
-                                // Read table url
-                                this._fn_readTableUrl();
-                            }.bind(this)).catch(function (oError) {
-                                // Set error in message strip
-                                this.byId("msgStripMainScreen").setText("<strong>Error: </strong><em>Error while processing. For more info </em>");
-                                this.byId("msgStripMainScreen").setType("Error");
-                                this.byId("msgStripMainScreen").setVisible(true);
-
-                                this.fn_showServiceError(oError);
-                            }.bind(this));
-                        } else {
+                            // Read table url
+                            this._fn_readTableUrl();
+                        }.bind(this)).catch(function (oError) {
                             // Set error in message strip
                             this.byId("msgStripMainScreen").setText("<strong>Error: </strong><em>Error while processing. For more info </em>");
                             this.byId("msgStripMainScreen").setType("Error");
                             this.byId("msgStripMainScreen").setVisible(true);
 
-                            oMessage = new Message({
-                                id: "sIdTechError",
-                                message: "Error during processing",
-                                type: MessageType.Error,
-                                additionalText: "Approver task issue",
-                                description: "Tablename is missing in the task parameters passed",
-                                target: "/TechnicalError",
-                                processor: this.fn_getLocalModel("messageModel")
-                            });
-
-                            // Add message in message manager
-                            sap.ui.getCore().getMessageManager().addMessages(oMessage);
-                        }
+                            this.fn_showServiceError(oError);
+                        }.bind(this));
                     } else {
                         // Set error in message strip
                         this.byId("msgStripMainScreen").setText("<strong>Error: </strong><em>Error while processing. For more info </em>");
@@ -1726,7 +1708,7 @@ sap.ui.define([
                             message: "Error during processing",
                             type: MessageType.Error,
                             additionalText: "Approver task issue",
-                            description: "Workitem ID is missing in the task parameters passed",
+                            description: "Tablename is missing in the task parameters passed",
                             target: "/TechnicalError",
                             processor: this.fn_getLocalModel("messageModel")
                         });
@@ -1734,10 +1716,29 @@ sap.ui.define([
                         // Add message in message manager
                         sap.ui.getCore().getMessageManager().addMessages(oMessage);
                     }
+                    // } else {
+                    //     // Set error in message strip
+                    //     this.byId("msgStripMainScreen").setText("<strong>Error: </strong><em>Error while processing. For more info </em>");
+                    //     this.byId("msgStripMainScreen").setType("Error");
+                    //     this.byId("msgStripMainScreen").setVisible(true);
+
+                    //     oMessage = new Message({
+                    //         id: "sIdTechError",
+                    //         message: "Error during processing",
+                    //         type: MessageType.Error,
+                    //         additionalText: "Approver task issue",
+                    //         description: "Workitem ID is missing in the task parameters passed",
+                    //         target: "/TechnicalError",
+                    //         processor: this.fn_getLocalModel("messageModel")
+                    //     });
+
+                    //     // Add message in message manager
+                    //     sap.ui.getCore().getMessageManager().addMessages(oMessage);
+                    // }
                 } else {
                     // Log error message
                     this.fn_getLogReference().error("Main Screen Controller: App initiator is neither Requestor nor Approver");
-                    
+
                     // Show error message on screen
                     this.byId("msgStripMainScreen").setText("<strong>Error: </strong><em>App initiator is neither Requestor nor Approver.</em>");
                     this.byId("msgStripMainScreen").setType("Error");
@@ -1748,7 +1749,7 @@ sap.ui.define([
             } else {
                 // Log error message
                 this.fn_getLogReference().error("Main Screen Controller: App is initialized without mandatory startup parameters");
-                
+
                 // Show error message on screen
                 this.byId("msgStripMainScreen").setText("<strong>Error: </strong><em>App is initialized without mandatory startup parameters. Run this app from the Fiori Launchpad.</em>");
                 this.byId("msgStripMainScreen").setType("Error");
@@ -1787,7 +1788,7 @@ sap.ui.define([
                 if (oFieldDetails.VisibilityFlag !== "Y") {
                     return;
                 }
-                
+
                 if (aSections.length === 0) {
                     aSections.push({ sectionSequence: oFieldDetails.SectionSequence, sectionId: oFieldDetails.SectionId, sectionName: oFieldDetails.SectionName, sectionColumns: [oFieldDetails.ColumnSeqNo] });
                 } else {
@@ -2025,7 +2026,7 @@ sap.ui.define([
                             }
                         }
                     } else if (this.sActionType === "Amend") {
-                        if (oField.primarykeyflag === "Y") {
+                        if (oField.PrimaryKeyFlag === "Y") {
                             oForm.addContent(new Input({
                                 id: sIdInp,
                                 type: "Number",
@@ -2188,7 +2189,7 @@ sap.ui.define([
                             }
                         }
                     } else if (this.sActionType === "Amend") {
-                        if (oField.primarykeyflag === "Y") {
+                        if (oField.PrimaryKeyFlag === "Y") {
                             oForm.addContent(new Input({
                                 id: sIdInp,
                                 type: "Text",
@@ -2351,7 +2352,7 @@ sap.ui.define([
                             }
                         }
                     } else if (this.sActionType === "Amend") {
-                        if (oField.primarykeyflag === "Y") {
+                        if (oField.PrimaryKeyFlag === "Y") {
                             if (sValue) {
                                 oForm.addContent(new DatePicker({
                                     id: sIdInp,
@@ -2553,7 +2554,7 @@ sap.ui.define([
                             sValue = sValue + ", " + this.oSelectedTableData[oDisplayField.ColumnName]
                         }, this);
 
-                        if (oField.primarykeyflag === "Y") {
+                        if (oField.PrimaryKeyFlag === "Y") {
                             oForm.addContent(new Input({
                                 id: sIdInp,
                                 editable: false,
@@ -2770,7 +2771,7 @@ sap.ui.define([
             var oListBinding = oLookupModel.bindList(sEntitySet, null, null, aFilters);
             oListBinding.requestContexts(iSkip, iTop).then(function (aContexts) {
                 // Remove duplicate data of the lookup
-                var aResults = aContexts.map(function(c) { return c.getObject(); });
+                var aResults = aContexts.map(function (c) { return c.getObject(); });
                 aLookupData = aResults.filter(function (sValue1, index, self) {
                     return index === self.findIndex(function (sValue2) {
                         return sValue2[sKeyField] === sValue1[sKeyField];
@@ -3035,7 +3036,7 @@ sap.ui.define([
             // Read validation data
             var oListBinding = oValidationModel.bindList("/ZMDGCPCNTRLVAL01Set", null, null, [new Filter("p_tabname", FilterOperator.EQ, this.sSelectedTableName)]);
             oListBinding.requestContexts(0, Infinity).then(function (aContexts) {
-                var aResults = aContexts.map(function(c) { return c.getObject(); });
+                var aResults = aContexts.map(function (c) { return c.getObject(); });
                 // Check if custom validation exists
                 if (aResults.length > 0) {
                     // Sort the validations based on its index
@@ -3056,46 +3057,46 @@ sap.ui.define([
                     // Perform Validations
                     this._fn_checkCustomValidations();
                 } else {
-                        // Log info
-                        this.fn_getLogReference().info("Main Screen Controller: No custom validation added in configuration")
+                    // Log info
+                    this.fn_getLogReference().info("Main Screen Controller: No custom validation added in configuration")
 
-                        // Check if validation check was successful after perform basic validations
-                        if (this.bValidationSuccess) {
-                            // Show that validation is successful
-                            this.byId("msgStripMainScreen").setText("<strong>Success: </strong><em>Validation is successful. For more info </em>")
-                            this.byId("msgStripMainScreen").setType("Success");
-                            this.byId("msgStripMainScreen").setVisible(true);
+                    // Check if validation check was successful after perform basic validations
+                    if (this.bValidationSuccess) {
+                        // Show that validation is successful
+                        this.byId("msgStripMainScreen").setText("<strong>Success: </strong><em>Validation is successful. For more info </em>")
+                        this.byId("msgStripMainScreen").setType("Success");
+                        this.byId("msgStripMainScreen").setVisible(true);
 
-                            // Set reference of the user comments dialog globally
-                            if (!this.userCommentsDialog) {
-                                this.userCommentsDialog = Fragment.load({
-                                    id: this.getView().getId(),
-                                    name: "com.intapptics.zmdrcntrlcmn.view.UserComments",
-                                    controller: this
-                                }).then(function (oDialog) {
-                                    this.getView().addDependent(oDialog);
-                                    return oDialog;
-                                }.bind(this));
-                            }
-
-                            // Open the user comments dialog
-                            this.userCommentsDialog.then(function (oDialog) {
-                                oDialog.open();
-                            });
-                        } else {
-                            // Show that validation is failed
-                            this.byId("msgStripMainScreen").setText("<strong>Error: </strong><em>Validation is failed for highlighted fields. For more info </em>")
-                            this.byId("msgStripMainScreen").setType("Error");
-                            this.byId("msgStripMainScreen").setVisible(true);
+                        // Set reference of the user comments dialog globally
+                        if (!this.userCommentsDialog) {
+                            this.userCommentsDialog = Fragment.load({
+                                id: this.getView().getId(),
+                                name: "com.intapptics.zmdrcntrlcmn.view.UserComments",
+                                controller: this
+                            }).then(function (oDialog) {
+                                this.getView().addDependent(oDialog);
+                                return oDialog;
+                            }.bind(this));
                         }
 
-                        // Close busy dialog
-                        this.fn_closeBusyDialog();
+                        // Open the user comments dialog
+                        this.userCommentsDialog.then(function (oDialog) {
+                            oDialog.open();
+                        });
+                    } else {
+                        // Show that validation is failed
+                        this.byId("msgStripMainScreen").setText("<strong>Error: </strong><em>Validation is failed for highlighted fields. For more info </em>")
+                        this.byId("msgStripMainScreen").setType("Error");
+                        this.byId("msgStripMainScreen").setVisible(true);
                     }
+
+                    // Close busy dialog
+                    this.fn_closeBusyDialog();
+                }
             }.bind(this)).catch(function (oError) {
                 // If the service is not found (404), assume no custom validations for local testing
                 this.fn_getLogReference().info("Main Screen Controller: Custom validation endpoint failed, assuming no custom validations.");
-                
+
                 if (this.bValidationSuccess) {
                     this.byId("msgStripMainScreen").setText("<strong>Success: </strong><em>Validation is successful. For more info </em>");
                     this.byId("msgStripMainScreen").setType("Success");
@@ -3684,7 +3685,7 @@ sap.ui.define([
 
             // Get the primary keys
             aPrimaryKeys = this.aFieldDetails.filter(function (oField) {
-                return oField.primarykeyflag === "Y";
+                return oField.PrimaryKeyFlag === "Y";
             });
 
             // Prepare filter
@@ -3812,10 +3813,10 @@ sap.ui.define([
 
             // [FIXED] Reuse global OData model (which already has a valid CSRF token from App startup)
             // instead of instantiating a new one which fails on POST due to missing CSRF token!
-            oTableModel = this.getOwnerComponent().getModel();
+            // oTableModel = this.getOwnerComponent().getModel();
 
             // Create data at backend system
-            var oListBinding = oTableModel.bindList("/" + this.sTableEntitySet);
+            var oListBinding = this.oTableModel.bindList("/" + this.sTableEntitySet);
             var oContext = oListBinding.create(oTableData);
             oContext.created().then(function () {
                 var oData = oContext.getObject() || {};
@@ -3826,13 +3827,13 @@ sap.ui.define([
                 if (oMessage) {
                     // Update details of the message
                     oMessage.description = oMessage.message;
-                    oMessage.additionalText = oData.WORKFLOW_ID || "WF" + Math.floor(Math.random() * 10000);
+                    oMessage.additionalText = oData.WorkflowId || "WF" + Math.floor(Math.random() * 10000);
                     oMessage.message = "Data pushed to backend";
                 }
 
                 // Fallback if backend does not return WORKFLOW_ID (e.g. CAP generic handler)
-                if (!oData.WORKFLOW_ID) {
-                    oData.WORKFLOW_ID = "WF" + Math.floor(Math.random() * 10000);
+                if (!oData.WorkflowId) {
+                    oData.WorkflowId = "WF" + Math.floor(Math.random() * 10000);
                 }
 
                 // Update the value of the table data post data creation at backend with additional data received
@@ -3843,7 +3844,7 @@ sap.ui.define([
                 });
 
                 // Trigger workflow
-                this._fn_triggerWorkflow(oData.WORKFLOW_ID);
+                this._fn_triggerWorkflow(oData.WorkflowId);
             }.bind(this)).catch(function (oError) {
                 // Set error in message strip
                 this.byId("msgStripMainScreen").setText("<strong>Error: </strong><em>Error while processing. For more info </em>");
@@ -3883,7 +3884,7 @@ sap.ui.define([
             /** Method Implementation */
             // Get primary key fields
             aPrimaryKeys = this.aFieldDetails.filter(function (oField) {
-                return oField.primarykeyflag === "Y";
+                return oField.PrimaryKeyFlag === "Y";
             });
 
             // Prepare entity id
@@ -3922,7 +3923,7 @@ sap.ui.define([
                 }
             }).then(function (oTokenResponse) {
                 var sCsrfToken = oTokenResponse.headers.get("X-CSRF-Token") || "";
-                
+
                 return fetch(sTriggerUrl, {
                     method: "POST",
                     headers: {
@@ -4108,8 +4109,8 @@ sap.ui.define([
             }).getNativeModel();
 
             // Add filters
-            aFilters.push(new Filter("WORKFLOW_ID", FilterOperator.EQ, this.sWorkflowID));
-            aFilters.push(new Filter("VERSION_ACTIVE", FilterOperator.EQ, "I"));
+            aFilters.push(new Filter("WorkflowId", FilterOperator.EQ, this.sWorkflowID));
+            aFilters.push(new Filter("VersionActive", FilterOperator.EQ, "I"));
 
             // Read data from backend
             var oListBinding = oTableModel.bindList("/" + this.sTableEntitySet, null, null, aFilters);
@@ -4122,7 +4123,7 @@ sap.ui.define([
                     this._fn_dynamicFormPreparation();
 
                     // Read User remarks
-                    this._fn_readRemarks();
+                    // this._fn_readRemarks(); //to do
                 } else {
                     // Set error in message strip
                     this.byId("msgStripMainScreen").setText("<strong>Error: </strong><em>Error while processing. For more info </em>");
@@ -4184,7 +4185,7 @@ sap.ui.define([
             /** Method Implementation */
             // Get primary key fields
             aPrimaryKeys = this.aFieldDetails.filter(function (oField) {
-                return oField.primarykeyflag === "Y";
+                return oField.PrimaryKeyFlag === "Y";
             });
 
             // Prepare entity id
@@ -4468,13 +4469,13 @@ sap.ui.define([
             oTableModel = new ODataModel({
                 serviceUrl: this.sTableServiceUrl
             }).getNativeModel();
-            
+
             // Set update group
             oTableModel.setSubmitBatchMode(sap.ui.model.odata.v4.SubmitMode.Auto);
 
             // Get the primary key fields
             aPrimaryKeys = this.aFieldDetails.filter(function (oField) {
-                return oField.primarykeyflag === "Y";
+                return oField.PrimaryKeyFlag === "Y";
             });
 
             aPrimaryKeys.forEach(function (oPrimaryKey, index) {

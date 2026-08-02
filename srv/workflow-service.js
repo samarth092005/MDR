@@ -110,8 +110,8 @@ module.exports = cds.service.impl(async function (srv) {
             const sequenceid = `${d.workflowId}-${count + 1}`;
             
             await db.run(INSERT.into(WFAudit).entries({
-                sequenceid,
-                workflowid:    d.workflowId,
+                SequenceId:    sequenceid,
+                WorkflowId:    d.workflowId,
                 entityid:      d.entityId || '',
                 actiontime:    new Date().toISOString(),
                 operationtype: d.operationType,
@@ -121,11 +121,11 @@ module.exports = cds.service.impl(async function (srv) {
                 userremarks:   d.userRemarks || '',
                 actioninguser: d.actioningUser || '',
             }));
-            return { sequenceid, success: true };
+            return { seqid: sequenceid, success: true };
         } catch (err) {
             console.error("Error inserting WFAudit:", err.message);
             // Return success anyway so BPA doesn't crash during development
-            return { sequenceid: 'ERROR', success: true }; 
+            return { seqid: err.message, success: true }; 
         }
     });
 

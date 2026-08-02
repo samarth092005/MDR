@@ -171,7 +171,7 @@
         {
           "id": "mainscreen-default",
           "pattern": "detail/{SAPOrigin}/{AppTaskId}/{query}",
-          "name": "detail",
+          "name": "approvaltask",
           "target": [
             "mainscreen"
           ]
@@ -226,43 +226,43 @@
       "title": "input",
       "type": "object",
       "required": [
-        "workflowId",
-        "entityName",
-        "tablename",
-        "operationType",
-        "requestorId",
-        "totalSteps"
+        "sActionType",
+        "sActionedBy",
+        "sPrvStage",
+        "sNextStage",
+        "sTablename",
+        "sWorkflowID"
       ],
       "properties": {
-        "workflowId": {
+        "sActionType": {
           "type": "string",
-          "title": "Workflow ID",
-          "description": "Workflow ID"
+          "title": "Action Type",
+          "description": "Action Type like Create, Amend, Close or Reopen"
         },
-        "entityName": {
+        "sActionedBy": {
           "type": "string",
-          "title": "Entity Name",
-          "description": "Entity Name"
+          "title": "Actioned By",
+          "description": "Actioned By Requestor or Approver"
         },
-        "tablename": {
+        "sPrvStage": {
+          "type": "string",
+          "title": "Previous Stage",
+          "description": "Previous Stage"
+        },
+        "sNextStage": {
+          "type": "string",
+          "title": "Next Stage",
+          "description": "Next Stage"
+        },
+        "sTablename": {
           "type": "string",
           "title": "Table Name",
           "description": "Table Name"
         },
-        "operationType": {
+        "sWorkflowID": {
           "type": "string",
-          "title": "Operation Type",
-          "description": "Operation Type"
-        },
-        "requestorId": {
-          "type": "string",
-          "title": "Requestor ID",
-          "description": "Requestor ID"
-        },
-        "totalSteps": {
-          "type": "number",
-          "title": "Total Steps",
-          "description": "Total Steps"
+          "title": "Workflow Id",
+          "description": "Workflow Id"
         }
       }
     },
