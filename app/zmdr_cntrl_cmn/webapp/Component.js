@@ -224,10 +224,20 @@ sap.ui.define([
                 this.setModel(startupParameters.taskModel, "task");
 
                 // set the task context model
-                var taskContextModel = new sap.ui.model.json.JSONModel(
-                    this._getTaskInstancesBaseURL() + "/context"
-                );
-                this.setModel(taskContextModel, "context");
+                // var taskContextModel = new sap.ui.model.json.JSONModel(
+                //     this._getTaskInstancesBaseURL() + "/context"
+                // );
+                // this.setModel(taskContextModel, "context");
+                this.contextLoaded = this._loadTaskContext(); // returns a promise, stored on the component
+            },
+
+            _loadTaskContext: function () {
+                var taskContextModel = new sap.ui.model.json.JSONModel();
+                return taskContextModel
+                    .loadData(this._getTaskInstancesBaseURL() + "/context")
+                    .then(() => {
+                        this.setModel(taskContextModel, "context");
+                    });
             },
 
             _getTaskInstancesBaseURL: function () {
