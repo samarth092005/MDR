@@ -885,7 +885,7 @@ sap.ui.define([
                             this.fn_getLogReference().info("Table Result Controller: No in-progress record exists for the selected entry");
 
                             // Check status — seed data uses "ACT" for active/approved and "CLO" for closed
-                            if (this.oSelectedTableData.STATUS === "510" || this.oSelectedTableData.STATUS === "Approved") {
+                            if (this.oSelectedTableData.Status === "510" || this.oSelectedTableData.Status === "Approved") {
                                 // Enable Amend and close button
                                 this.byId("btnAmend").setVisible(true);
                                 this.byId("btnReopen").setVisible(false);
@@ -894,7 +894,7 @@ sap.ui.define([
                                 // Show below information in the message strip area
                                 this.byId("msgStripTableResult").setText("<strong>Success:</strong><em> Record is valid for modification </em>");
                                 this.byId("msgStripTableResult").setType("Success");
-                            } else if (this.oSelectedTableData.STATUS === "590" || this.oSelectedTableData.STATUS === "Closed") {
+                            } else if (this.oSelectedTableData.Status === "590" || this.oSelectedTableData.Status === "Closed") {
                                 // Enable Reopen button
                                 this.byId("btnAmend").setVisible(false);
                                 this.byId("btnReopen").setVisible(true);
@@ -922,7 +922,7 @@ sap.ui.define([
                             this.byId("btnClose").setVisible(false);
 
                             // Show below information in the message strip area
-                            this.byId("msgStripTableResult").setText("<strong>Warning: </strong><em> Workflow <strong>" + oInProgressData.WORKFLOW_ID +
+                            this.byId("msgStripTableResult").setText("<strong>Warning: </strong><em> Workflow <strong>" + oInProgressData.WorkflowId +
                                 "</strong> is in progress for the selected entry. For more information of the in progress workflow </em>");
 
                             this.byId("msgStripTableResult").setType("Warning");
@@ -959,15 +959,15 @@ sap.ui.define([
                             ofrmItemDetails.addContent(new DatePicker({
                                 displayFormat: "dd.MM.yyyy",
                                 valueFormat: "yyyy-MM-dd",
-                                value: this.oSelectedTableData[oItemDetail.ColumnName].toJSON().slice(0, 10),
-                                tooltip: this.oSelectedTableData[oItemDetail.ColumnName],
+                                value: this.oSelectedTableData[oItemDetail.ColumnName] ? this.oSelectedTableData[oItemDetail.ColumnName].toJSON().slice(0, 10) : this.oSelectedTableData[oItemDetail.ColumnName],
+                                tooltip: this.oSelectedTableData[oItemDetail.ColumnName] ? this.oSelectedTableData[oItemDetail.ColumnName].toJSON().slice(0, 10) : this.oSelectedTableData[oItemDetail.ColumnName],
                                 editable: false,
                                 width: "25rem"
                             }));
                         } else {
                             ofrmItemDetails.addContent(new Input({
-                                value: this.oSelectedTableData[oItemDetail.ColumnName],
-                                tooltip: this.oSelectedTableData[oItemDetail.ColumnName],
+                                value: this.oSelectedTableData[oItemDetail.ColumnName] + "",
+                                tooltip: this.oSelectedTableData[oItemDetail.ColumnName] + "",
                                 editable: false,
                                 width: "25rem"
                             }));
@@ -1738,9 +1738,14 @@ sap.ui.define([
                     this.fn_getLogReference().info("Table Result Controller: Service URL - " + this.sServiceUrl);
                     this.fn_getLogReference().info("Table Result Controller: Entity Set - " + this.sEntitySet);
 
+                    // Resolve the service URL as per manifest
+                    var sResolvedServiceUri =  this.getOwnerComponent().getManifestObject().resolveUri(this.sServiceUrl, "sap.app");
+
+                    this.fn_getLogReference().info("Table Result Controller: Resolved Service URL - " + sResolvedServiceUri);
+
                     // Odata model of the selected table - use the global model which has proper authentication context
                     this.oTableModel = new ODataModel({
-                        serviceUrl: this.sServiceUrl,
+                        serviceUrl: sResolvedServiceUri,
                         synchronizationMode: "None",   // required for OData V4
                         autoExpandSelect: true,
                         operationMode: "Server"

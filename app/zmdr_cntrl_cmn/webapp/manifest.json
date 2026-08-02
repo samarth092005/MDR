@@ -169,6 +169,14 @@
       },
       "routes": [
         {
+          "id": "mainscreen-default",
+          "pattern": "detail/{SAPOrigin}/{AppTaskId}/{query}",
+          "name": "detail",
+          "target": [
+            "mainscreen"
+          ]
+        },
+        {
           "id": "mainscreen",
           "pattern": "/:?sap-iapp-state:",
           "name": "mainscreen",
@@ -201,79 +209,78 @@
     "public": true,
     "service": "mdr.cap.btp"
   },
-    "sap.bpa.task": {
-        "_version": "1.0.0",
-        "outcomes": [
-            {
-                "id": "approve",
-                "label": "Approve"
-            },
-            {
-                "id": "reject",
-                "label": "Reject"
-            }
-        ],
-        "inputs": {
-            "$schema": "http://json-schema.org/draft-07/schema",
-            "title": "input",
-            "type": "object",
-            "required": [
-                "workflowId",
-                "entityName",
-                "tablename",
-                "operationType",
-                "requestorId",
-                "totalSteps"
-            ],
-            "properties": {
-                "workflowId": {
-                    "type": "string",
-                    "title": "Workflow ID",
-                    "description": "Workflow ID"
-                },
-                "entityName": {
-                    "type": "string",
-                    "title": "Entity Name",
-                    "description": "Entity Name"
-                },
-                "tablename": {
-                    "type": "string",
-                    "title": "Table Name",
-                    "description": "Table Name"
-                },
-                "operationType": {
-                    "type": "string",
-                    "title": "Operation Type",
-                    "description": "Operation Type"
-                },
-                "requestorId": {
-                    "type": "string",
-                    "title": "Requestor ID",
-                    "description": "Requestor ID"
-                },
-                "totalSteps": {
-                    "type": "number",
-                    "title": "Total Steps",
-                    "description": "Total Steps"
-                }
-            }
+  "sap.bpa.task": {
+    "_version": "1.0.0",
+    "outcomes": [
+      {
+        "id": "approve",
+        "label": "Approve"
+      },
+      {
+        "id": "reject",
+        "label": "Reject"
+      }
+    ],
+    "inputs": {
+      "$schema": "http://json-schema.org/draft-07/schema",
+      "title": "input",
+      "type": "object",
+      "required": [
+        "workflowId",
+        "entityName",
+        "tablename",
+        "operationType",
+        "requestorId",
+        "totalSteps"
+      ],
+      "properties": {
+        "workflowId": {
+          "type": "string",
+          "title": "Workflow ID",
+          "description": "Workflow ID"
         },
-        "outputs": {
-            "$schema": "http://json-schema.org/draft-07/schema",
-            "title": "output",
-            "type": "object",
-            "required": [
-                "comment"
-            ],
-            "properties": {
-                "comment": {
-                    "type": "string",
-                    "title": "Comment",
-                    "description": "Approver Comment"
-                }
-            }
+        "entityName": {
+          "type": "string",
+          "title": "Entity Name",
+          "description": "Entity Name"
         },
-        "category": "approval"
-    }
-
+        "tablename": {
+          "type": "string",
+          "title": "Table Name",
+          "description": "Table Name"
+        },
+        "operationType": {
+          "type": "string",
+          "title": "Operation Type",
+          "description": "Operation Type"
+        },
+        "requestorId": {
+          "type": "string",
+          "title": "Requestor ID",
+          "description": "Requestor ID"
+        },
+        "totalSteps": {
+          "type": "number",
+          "title": "Total Steps",
+          "description": "Total Steps"
+        }
+      }
+    },
+    "outputs": {
+      "$schema": "http://json-schema.org/draft-07/schema",
+      "title": "output",
+      "type": "object",
+      "required": [
+        "comment"
+      ],
+      "properties": {
+        "comment": {
+          "type": "string",
+          "title": "Comment",
+          "description": "Approver Comment"
+        }
+      }
+    },
+    "category": "approval"
+  }
 }

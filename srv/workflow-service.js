@@ -62,35 +62,40 @@ module.exports = cds.service.impl(async function (srv) {
     // ── resolveApprovers ─────────────────────────────────────────────────
     srv.on('resolveApprovers', async (req) => {
         console.log("[Workflow Handler] resolveApprovers called with:", req.data);
-        const { tablename, currentStage, processId, requesterRole, requestorId, apprClass } = req.data;
+        // const { tablename, currentStage, processId, requesterRole, requestorId, apprClass } = req.data;
         
-        // get approver class line item id from approver class
-        const db = await cds.connect.to('db');
-        const { ApproverClass, Approver } = db.entities('zmdr');
-        const approverClassLineItemId = await db.run(SELECT.one.from(ApproverClass).where({ subclass : apprClass, version_active : 'X'}).columns('approver_class_lineid'));//.then(r => r ? r.approverclasslineitemid : null);
-        // get approver list from approver class line item id
-        const approverList = await db.run(SELECT.one.from(Approver).where({ approver_class_lineid : approverClassLineItemId.approver_class_lineid, version_active : 'X', status : 'ACT'}).columns('approver_lineid', 'version_start_date', 'node_name', 'approver_id', 'status'));
-        // return approver id, default approver email, and next stage
-        if (approverList) {
-            return {
-                approverEmail: approverList.approver_id + '@abhiyantatech.com', // Assuming email is derived from approver_id
-                approverId: approverList.approver_id,
-                nextStage: '' // Blank means final stage
-            };
-        } else {
-            console.warn("[Workflow Handler] No approvers found for class:", apprClass);
-            return {
-                approverEmail: 'approver@example.com',
-                approverId: 'APPROVER',
-                nextStage: ''
-            };
-        }
+        // // get approver class line item id from approver class
+        // const db = await cds.connect.to('db');
+        // const { ApproverClass, Approver } = db.entities('zmdr');
+        // const approverClassLineItemId = await db.run(SELECT.one.from(ApproverClass).where({ subclass : apprClass, version_active : 'Y'}).columns('approver_class_lineid'));//.then(r => r ? r.approverclasslineitemid : null);
+        // // get approver list from approver class line item id
+        // const approverList = await db.run(SELECT.one.from(Approver).where({ approver_class_lineid : approverClassLineItemId.approver_class_lineid, version_active : 'Y', status : 'ACT'}).columns('approver_lineid', 'version_start_date', 'node_name', 'approver_id', 'status'));
+        // // return approver id, default approver email, and next stage
+        // if (approverList) {
+        //     return {
+        //         approverEmail: approverList.approver_id + '@abhiyantatech.com', // Assuming email is derived from approver_id
+        //         approverId: approverList.approver_id,
+        //         nextStage: '' // Blank means final stage
+        //     };
+        // } else {
+        //     console.warn("[Workflow Handler] No approvers found for class:", apprClass);
+        //     return {
+        //         approverEmail: 'approver@example.com',
+        //         approverId: 'APPROVER',
+        //         nextStage: ''
+        //     };
+        // }
         // For now, return dummy approver to allow BPA to continue without failing on missing tables
         // return {
         //     approverEmail: req.user.id || 'approver@example.com',
         //     approverId: req.user.id || 'APPROVER',
         //     nextStage: '' // Blank means final stage
         // };
+        return {
+            approverEmail: 'Abhinandan.d@abhiyantatech.com',
+            approverId: 'Abhinandan.d@abhiyantatech.com',
+            nextStage: '' // Blank means final stage
+        };
     });
 
     // ── insertWFAudit (generic audit writer) ─────────────────────────────

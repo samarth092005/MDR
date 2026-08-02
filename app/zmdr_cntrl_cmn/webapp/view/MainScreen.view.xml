@@ -4,7 +4,8 @@
         <f:title>
             <f:DynamicPageTitle id="dptMainScreen">
                 <f:heading>
-                    <Title id="ttlMainScreen" text="{mainScreenViewModel>/pageTitle}" tooltip="{mainScreenViewModel>/pageTitle}"></Title>
+                    <Title text="Swapnil"/>
+                    <!-- <Title id="ttlMainScreen" text="{mainScreenViewModel>/pageTitle}" tooltip="{mainScreenViewModel>/pageTitle}"></Title> -->
                 </f:heading>
                 <f:navigationActions>
                     <OverflowToolbarButton id="btnRelease" type="Emphasized" icon="sap-icon://cause" press="onPress_btnRelease" tooltip="{i18n>btnRelease}" visible="true"></OverflowToolbarButton>

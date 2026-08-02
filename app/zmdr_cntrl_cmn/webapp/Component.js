@@ -21,9 +21,9 @@ sap.ui.define([
                 var sEntityPath = bCount ? sPath.replace("/$count", "") : sPath;
                 var iSkip = (mParameters.urlParameters && mParameters.urlParameters.$skip) || 0;
                 var iTop = (mParameters.urlParameters && mParameters.urlParameters.$top) || 1000;
-                
+
                 var oListBinding = this.bindList(sEntityPath, null, null, mParameters.filters, bCount ? { $$count: true } : undefined);
-                
+
                 oListBinding.requestContexts(iSkip, iTop).then(function (aContexts) {
                     if (bCount) {
                         if (mParameters.success) mParameters.success(oListBinding.getLength().toString(), null);
@@ -50,7 +50,7 @@ sap.ui.define([
             V4ODataModel.prototype.update = function (sPath, oData, mParameters) {
                 mParameters = mParameters || {};
                 var oBinding = this.bindContext(sPath);
-                oBinding.requestObject().then(function() {
+                oBinding.requestObject().then(function () {
                     var oCtx = oBinding.getBoundContext();
                     for (var sKey in oData) {
                         oCtx.setProperty(sKey, oData[sKey]);
@@ -64,11 +64,11 @@ sap.ui.define([
             V4ODataModel.prototype.remove = function (sPath, mParameters) {
                 mParameters = mParameters || {};
                 var oBinding = this.bindContext(sPath);
-                oBinding.requestObject().then(function() {
+                oBinding.requestObject().then(function () {
                     var oCtx = oBinding.getBoundContext();
-                    oCtx.delete().then(function() {
+                    oCtx.delete().then(function () {
                         if (mParameters.success) mParameters.success(null, null);
-                    }).catch(function(oError) {
+                    }).catch(function (oError) {
                         if (mParameters.error) mParameters.error(oError);
                     });
                 }).catch(function (oError) {
@@ -113,39 +113,60 @@ sap.ui.define([
                 // Initialize the error handler with the component
                 this._oErrorHandler = new ErrorHandler(this);
 
+                // Attach BEFORE initialize(), not after
+                this.getRouter().attachRouteMatched(function (evt) {
+                    console.log("Route matched:", evt.getParameter("name"), evt.getParameter("arguments"));
+                });
+                this.getRouter().attachBypassed(function () {
+                    console.log("Router BYPASSED — no route matched current hash");
+                });
+                
                 // enable routing
                 this.getRouter().initialize();
+
+                // ---- ADD THE DIAGNOSTIC LOGGING RIGHT HERE ---- 
+                this.getRouter().attachRouteMatched(function (evt) {
+                    console.log("Route matched1:", evt.getParameter("name"));
+                });
+                this.getRouter().attachBypassed(function () {
+                    console.log("Router BYPASSED1 — no route matched current hash");
+                });
+                // --------------------------------------------
 
                 // set the device model
                 this.setModel(models.createDeviceModel(), "device");
 
                 // swapnil
-                this.setTaskModels();
-                const rejectOutcomeId = "reject";
-                this.getInboxAPI().addAction(
-                    {
-                        action: rejectOutcomeId,
-                        label: "Reject",
-                        type: "reject",
-                    },
-                    function () {
-                        this.completeTask(false, rejectOutcomeId);
-                    },
-                    this
-                );
-                const approveOutcomeId = "approve";
-                this.getInboxAPI().addAction(
-                    {
-                        action: approveOutcomeId,
-                        label: "Approve",
-                        type: "accept",
-                    },
-                    function () {
-                        this.completeTask(true, approveOutcomeId);
-                    },
-                    this
-                );
+                var oStartupParameters = this.getComponentData().startupParameters;
+                var oTaskModel = oStartupParameters.taskModel;
 
+                if (oTaskModel) {
+                    this.setTaskModels();
+                    const rejectOutcomeId = "reject";
+                    this.getInboxAPI().addAction(
+                        {
+                            action: rejectOutcomeId,
+                            label: "Reject",
+                            type: "reject",
+                        },
+                        function () {
+                            this.completeTask(false, rejectOutcomeId);
+                        },
+                        this
+                    );
+                    const approveOutcomeId = "approve";
+                    this.getInboxAPI().addAction(
+                        {
+                            action: approveOutcomeId,
+                            label: "Approve",
+                            type: "accept",
+                        },
+                        function () {
+                            this.completeTask(true, approveOutcomeId);
+                        },
+                        this
+                    );
+                }
                 // swapnil
 
                 // Log information
@@ -277,7 +298,7 @@ sap.ui.define([
                 });
                 return fetchedToken;
             },
-            
+
             _refreshTaskList: function () {
                 this.getInboxAPI().updateTask("NA", this.getTaskInstanceID());
             },

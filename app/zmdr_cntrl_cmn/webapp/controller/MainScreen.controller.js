@@ -139,7 +139,7 @@ sap.ui.define([
 
             // Get value of all fields
             this.aFieldDetails.forEach(function (oField) {
-                var sColName = oField.columnname || oField.Columnname;
+                var sColName = oField.ColumnName;
                 
                 if (!sColName) return; // Skip if no column name
 
@@ -148,7 +148,7 @@ sap.ui.define([
 
                 // Check field
                 if (sap.ui.getCore().byId(sIdInp) && sap.ui.getCore().byId(sIdInp).getValue()) {
-                    var sDataType = (oField.columndatatype || oField.Columndatatype || "").toUpperCase();
+                    var sDataType = (oField.ColumnDataType || oField.Columndatatype || "").toUpperCase();
                     if (sDataType.includes("INTEGER") || sDataType.includes("INT") || sDataType === "NUMC" || sDataType === "DEC") {
                         if (!oField.lkpodata) {
                             oTableData[sColName] = parseInt(sap.ui.getCore().byId(sIdInp).getValue(), 10);
@@ -300,7 +300,7 @@ sap.ui.define([
                         // Set data into global variable
                         oTableData[this.aLkpInformation.filter(function (oLkpInformation) {
                             return oLkpInformation.fieldId === sFieldId;
-                        })[0].fieldData.columnname] = sInputData;
+                        })[0].fieldData.ColumnName] = sInputData;
                     } else {
                         sInputData = sInputData + ", " + aContexts[0].getObject()[oLkpFieldName];
                     }
@@ -313,11 +313,11 @@ sap.ui.define([
 
                     // Clear the value of the fields related to the current value change in the selected field
                     this.aFieldDetails.map(function (oField1) {
-                        if (sFieldId === "inp" + this._fn_getFieldId(oField1.columnname)) {
+                        if (sFieldId === "inp" + this._fn_getFieldId(oField1.ColumnName)) {
                             this.aFieldDetails.filter(function (oField2) {
-                                if (oField1.columnname === oField2.Lkprestvalue) {
-                                    sap.ui.getCore().byId("inp" + this._fn_getFieldId(oField2.columnname)).setValue(null);
-                                    sap.ui.getCore().byId("inp" + this._fn_getFieldId(oField2.columnname)).setTooltip(null);
+                                if (oField1.ColumnName === oField2.Lkprestvalue) {
+                                    sap.ui.getCore().byId("inp" + this._fn_getFieldId(oField2.ColumnName)).setValue(null);
+                                    sap.ui.getCore().byId("inp" + this._fn_getFieldId(oField2.ColumnName)).setTooltip(null);
                                 }
                             }, this);
                         }
@@ -453,11 +453,11 @@ sap.ui.define([
                     // Get the value for each field entered by the user
                     this.aFieldDetails.forEach(function (oField) {
                         // Prepare input id
-                        sIdInp = "inp" + this._fn_getFieldId(oField.columnname);
+                        sIdInp = "inp" + this._fn_getFieldId(oField.ColumnName);
 
                         // Check field
                         if (sap.ui.getCore().byId(sIdInp) && sap.ui.getCore().byId(sIdInp).getValue()) {
-                            oEnteredData[oField.columnname] = sap.ui.getCore().byId(sIdInp).getValue();
+                            oEnteredData[oField.ColumnName] = sap.ui.getCore().byId(sIdInp).getValue();
                         }
                     }, this);
 
@@ -672,7 +672,7 @@ sap.ui.define([
                 } else {
                     this._aValueHelpDialog.forEach(function (oVHD, iIndex) {
                         if (!bOpenDialogFlag) {
-                            if (oVHD.getId() === sap.ui.core.Fragment.createId(this._fn_getFieldId(oLkpData.columnname)), "dlgLookup") {
+                            if (oVHD.getId() === sap.ui.core.Fragment.createId(this._fn_getFieldId(oLkpData.ColumnName)), "dlgLookup") {
                                 bOpenDialogFlag = true;
                                 iIndex = iIndex;
                             } else {
@@ -727,7 +727,7 @@ sap.ui.define([
                 this._fn_readLookupData(oLkpData, 20, 0);
 
                 // Set title of the value help dialog
-                this.fn_getLocalModel("mainScreenViewModel").setProperty("/valueHelpDialogTitle", "Select " + oLkpData.columnlabel);
+                this.fn_getLocalModel("mainScreenViewModel").setProperty("/valueHelpDialogTitle", "Select " + oLkpData.ColumnLabel);
 
                 // If value help dialog is already initialized then open it else prepare and open it
                 if (bOpenDialogFlag) {
@@ -745,7 +745,7 @@ sap.ui.define([
 
                     // Create the value help dialog
                     oValueHelpDialog = Fragment.load({
-                        id: sap.ui.core.Fragment.createId(this.getView().getId(), this._fn_getFieldId(oLkpData.columnname)),
+                        id: sap.ui.core.Fragment.createId(this.getView().getId(), this._fn_getFieldId(oLkpData.ColumnName)),
                         name: "com.intapptics.zmdrcntrlcmn.view.LookupValueHelp",
                         controller: this
                     }).then(function (oDialog) {
@@ -773,8 +773,8 @@ sap.ui.define([
                                 oSorter = new oSorter(sLkpFieldName, false); // Sort ascending by setting the descending parameter to false
                             }
                             oLkpCell = new Text({
-                                text: { path: oLkpData.columnname + ">" + sLkpFieldName },
-                                tooltip: { path: oLkpData.columnname + ">" + sLkpFieldName, formatter: function (sValue) { return sValue + ""; } },
+                                text: { path: oLkpData.ColumnName + ">" + sLkpFieldName },
+                                tooltip: { path: oLkpData.ColumnName + ">" + sLkpFieldName, formatter: function (sValue) { return sValue + ""; } },
                             });
 
                             // Add cell to the array
@@ -783,7 +783,7 @@ sap.ui.define([
 
                         // Bind rows
                         oDialog.getContent()[0].getItems()[0].bindAggregation("items", {
-                            path: oLkpData.columnname + ">/",
+                            path: oLkpData.ColumnName + ">/",
                             sorter: oSorter,
                             template: new ColumnListItem({
                                 cells: aLkpCells
@@ -921,10 +921,10 @@ sap.ui.define([
                 this.fn_openBusyDialog();
 
                 // Remove selection of table data if any
-                this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.columnname) + "--tblDlgLookup")).removeSelections();
+                this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.ColumnName) + "--tblDlgLookup")).removeSelections();
 
                 // Calculate page numbering and values
-                iMaxPageNum = parseInt(this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.columnname) + "--lblDlgLookupMaxPageNum")).getText().substr(2), 10);
+                iMaxPageNum = parseInt(this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.ColumnName) + "--lblDlgLookupMaxPageNum")).getText().substr(2), 10);
                 if (oEvent.getSource().getId().includes("PageNum")) {
                     iCurrPageNum = parseInt(oEvent.getSource().getValue(), 10);
                     if (isNaN(iCurrPageNum)) {
@@ -934,9 +934,9 @@ sap.ui.define([
                     if (oEvent.getSource().getId().includes("First")) {
                         iCurrPageNum = 1;
                     } else if (oEvent.getSource().getId().includes("Prev")) {
-                        iCurrPageNum = parseInt(this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.columnname) + "--inpDlgLookupPageNum")).getValue(), 10) - 1;
+                        iCurrPageNum = parseInt(this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.ColumnName) + "--inpDlgLookupPageNum")).getValue(), 10) - 1;
                     } else if (oEvent.getSource().getId().includes("Next")) {
-                        iCurrPageNum = parseInt(this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.columnname) + "--inpDlgLookupPageNum")).getValue(), 10) + 1;
+                        iCurrPageNum = parseInt(this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.ColumnName) + "--inpDlgLookupPageNum")).getValue(), 10) + 1;
                     } else {
                         iCurrPageNum = iMaxPageNum;
                     }
@@ -948,28 +948,28 @@ sap.ui.define([
                     iCurrPageNum = iMaxPageNum;
                 }
 
-                this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.columnname) + "--inpDlgLookupPageNum")).setValue(iCurrPageNum);
+                this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.ColumnName) + "--inpDlgLookupPageNum")).setValue(iCurrPageNum);
 
                 if (iCurrPageNum === iMaxPageNum && (iCurrPageNum === 1 || iCurrPageNum === 0)) {
-                    this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.columnname) + "--btnDlgLookupFirstPage")).setEnabled(false);
-                    this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.columnname) + "--btnDlgLookupPrevPage")).setEnabled(false);
-                    this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.columnname) + "--btnDlgLookupNextPage")).setEnabled(false);
-                    this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.columnname) + "--btnDlgLookupLastPage")).setEnabled(false);
+                    this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.ColumnName) + "--btnDlgLookupFirstPage")).setEnabled(false);
+                    this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.ColumnName) + "--btnDlgLookupPrevPage")).setEnabled(false);
+                    this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.ColumnName) + "--btnDlgLookupNextPage")).setEnabled(false);
+                    this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.ColumnName) + "--btnDlgLookupLastPage")).setEnabled(false);
                 } else if (iCurrPageNum === iMaxPageNum) {
-                    this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.columnname) + "--btnDlgLookupFirstPage")).setEnabled(true);
-                    this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.columnname) + "--btnDlgLookupPrevPage")).setEnabled(true);
-                    this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.columnname) + "--btnDlgLookupNextPage")).setEnabled(false);
-                    this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.columnname) + "--btnDlgLookupLastPage")).setEnabled(false);
+                    this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.ColumnName) + "--btnDlgLookupFirstPage")).setEnabled(true);
+                    this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.ColumnName) + "--btnDlgLookupPrevPage")).setEnabled(true);
+                    this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.ColumnName) + "--btnDlgLookupNextPage")).setEnabled(false);
+                    this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.ColumnName) + "--btnDlgLookupLastPage")).setEnabled(false);
                 } else if (iCurrPageNum === 1) {
-                    this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.columnname) + "--btnDlgLookupFirstPage")).setEnabled(false);
-                    this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.columnname) + "--btnDlgLookupPrevPage")).setEnabled(false);
-                    this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.columnname) + "--btnDlgLookupNextPage")).setEnabled(true);
-                    this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.columnname) + "--btnDlgLookupLastPage")).setEnabled(true);
+                    this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.ColumnName) + "--btnDlgLookupFirstPage")).setEnabled(false);
+                    this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.ColumnName) + "--btnDlgLookupPrevPage")).setEnabled(false);
+                    this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.ColumnName) + "--btnDlgLookupNextPage")).setEnabled(true);
+                    this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.ColumnName) + "--btnDlgLookupLastPage")).setEnabled(true);
                 } else {
-                    this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.columnname) + "--btnDlgLookupFirstPage")).setEnabled(true);
-                    this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.columnname) + "--btnDlgLookupPrevPage")).setEnabled(true);
-                    this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.columnname) + "--btnDlgLookupNextPage")).setEnabled(true);
-                    this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.columnname) + "--btnDlgLookupLastPage")).setEnabled(true);
+                    this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.ColumnName) + "--btnDlgLookupFirstPage")).setEnabled(true);
+                    this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.ColumnName) + "--btnDlgLookupPrevPage")).setEnabled(true);
+                    this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.ColumnName) + "--btnDlgLookupNextPage")).setEnabled(true);
+                    this.byId(this.getView().createId(this._fn_getFieldId(oLkpData.ColumnName) + "--btnDlgLookupLastPage")).setEnabled(true);
                 }
 
                 if (iCurrPageNum === 0) {
@@ -1230,14 +1230,14 @@ sap.ui.define([
 
             // Get the primary fields
             aPrimaryKeys = this.aFieldDetails.filter(function (oField) {
-                return oField.primarykeyflag === "Y";
+                return oField.PrimaryKeyFlag === "Y";
             });
 
             // Prepare filter
             aPrimaryKeys.forEach(function (oPrimaryKey) {
-                aFilters.push(new Filter(oPrimaryKey.columnname, FilterOperator.EQ, this.oSelectedTableData[oPrimaryKey.columnname]));
+                aFilters.push(new Filter(oPrimaryKey.ColumnName, FilterOperator.EQ, this.oSelectedTableData[oPrimaryKey.ColumnName]));
             }, this);
-            aFilters.push(new Filter("VERSION_ACTIVE", FilterOperator.EQ, "Y"));
+            aFilters.push(new Filter("VersionActive", FilterOperator.EQ, "Y"));
 
             // Read active data to compare
             var oListBinding = oTableModel.bindList("/" + this.sTableEntitySet, null, null, aFilters);
@@ -1384,16 +1384,16 @@ sap.ui.define([
             console.log("Hash:", window.location.hash);
 
             /** Method Implementation */
-            // LOCAL DEV MOCK: If running locally without Launchpad, inject default startup parameters to enable testing
-            if (!oComponentData || !oComponentData.startupParameters) {
-                this.fn_getLogReference().info("Main Screen Controller: Running locally - injecting mock startup parameters for development.");
-                oComponentData = oComponentData || {};
-                oComponentData.startupParameters = {
-                    sActionType: ["Create"],
-                    sActionedBy: ["Requestor"],
-                    sTablename: ["ZMDR_GLACCOUNT"]
-                };
-            }
+            // // LOCAL DEV MOCK: If running locally without Launchpad, inject default startup parameters to enable testing
+            // if (!oComponentData || !oComponentData.startupParameters) {
+            //     this.fn_getLogReference().info("Main Screen Controller: Running locally - injecting mock startup parameters for development.");
+            //     oComponentData = oComponentData || {};
+            //     oComponentData.startupParameters = {
+            //         sActionType: ["Create"],
+            //         sActionedBy: ["Requestor"],
+            //         sTablename: ["ZMDR_GLACCOUNT"]
+            //     };
+            // }
 
             // Check if mandatory startup parameters are passed
             if (oComponentData && oComponentData.startupParameters) {
@@ -1539,27 +1539,6 @@ sap.ui.define([
                         
                         this.byId("obatHdr1").setText(this.sRepositoryName).setVisible(true);
                         this.byId("obatHdr2").setText(this.sTableLabel).setVisible(true);
-
-                        var oModel = this.fn_getGlobalModel();
-                        var oListBinding = oModel.bindList("/UIConfigSet", null, null, [new sap.ui.model.Filter("tablename", sap.ui.model.FilterOperator.EQ, this.sSelectedTableName)]);
-                        oListBinding.requestContexts(0, Infinity).then(function (aContexts) {
-                            var aResults = aContexts.map(function(c) { return c.getObject(); });
-                            this.aFieldDetails = aResults;
-                            this.oSelectedTableData = {};
-                            
-                            if (this.sActionType !== "Display") {
-                                if (this.bFirstFlag) {
-                                    this.bFirstFlag = false;
-                                    this._fn_dynamicFormPreparation();
-                                }
-                            } else {
-                                this._fn_dynamicFormPreparation();
-                            }
-                            this.fn_closeBusyDialog();
-                        }.bind(this)).catch(function () {
-                            this.fn_getLogReference().error("Main Screen Controller: Failed to fetch mock UI config from /UIConfigSet");
-                            this.fn_closeBusyDialog();
-                        }.bind(this));
                         return; // Bypass the getAppState block
                     }
 
@@ -1594,24 +1573,9 @@ sap.ui.define([
                             }
 
                             // Get the field details — filter by tablename (not tablelabel) and normalize keys to lowercase
-                            var aFilteredFields = oSavedAppState.getData().aCntrlUiConfigData.filter(function (oCntrlUiConfigData) {
-                                var sTableName = oCntrlUiConfigData.tablename || oCntrlUiConfigData.Tablename;
-                                return sTableName === this.sSelectedTableName;
+                            this.aFieldDetails = oSavedAppState.getData().aCntrlUiConfigData.filter(function (oCntrlUiConfigData) {
+                                return oCntrlUiConfigData.TableName === this.sSelectedTableName;
                             }, this);
-
-                            this.aFieldDetails = aFilteredFields.map(function(oField) {
-                                var oNormalized = {};
-                                for (var sKey in oField) {
-                                    oNormalized[sKey.toLowerCase()] = oField[sKey];
-                                }
-                                // Map to legacy camelCase properties expected by the frontend
-                                oNormalized.Lkprestfield = oNormalized.lkpdatarestfield || oNormalized.lkprestfield;
-                                oNormalized.Lkprestcond = oNormalized.lkpdatarestcond || oNormalized.lkprestcond;
-                                oNormalized.Lkprestvalue = oNormalized.lkpdatarestvalue || oNormalized.lkprestvalue;
-                                oNormalized.Lookupfieldsname = oNormalized.lkpfieldsname || oNormalized.lookupfieldsname;
-                                oNormalized.Lookupfieldslabel = oNormalized.lkpfieldslabel || oNormalized.lookupfieldslabel;
-                                return oNormalized;
-                            });
 
                             if (this.sActionType !== "Display") {
                                 if (this.sActionType !== "Create") {
@@ -1702,37 +1666,24 @@ sap.ui.define([
                             aFilters = [];
 
                             // Prepare the filter
-                            aFilters.push(new Filter("tablename", FilterOperator.EQ, this.sSelectedTableName));
+                            aFilters.push(new Filter("TableName", FilterOperator.EQ, this.sSelectedTableName));
 
                             // Get table fields data
-                            var oListBinding = oCntrlUiConfigModel.bindList("/UIConfigSet", null, null, aFilters);
+                            var oListBinding = oCntrlUiConfigModel.bindList("/CntrlUIConfig", null, null, aFilters);
                             oListBinding.requestContexts(0, Infinity).then(function (aContexts) {
                                 // Get field details
-                                this.aFieldDetails = aContexts.map(function(c) {
-                                    var oField = c.getObject();
-                                    var oNormalized = {};
-                                    for (var sKey in oField) {
-                                        oNormalized[sKey.toLowerCase()] = oField[sKey];
-                                    }
-                                    // Map to legacy camelCase properties expected by the frontend
-                                    oNormalized.Lkprestfield = oNormalized.lkpdatarestfield || oNormalized.lkprestfield;
-                                    oNormalized.Lkprestcond = oNormalized.lkpdatarestcond || oNormalized.lkprestcond;
-                                    oNormalized.Lkprestvalue = oNormalized.lkpdatarestvalue || oNormalized.lkprestvalue;
-                                    oNormalized.Lookupfieldsname = oNormalized.lkpfieldsname || oNormalized.lookupfieldsname;
-                                    oNormalized.Lookupfieldslabel = oNormalized.lkpfieldslabel || oNormalized.lookupfieldslabel;
-                                    return oNormalized;
-                                });
+                                this.aFieldDetails = aContexts.map(function (oCtx) { return oCtx.getObject(); });
 
                                 // Get repository name and tablelabel
-                                this.sRepositoryName = this.aFieldDetails[0].repositorylabel || this.aFieldDetails[0].repository || "";
-                                this.sTableLabel = this.aFieldDetails[0].tablelabel || this.aFieldDetails[0].tablename || "";
+                                this.sRepositoryName = this.aFieldDetails[0].RepositoryLabel;
+                                this.sTableLabel = this.aFieldDetails[0].TableLabel;
 
                                 // Set page title
                                 this.fn_getLocalModel("mainScreenViewModel").setProperty("/pageTitle", this.fn_getResourceBundle().getText("approverTitle", [sActionType, this.sRepositoryName, this.sTableLabel, this.sWorkflowID]));
 
                                 // Sort fields data
                                 this.aFieldDetails.sort(function (oVal1, oVal2) {
-                                    return oVal1.columnseqno - oVal2.columnseqno;
+                                    return oVal1.ColumnSeqNo - oVal2.ColumnSeqNo;
                                 })
 
                                 // Read table url
@@ -1833,26 +1784,26 @@ sap.ui.define([
             // Create an array of sections
             this.aFieldDetails.forEach(function (oFieldDetails) {
                 // Skip fields that are not visible so they don't create empty sections
-                if (oFieldDetails.visibilityflag !== "Y") {
+                if (oFieldDetails.VisibilityFlag !== "Y") {
                     return;
                 }
                 
                 if (aSections.length === 0) {
-                    aSections.push({ sectionSequence: oFieldDetails.sectionsequence, sectionId: oFieldDetails.sectionid, sectionName: oFieldDetails.sectionname, sectionColumns: [oFieldDetails.columnseqno] });
+                    aSections.push({ sectionSequence: oFieldDetails.SectionSequence, sectionId: oFieldDetails.SectionId, sectionName: oFieldDetails.SectionName, sectionColumns: [oFieldDetails.ColumnSeqNo] });
                 } else {
                     // Check if section already exists
                     if (aSections.some(function (oSection) {
-                        return oSection.sectionSequence === oFieldDetails.sectionsequence;
+                        return oSection.sectionSequence === oFieldDetails.SectionSequence;
                     })) {
                         aSections.forEach(function (oSection) {
-                            if (oSection.sectionSequence === oFieldDetails.sectionsequence) {
+                            if (oSection.sectionSequence === oFieldDetails.SectionSequence) {
                                 // If section already exists then push the column sequence number
-                                oSection.sectionColumns.push(oFieldDetails.columnseqno);
+                                oSection.sectionColumns.push(oFieldDetails.ColumnSeqNo);
                             }
                         });
                     } else {
                         // If section does not exist then create a new section
-                        aSections.push({ sectionSequence: oFieldDetails.sectionsequence, sectionId: oFieldDetails.sectionid, sectionName: oFieldDetails.sectionname, sectionColumns: [oFieldDetails.columnseqno] });
+                        aSections.push({ sectionSequence: oFieldDetails.SectionSequence, sectionId: oFieldDetails.SectionId, sectionName: oFieldDetails.SectionName, sectionColumns: [oFieldDetails.ColumnSeqNo] });
                     }
                 }
             });
@@ -1885,21 +1836,21 @@ sap.ui.define([
                 // Add fields to the subsection
                 oSection.sectionColumns.forEach(function (iColumnSeqNo) {
                     var oField = this.aFieldDetails.find(function (oFieldDetails) {
-                        return oFieldDetails.columnseqno === iColumnSeqNo;
+                        return oFieldDetails.ColumnSeqNo === iColumnSeqNo;
                     });
 
                     if (oField) {
-                        var sDataType = (oField.columndatatype || "").toUpperCase();
+                        var sDataType = (oField.ColumnDataType || "").toUpperCase();
                         // Create the field element based on its type
                         // Supports: STRING / CHAR (text), INTEGER / INT (numeric), DATS / DATE (date), LOOKUP
                         if (sDataType === "STRING" || sDataType.includes("CHAR")) {
-                            if (!oField.lkpodata || oField.lkpodata.length === 0) {
+                            if (!oField.LkpoData || oField.LkpoData.length === 0) {
                                 this._fn_createCharElement(oPanel.getContent()[0], oField);
                             } else {
                                 this._fn_createLookupElement(oPanel.getContent()[0], oField);
                             }
                         } else if (sDataType.includes("INTEGER") || sDataType.includes("INT") || sDataType === "NUMC" || sDataType === "DEC") {
-                            if (!oField.lkpodata || oField.lkpodata.length === 0) {
+                            if (!oField.LkpoData || oField.LkpoData.length === 0) {
                                 this._fn_createIntegerElement(oPanel.getContent()[0], oField);
                             } else {
                                 this._fn_createLookupElement(oPanel.getContent()[0], oField);
@@ -1908,7 +1859,7 @@ sap.ui.define([
                             this._fn_createDateElement(oPanel.getContent()[0], oField);
                         } else {
                             // Fallback: treat any unknown type as a text field
-                            this.fn_getLogReference().warning("Main Screen Controller: Unknown field type '" + oField.columndatatype + "' — rendering as text input");
+                            this.fn_getLogReference().warning("Main Screen Controller: Unknown field type '" + oField.ColumnDataType + "' — rendering as text input");
                             this._fn_createCharElement(oPanel.getContent()[0], oField);
                         }
                     }
@@ -1917,23 +1868,23 @@ sap.ui.define([
 
             // // Add fields into the form
             // this.aFieldDetails.forEach(function (oField) {
-            //     if (oField.columndatatype.includes("INTEGER")) {
+            //     if (oField.ColumnDataType.includes("INTEGER")) {
             //         if (oField.lkpodata.length === 0) {
             //             this._fn_createIntegerElement(oForm, oField);
             //         } else {
             //             this._fn_createLookupElement(oForm, oField);
             //         }
-            //     } else if (oField.columndatatype.includes("CHAR")) {
+            //     } else if (oField.ColumnDataType.includes("CHAR")) {
             //         if (oField.lkpodata.length === 0) {
             //             this._fn_createCharElement(oForm, oField);
             //         } else {
             //             this._fn_createLookupElement(oForm, oField);
             //         }
-            //     } else if (oField.columndatatype.includes("DATS")) {
+            //     } else if (oField.ColumnDataType.includes("DATS")) {
             //         this._fn_createDateElement(oForm, oField);
             //     } else {
             //         // Log error
-            //         this.fn_getLogReference().error("Main Screen Controller: Field type " + oField.columndatatype + "is not handled in the UI")
+            //         this.fn_getLogReference().error("Main Screen Controller: Field type " + oField.ColumnDataType + "is not handled in the UI")
             //     }
             // }, this);
 
@@ -1995,27 +1946,27 @@ sap.ui.define([
 
             /** Define variables */
             var aDisplayFields, // Display field details
-                sValue = this.oSelectedTableData[oField.columnname], // Value to be displayed other than create scenario
+                sValue = this.oSelectedTableData[oField.ColumnName], // Value to be displayed other than create scenario
                 bMandatory, // Mandatory flag
                 bEditable, // Editable flag
                 sIdLbl, // Label Id
                 sIdInp; // Input Id
 
             /** Method Implementation */
-            if (oField.visibilityflag == "Y") {
+            if (oField.VisibilityFlag == "Y") {
                 // Create the id of the fields
-                sIdLbl = "lbl" + this._fn_getFieldId(oField.columnname);
-                sIdInp = "inp" + this._fn_getFieldId(oField.columnname);
+                sIdLbl = "lbl" + this._fn_getFieldId(oField.ColumnName);
+                sIdInp = "inp" + this._fn_getFieldId(oField.ColumnName);
 
                 // Set mandatory flag
-                if (oField.mandatoryflag === "Y") {
+                if (oField.MandatoryFlag === "Y") {
                     bMandatory = true;
                 } else {
                     bMandatory = false;
                 }
 
                 // Set editable flag
-                if (oField.editableflag === "Y") {
+                if (oField.EditableFlag === "Y") {
                     bEditable = true;
                 } else {
                     bEditable = false;
@@ -2024,8 +1975,8 @@ sap.ui.define([
                 // Add label to the form
                 oForm.addContent(new Label({
                     id: sIdLbl,
-                    text: oField.columnlabel,
-                    tooltip: oField.columnlabel,
+                    text: oField.ColumnLabel,
+                    tooltip: oField.ColumnLabel,
                     required: bMandatory
                 }));
 
@@ -2036,10 +1987,10 @@ sap.ui.define([
                             oForm.addContent(new Input({
                                 id: sIdInp,
                                 type: "Number",
-                                placeholder: "Enter numeric value of length " + oField.fieldsize,
+                                placeholder: "Enter numeric value of length " + oField.FieldSize,
                                 required: bMandatory,
                                 editable: bEditable,
-                                maxLength: parseInt(oField.fieldsize, 10),
+                                maxLength: parseInt(oField.FieldSize, 10),
                                 value: sValue,
                                 tooltip: sValue + "",
                                 liveChange: this.onChange_sfrmItemDetailsFieldData.bind(this),
@@ -2050,10 +2001,10 @@ sap.ui.define([
                                 oForm.addContent(new Input({
                                     id: sIdInp,
                                     type: "Number",
-                                    placeholder: "Enter numeric value of length " + oField.fieldsize,
+                                    placeholder: "Enter numeric value of length " + oField.FieldSize,
                                     required: bMandatory,
                                     editable: bEditable,
-                                    maxLength: parseInt(oField.fieldsize, 10),
+                                    maxLength: parseInt(oField.FieldSize, 10),
                                     value: oField.Defaultvalue,
                                     tooltip: oField.Defaultvalue + "",
                                     liveChange: this.onChange_sfrmItemDetailsFieldData.bind(this),
@@ -2063,10 +2014,10 @@ sap.ui.define([
                                 oForm.addContent(new Input({
                                     id: sIdInp,
                                     type: "Number",
-                                    placeholder: "Enter numeric value of length " + oField.fieldsize,
+                                    placeholder: "Enter numeric value of length " + oField.FieldSize,
                                     required: bMandatory,
                                     editable: bEditable,
-                                    maxLength: parseInt(oField.fieldsize, 10),
+                                    maxLength: parseInt(oField.FieldSize, 10),
                                     tooltip: "",
                                     liveChange: this.onChange_sfrmItemDetailsFieldData.bind(this),
                                     width: "25rem"
@@ -2087,10 +2038,10 @@ sap.ui.define([
                             oForm.addContent(new Input({
                                 id: sIdInp,
                                 type: "Number",
-                                placeholder: "Enter numeric value of length " + oField.fieldsize,
+                                placeholder: "Enter numeric value of length " + oField.FieldSize,
                                 required: bMandatory,
                                 editable: bEditable,
-                                maxLength: parseInt(oField.fieldsize, 10),
+                                maxLength: parseInt(oField.FieldSize, 10),
                                 value: sValue,
                                 tooltip: sValue + "",
                                 liveChange: this.onChange_sfrmItemDetailsFieldData.bind(this),
@@ -2113,12 +2064,12 @@ sap.ui.define([
                 } else if (this.sActionedBy === "Approver") {
                     // Get display field info if any
                     aDisplayFields = this.aFieldDetails.filter(function (oFieldDetails) {
-                        return oFieldDetails.displayfieldof === oField.columnname;
+                        return oFieldDetails.DisplayFieldOf === oField.ColumnName;
                     });
 
                     // Prepare the value
                     aDisplayFields.forEach(function (oDisplayField) {
-                        sValue = sValue + ", " + this.oSelectedTableData[oDisplayField.columnname]
+                        sValue = sValue + ", " + this.oSelectedTableData[oDisplayField.ColumnName]
                     }, this);
 
                     // Add input field
@@ -2136,7 +2087,7 @@ sap.ui.define([
                 }
             } else {
                 // Log info
-                this.fn_getLogReference().info("Main Screen Controller: Visibility of the field " + oField.columnlabel + "is turned off in configuration");
+                this.fn_getLogReference().info("Main Screen Controller: Visibility of the field " + oField.ColumnLabel + "is turned off in configuration");
             }
 
             // Log info
@@ -2158,27 +2109,27 @@ sap.ui.define([
 
             /** Define variables */
             var aDisplayFields, // Display field details
-                sValue = this.oSelectedTableData[oField.columnname], // Value to be displayed other than create scenario
+                sValue = this.oSelectedTableData[oField.ColumnName], // Value to be displayed other than create scenario
                 bMandatory, // Mandatory flag
                 bEditable, // Editable flag
                 sIdLbl, // Label Id
                 sIdInp; // Input Id
 
             /** Method Implementation */
-            if (oField.visibilityflag == "Y") {
+            if (oField.VisibilityFlag == "Y") {
                 // Create the id of the fields
-                sIdLbl = "lbl" + this._fn_getFieldId(oField.columnname);
-                sIdInp = "inp" + this._fn_getFieldId(oField.columnname);
+                sIdLbl = "lbl" + this._fn_getFieldId(oField.ColumnName);
+                sIdInp = "inp" + this._fn_getFieldId(oField.ColumnName);
 
                 // Set mandatory flag
-                if (oField.mandatoryflag === "Y") {
+                if (oField.MandatoryFlag === "Y") {
                     bMandatory = true;
                 } else {
                     bMandatory = false;
                 }
 
                 // Set editable flag
-                if (oField.editableflag === "Y") {
+                if (oField.EditableFlag === "Y") {
                     bEditable = true;
                 } else {
                     bEditable = false;
@@ -2187,8 +2138,8 @@ sap.ui.define([
                 // Add label to the form
                 oForm.addContent(new Label({
                     id: sIdLbl,
-                    text: oField.columnlabel,
-                    tooltip: oField.columnlabel,
+                    text: oField.ColumnLabel,
+                    tooltip: oField.ColumnLabel,
                     required: bMandatory
                 }));
 
@@ -2199,10 +2150,10 @@ sap.ui.define([
                             oForm.addContent(new Input({
                                 id: sIdInp,
                                 type: "Text",
-                                placeholder: "Enter text value of length " + oField.fieldsize,
+                                placeholder: "Enter text value of length " + oField.FieldSize,
                                 required: bMandatory,
                                 editable: bEditable,
-                                maxLength: parseInt(oField.fieldsize, 10),
+                                maxLength: parseInt(oField.FieldSize, 10),
                                 value: sValue,
                                 tooltip: sValue,
                                 liveChange: this.onChange_sfrmItemDetailsFieldData.bind(this),
@@ -2213,10 +2164,10 @@ sap.ui.define([
                                 oForm.addContent(new Input({
                                     id: sIdInp,
                                     type: "Text",
-                                    placeholder: "Enter text value of length " + oField.fieldsize,
+                                    placeholder: "Enter text value of length " + oField.FieldSize,
                                     required: bMandatory,
                                     editable: bEditable,
-                                    maxLength: parseInt(oField.fieldsize, 10),
+                                    maxLength: parseInt(oField.FieldSize, 10),
                                     value: oField.Defaultvalue,
                                     tooltip: oField.Defaultvalue,
                                     liveChange: this.onChange_sfrmItemDetailsFieldData.bind(this),
@@ -2226,10 +2177,10 @@ sap.ui.define([
                                 oForm.addContent(new Input({
                                     id: sIdInp,
                                     type: "Text",
-                                    placeholder: "Enter text value of length " + oField.fieldsize,
+                                    placeholder: "Enter text value of length " + oField.FieldSize,
                                     required: bMandatory,
                                     editable: bEditable,
-                                    maxLength: parseInt(oField.fieldsize, 10),
+                                    maxLength: parseInt(oField.FieldSize, 10),
                                     tooltip: "",
                                     liveChange: this.onChange_sfrmItemDetailsFieldData.bind(this),
                                     width: "25rem"
@@ -2250,10 +2201,10 @@ sap.ui.define([
                             oForm.addContent(new Input({
                                 id: sIdInp,
                                 type: "Text",
-                                placeholder: "Enter text value of length " + oField.fieldsize,
+                                placeholder: "Enter text value of length " + oField.FieldSize,
                                 required: bMandatory,
                                 editable: bEditable,
-                                maxLength: parseInt(oField.fieldsize, 10),
+                                maxLength: parseInt(oField.FieldSize, 10),
                                 value: sValue,
                                 tooltip: sValue,
                                 liveChange: this.onChange_sfrmItemDetailsFieldData.bind(this),
@@ -2276,12 +2227,12 @@ sap.ui.define([
                 } else if (this.sActionedBy === "Approver") {
                     // Get display field info if any
                     aDisplayFields = this.aFieldDetails.filter(function (oFieldDetails) {
-                        return oFieldDetails.displayfieldof === oField.columnname;
+                        return oFieldDetails.displayfieldof === oField.ColumnName;
                     });
 
                     // Prepare the value
                     aDisplayFields.forEach(function (oDisplayField) {
-                        sValue = sValue + ", " + this.oSelectedTableData[oDisplayField.columnname]
+                        sValue = sValue + ", " + this.oSelectedTableData[oDisplayField.ColumnName]
                     }, this);
 
                     // Add input field
@@ -2299,7 +2250,7 @@ sap.ui.define([
                 }
             } else {
                 // Log info
-                this.fn_getLogReference().info("Main Screen Controller: Visibility of the field " + oField.columnlabel + "is turned off in configuration");
+                this.fn_getLogReference().info("Main Screen Controller: Visibility of the field " + oField.ColumnLabel + "is turned off in configuration");
             }
 
             // Log info
@@ -2321,7 +2272,7 @@ sap.ui.define([
             this.fn_getLogReference().info("Main Screen Controller: Entering _fn_createDateElement method");
 
             /** Define variables */
-            var sValue = this.oSelectedTableData[oField.columnname], // Value to be displayed other than create scenario
+            var sValue = this.oSelectedTableData[oField.ColumnName], // Value to be displayed other than create scenario
                 bMandatory, // Mandatory flag
                 bEditable, // Editable flag
                 sIdLbl, // Label Id
@@ -2330,11 +2281,11 @@ sap.ui.define([
             /** Method Implementation */
             if (oField.visibilityflag == "Y") {
                 // Create the id of the fields
-                sIdLbl = "lbl" + this._fn_getFieldId(oField.columnname);
-                sIdInp = "inp" + this._fn_getFieldId(oField.columnname);
+                sIdLbl = "lbl" + this._fn_getFieldId(oField.ColumnName);
+                sIdInp = "inp" + this._fn_getFieldId(oField.ColumnName);
 
                 // Set mandatory flag
-                if (oField.mandatoryflag === "Y") {
+                if (oField.MandatoryFlag === "Y") {
                     bMandatory = true;
                 } else {
                     bMandatory = false;
@@ -2350,8 +2301,8 @@ sap.ui.define([
                 // Add label to the form
                 oForm.addContent(new Label({
                     id: sIdLbl,
-                    text: oField.columnlabel,
-                    tooltip: oField.columnlabel,
+                    text: oField.ColumnLabel,
+                    tooltip: oField.ColumnLabel,
                     required: bMandatory
                 }));
 
@@ -2478,7 +2429,7 @@ sap.ui.define([
                 }
             } else {
                 // Log info
-                this.fn_getLogReference().info("Main Screen Controller: Visibility of the field " + oField.columnlabel + "is turned off in configuration");
+                this.fn_getLogReference().info("Main Screen Controller: Visibility of the field " + oField.ColumnLabel + "is turned off in configuration");
             }
 
             // Log info
@@ -2501,7 +2452,7 @@ sap.ui.define([
 
             /** Define variables */
             var aDisplayFields, // Display field details
-                sValue = this.oSelectedTableData[oField.columnname], // Value to be displayed other than create scenario
+                sValue = this.oSelectedTableData[oField.ColumnName], // Value to be displayed other than create scenario
                 bMandatory, // Mandatory flag
                 bEditable, // Editable flag
                 sIdLbl, // Label Id
@@ -2510,11 +2461,11 @@ sap.ui.define([
             /** Method Implementation */
             if (oField.visibilityflag == "Y") {
                 // Create the id of the fields
-                sIdLbl = "lbl" + this._fn_getFieldId(oField.columnname);
-                sIdInp = "inp" + this._fn_getFieldId(oField.columnname);
+                sIdLbl = "lbl" + this._fn_getFieldId(oField.ColumnName);
+                sIdInp = "inp" + this._fn_getFieldId(oField.ColumnName);
 
                 // Set mandatory flag
-                if (oField.mandatoryflag === "Y") {
+                if (oField.MandatoryFlag === "Y") {
                     bMandatory = true;
                 } else {
                     bMandatory = false;
@@ -2530,8 +2481,8 @@ sap.ui.define([
                 // Add label to the form
                 oForm.addContent(new Label({
                     id: sIdLbl,
-                    text: oField.columnlabel,
-                    tooltip: oField.columnlabel,
+                    text: oField.ColumnLabel,
+                    tooltip: oField.ColumnLabel,
                     required: bMandatory
                 }));
 
@@ -2590,16 +2541,16 @@ sap.ui.define([
                         }
                     } else if (this.sActionType === "Amend") {
                         // Set lookup value help data into global parameter
-                        oTableData[oField.columnname] = sValue;
+                        oTableData[oField.ColumnName] = sValue;
 
                         // Get display field info if any
                         aDisplayFields = this.aFieldDetails.filter(function (oFieldDetails) {
-                            return oFieldDetails.displayfieldof === oField.columnname;
+                            return oFieldDetails.displayfieldof === oField.ColumnName;
                         });
 
                         // Prepare the value
                         aDisplayFields.forEach(function (oDisplayField) {
-                            sValue = sValue + ", " + this.oSelectedTableData[oDisplayField.columnname]
+                            sValue = sValue + ", " + this.oSelectedTableData[oDisplayField.ColumnName]
                         }, this);
 
                         if (oField.primarykeyflag === "Y") {
@@ -2627,16 +2578,16 @@ sap.ui.define([
                         }
                     } else if (this.sActionType === "Close" || this.sActionType === "Display") {
                         // Set lookup value help data into global parameter
-                        oTableData[oField.columnname] = sValue;
+                        oTableData[oField.ColumnName] = sValue;
 
                         // Get display field info if any
                         aDisplayFields = this.aFieldDetails.filter(function (oFieldDetails) {
-                            return oFieldDetails.displayfieldof === oField.columnname;
+                            return oFieldDetails.displayfieldof === oField.ColumnName;
                         });
 
                         // Prepare the value
                         aDisplayFields.forEach(function (oDisplayField) {
-                            sValue = sValue + ", " + this.oSelectedTableData[oDisplayField.columnname]
+                            sValue = sValue + ", " + this.oSelectedTableData[oDisplayField.ColumnName]
                         }, this);
 
                         oForm.addContent(new Input({
@@ -2653,12 +2604,12 @@ sap.ui.define([
                 } else if (this.sActionedBy === "Approver") {
                     // Get display field info if any
                     aDisplayFields = this.aFieldDetails.filter(function (oFieldDetails) {
-                        return oFieldDetails.displayfieldof === oField.columnname;
+                        return oFieldDetails.displayfieldof === oField.ColumnName;
                     });
 
                     // Prepare the value
                     aDisplayFields.forEach(function (oDisplayField) {
-                        sValue = sValue + ", " + this.oSelectedTableData[oDisplayField.columnname]
+                        sValue = sValue + ", " + this.oSelectedTableData[oDisplayField.ColumnName]
                     }, this);
 
                     // Add input field
@@ -2675,7 +2626,7 @@ sap.ui.define([
                 }
             } else {
                 // Log info
-                this.fn_getLogReference().info("Main Screen Controller: Visibility of the field " + oField.columnlabel + "is turned off in configuration");
+                this.fn_getLogReference().info("Main Screen Controller: Visibility of the field " + oField.ColumnLabel + "is turned off in configuration");
             }
 
             // Log info
@@ -2730,29 +2681,29 @@ sap.ui.define([
 
                 if (this.iRecordCount === 0) {
                     // Set current page number to 0
-                    this.byId(this.getView().createId(this._fn_getFieldId(oField.columnname) + "--inpDlgLookupPageNum")).setValue("0");
+                    this.byId(this.getView().createId(this._fn_getFieldId(oField.ColumnName) + "--inpDlgLookupPageNum")).setValue("0");
 
                     // Disable next and last page buttons
-                    this.byId(this.getView().createId(this._fn_getFieldId(oField.columnname) + "--btnDlgLookupNextPage")).setEnabled(false);
-                    this.byId(this.getView().createId(this._fn_getFieldId(oField.columnname) + "--btnDlgLookupLastPage")).setEnabled(false);
+                    this.byId(this.getView().createId(this._fn_getFieldId(oField.ColumnName) + "--btnDlgLookupNextPage")).setEnabled(false);
+                    this.byId(this.getView().createId(this._fn_getFieldId(oField.ColumnName) + "--btnDlgLookupLastPage")).setEnabled(false);
                 } else {
                     // Set current page number to 1
-                    this.byId(this.getView().createId(this._fn_getFieldId(oField.columnname) + "--inpDlgLookupPageNum")).setValue("1");
+                    this.byId(this.getView().createId(this._fn_getFieldId(oField.ColumnName) + "--inpDlgLookupPageNum")).setValue("1");
 
                     // Enable next and last page button
                     if (this.iRecordCount > 20) {
-                        this.byId(this.getView().createId(this._fn_getFieldId(oField.columnname) + "--btnDlgLookupNextPage")).setEnabled(true);
-                        this.byId(this.getView().createId(this._fn_getFieldId(oField.columnname) + "--btnDlgLookupLastPage")).setEnabled(true);
+                        this.byId(this.getView().createId(this._fn_getFieldId(oField.ColumnName) + "--btnDlgLookupNextPage")).setEnabled(true);
+                        this.byId(this.getView().createId(this._fn_getFieldId(oField.ColumnName) + "--btnDlgLookupLastPage")).setEnabled(true);
                     } else {
-                        this.byId(this.getView().createId(this._fn_getFieldId(oField.columnname) + "--btnDlgLookupNextPage")).setEnabled(false);
-                        this.byId(this.getView().createId(this._fn_getFieldId(oField.columnname) + "--btnDlgLookupLastPage")).setEnabled(false);
+                        this.byId(this.getView().createId(this._fn_getFieldId(oField.ColumnName) + "--btnDlgLookupNextPage")).setEnabled(false);
+                        this.byId(this.getView().createId(this._fn_getFieldId(oField.ColumnName) + "--btnDlgLookupLastPage")).setEnabled(false);
                     }
 
                     // Set max page number
                     if (this.iRecordCount / 20 > Math.round(this.iRecordCount / 20)) {
-                        this.byId(this.getView().createId(this._fn_getFieldId(oField.columnname) + "--lblDlgLookupMaxPageNum")).setText("/ " + Math.round(this.iRecordCount / 20) + 1);
+                        this.byId(this.getView().createId(this._fn_getFieldId(oField.ColumnName) + "--lblDlgLookupMaxPageNum")).setText("/ " + Math.round(this.iRecordCount / 20) + 1);
                     } else {
-                        this.byId(this.getView().createId(this._fn_getFieldId(oField.columnname) + "--lblDlgLookupMaxPageNum")).setText("/ " + Math.round(this.iRecordCount / 20));
+                        this.byId(this.getView().createId(this._fn_getFieldId(oField.ColumnName) + "--lblDlgLookupMaxPageNum")).setText("/ " + Math.round(this.iRecordCount / 20));
                     }
                 }
             }.bind(this)).catch(function (oError) {
@@ -2784,7 +2735,7 @@ sap.ui.define([
                 oLookupModel = new ODataModel(sServiceUrl).getNativeModel(), // Stores oData V4 model for lookup field
                 oLookupDataModel = new JSONModel(), // Stores lookup data in JSON Model
                 aLookupData, // Array of lookup data
-                sKeyField = oField.columnname, // Stores the key field of the lookup
+                sKeyField = oField.ColumnName, // Stores the key field of the lookup
                 oFilter; // Filter added in the lookup search field
 
             /** Method Implementation */
@@ -2827,11 +2778,11 @@ sap.ui.define([
                 });
 
                 // Set the data into the global model
-                if (this.fn_getGlobalModel(oField.columnname)) {
-                    this.fn_getGlobalModel(oField.columnname).setData(aLookupData);
+                if (this.fn_getGlobalModel(oField.ColumnName)) {
+                    this.fn_getGlobalModel(oField.ColumnName).setData(aLookupData);
                 } else {
                     oLookupDataModel.setData(aLookupData);
-                    this.fn_setGlobalModel(oLookupDataModel, oField.columnname)
+                    this.fn_setGlobalModel(oLookupDataModel, oField.ColumnName)
                 }
 
                 // Close busy dialog
@@ -2870,7 +2821,7 @@ sap.ui.define([
             /** Method Implementation */
             // Get mandatory fields
             aMandatoryFields = this.aFieldDetails.filter(function (oField) {
-                return oField.mandatoryflag === 'Y';
+                return oField.MandatoryFlag === 'Y';
             });
 
             if (aMandatoryFields) {
@@ -2884,7 +2835,7 @@ sap.ui.define([
 
             // Get date fields
             aDateFields = this.aFieldDetails.filter(function (oField) {
-                var sDataType = (oField.columndatatype || "").toUpperCase();
+                var sDataType = (oField.ColumnDataType || "").toUpperCase();
                 return sDataType.includes("DATS") || sDataType.includes("DATE");
             });
 
@@ -2920,10 +2871,10 @@ sap.ui.define([
             /** Method Implementation */
             aMandatoryFields.forEach(function (oField) {
                 // Prepare field id
-                sFieldId = "inp" + this._fn_getFieldId(oField.columnname);
+                sFieldId = "inp" + this._fn_getFieldId(oField.ColumnName);
 
                 // Check if value present
-                if (oTableData[oField.columnname] || oTableData[oField.columnname] === 0) {
+                if (oTableData[oField.ColumnName] || oTableData[oField.ColumnName] === 0) {
                     // Clear the value state of the field
                     if (sap.ui.getCore().byId(sFieldId)) {
                         sap.ui.getCore().byId(sFieldId).setValueState("None");
@@ -2932,8 +2883,8 @@ sap.ui.define([
                             id: sFieldId,
                             message: "Basic Validation Successful",
                             type: MessageType.Success,
-                            additionalText: oField.columnlabel,
-                            description: "Basic validation on field " + oField.columnlabel + " is successful",
+                            additionalText: oField.ColumnLabel,
+                            description: "Basic validation on field " + oField.ColumnLabel + " is successful",
                             target: "/BasicValidation",
                             processor: this.fn_getLocalModel("messageModel")
                         });
@@ -2944,19 +2895,19 @@ sap.ui.define([
                     }
                 } else {
                     // Log Error
-                    this.fn_getLogReference().error("Main Screen Controller: Mandatory check failed for field - " + oField.columnlabel);
+                    this.fn_getLogReference().error("Main Screen Controller: Mandatory check failed for field - " + oField.ColumnLabel);
 
                     // Set value state and text
                     if (sap.ui.getCore().byId(sFieldId)) {
                         sap.ui.getCore().byId(sFieldId).setValueState("Error");
-                        sap.ui.getCore().byId(sFieldId).setValueStateText("Field " + oField.columnlabel + " is mandatory");
+                        sap.ui.getCore().byId(sFieldId).setValueStateText("Field " + oField.ColumnLabel + " is mandatory");
 
                         oMessage = new Message({
                             id: sFieldId,
                             message: "Basic Validation Failed",
                             type: MessageType.Error,
-                            additionalText: oField.columnlabel,
-                            description: "Field " + oField.columnlabel + " is mandatory",
+                            additionalText: oField.ColumnLabel,
+                            description: "Field " + oField.ColumnLabel + " is mandatory",
                             target: "/BasicValidation",
                             processor: this.fn_getLocalModel("messageModel")
                         });
@@ -2995,12 +2946,12 @@ sap.ui.define([
             /** Method Implementation */
             aDateFields.forEach(function (oField) {
                 // Prepare field id
-                sFieldId = "inp" + this._fn_getFieldId(oField.columnname);
+                sFieldId = "inp" + this._fn_getFieldId(oField.ColumnName);
 
                 // Check if value present
-                if (oTableData[oField.columnname]) {
+                if (oTableData[oField.ColumnName]) {
                     // Get date reference
-                    oDate = new Date(parseInt(oTableData[oField.columnname].split("(")[1].split(")")[0], 10));
+                    oDate = new Date(parseInt(oTableData[oField.ColumnName].split("(")[1].split(")")[0], 10));
 
                     if (oDate instanceof Date && !isNaN(oDate.valueOf())) {
                         // Clear the value state of the field
@@ -3011,8 +2962,8 @@ sap.ui.define([
                                 id: sFieldId,
                                 message: "Basic Validation Successful",
                                 type: MessageType.Success,
-                                additionalText: oField.columnlabel,
-                                description: "Date is valid for field " + oField.columnlabel,
+                                additionalText: oField.ColumnLabel,
+                                description: "Date is valid for field " + oField.ColumnLabel,
                                 target: "/BasicValidation",
                                 processor: this.fn_getLocalModel("messageModel")
                             });
@@ -3023,19 +2974,19 @@ sap.ui.define([
                         }
                     } else {
                         // Log Error
-                        this.fn_getLogReference().error("Main Screen Controller: Date validation failed for field - " + oField.columnlabel);
+                        this.fn_getLogReference().error("Main Screen Controller: Date validation failed for field - " + oField.ColumnLabel);
 
                         // Set value state and text
                         if (sap.ui.getCore().byId(sFieldId)) {
                             sap.ui.getCore().byId(sFieldId).setValueState("Error");
-                            sap.ui.getCore().byId(sFieldId).setValueStateText("Field " + oField.columnlabel + " is having incorrect date");
+                            sap.ui.getCore().byId(sFieldId).setValueStateText("Field " + oField.ColumnLabel + " is having incorrect date");
 
                             oMessage = new Message({
                                 id: sFieldId,
                                 message: "Basic Validation Failed",
                                 type: MessageType.Error,
-                                additionalText: oField.columnlabel,
-                                description: "Invalid date for field " + oField.columnlabel,
+                                additionalText: oField.ColumnLabel,
+                                description: "Invalid date for field " + oField.ColumnLabel,
                                 target: "/BasicValidation",
                                 processor: this.fn_getLocalModel("messageModel")
                             });
@@ -3058,7 +3009,7 @@ sap.ui.define([
                     }
 
                     // Log info
-                    this.fn_getLogReference().info("Main Screen Controller: Date field " + oField.columnlabel + " is not having any value to perform check");
+                    this.fn_getLogReference().info("Main Screen Controller: Date field " + oField.ColumnLabel + " is not having any value to perform check");
                 }
             }, this);
 
@@ -3321,7 +3272,7 @@ sap.ui.define([
                             message: "Custom validation successful",
                             type: MessageType.Success,
                             additionalText: oCustomVal.sourcecolumnlabel,
-                            description: "Custom REGEX validation on field " + oCustomVal.columnlabel + " is successful",
+                            description: "Custom REGEX validation on field " + oCustomVal.ColumnLabel + " is successful",
                             target: "/CustomValidation",
                             processor: this.fn_getLocalModel("messageModel")
                         });
@@ -3738,10 +3689,10 @@ sap.ui.define([
 
             // Prepare filter
             aPrimaryKeys.forEach(function (oPrimaryKey) {
-                if (oTableData[oPrimaryKey.columnname]) {
-                    aFilters.push(new Filter(oPrimaryKey.columnname, FilterOperator.EQ, oTableData[oPrimaryKey.columnname]));
+                if (oTableData[oPrimaryKey.ColumnName]) {
+                    aFilters.push(new Filter(oPrimaryKey.ColumnName, FilterOperator.EQ, oTableData[oPrimaryKey.ColumnName]));
                 } else {
-                    aFilters.push(new Filter(oPrimaryKey.columnname, FilterOperator.EQ, ""));
+                    aFilters.push(new Filter(oPrimaryKey.ColumnName, FilterOperator.EQ, ""));
                 }
             });
             aFilters.push(new Filter({
@@ -3886,8 +3837,8 @@ sap.ui.define([
 
                 // Update the value of the table data post data creation at backend with additional data received
                 this.aFieldDetails.forEach(function (oField) {
-                    if (oTableData[oField.columnname] !== undefined && oData[oField.columnname] !== undefined) {
-                        oTableData[oField.columnname] = oData[oField.columnname];
+                    if (oTableData[oField.ColumnName] !== undefined && oData[oField.ColumnName] !== undefined) {
+                        oTableData[oField.ColumnName] = oData[oField.ColumnName];
                     }
                 });
 
@@ -3937,11 +3888,11 @@ sap.ui.define([
 
             // Prepare entity id
             aPrimaryKeys.forEach(function (oPrimaryKey) {
-                if (oTableData[oPrimaryKey.columnname]) {
+                if (oTableData[oPrimaryKey.ColumnName]) {
                     if (sEntityId) {
-                        sEntityId = sEntityId + "|" + oTableData[oPrimaryKey.columnname].toString();
+                        sEntityId = sEntityId + "|" + oTableData[oPrimaryKey.ColumnName].toString();
                     } else {
-                        sEntityId = oTableData[oPrimaryKey.columnname].toString();
+                        sEntityId = oTableData[oPrimaryKey.ColumnName].toString();
                     }
                 }
             });
@@ -4238,11 +4189,11 @@ sap.ui.define([
 
             // Prepare entity id
             aPrimaryKeys.forEach(function (oPrimaryKey) {
-                if (this.oSelectedTableData[oPrimaryKey.columnname]) {
+                if (this.oSelectedTableData[oPrimaryKey.ColumnName]) {
                     if (sEntityId) {
-                        sEntityId = sEntityId + "|" + this.oSelectedTableData[oPrimaryKey.columnname].toString();
+                        sEntityId = sEntityId + "|" + this.oSelectedTableData[oPrimaryKey.ColumnName].toString();
                     } else {
-                        sEntityId = this.oSelectedTableData[oPrimaryKey.columnname].toString();
+                        sEntityId = this.oSelectedTableData[oPrimaryKey.ColumnName].toString();
                     }
                 }
             }, this);
@@ -4364,22 +4315,22 @@ sap.ui.define([
             // Loop into visible fields and add them to the comparison area layout
             aVisibleFields.forEach(function (oField) {
                 // Create the id of the fields
-                sIdLbl = "compLbl" + this._fn_getFieldId(oField.columnname);
-                sIdInp = "compTxt" + this._fn_getFieldId(oField.columnname);
+                sIdLbl = "compLbl" + this._fn_getFieldId(oField.ColumnName);
+                sIdInp = "compTxt" + this._fn_getFieldId(oField.ColumnName);
 
                 // Check if old and new data are same
-                var sDataType = (oField.columndatatype || "").toUpperCase();
+                var sDataType = (oField.ColumnDataType || "").toUpperCase();
                 if (sDataType.includes("DATS") || sDataType.includes("DATE")) {
-                    var oDate1 = new Date(aCarouselData[0][oField.columnname]);
-                    var oDate2 = new Date(aCarouselData[1][oField.columnname]);
+                    var oDate1 = new Date(aCarouselData[0][oField.ColumnName]);
+                    var oDate2 = new Date(aCarouselData[1][oField.ColumnName]);
 
                     if (oDate1.getTime() === oDate2.getTime()) {
                         // Add Label
                         this.byId(sIdBlockLayoutDisplayFields).addContent(new HBox({
                             items: new Label({
                                 id: sIdLbl,
-                                text: oField.columnlabel + ": ",
-                                tooltip: oField.columnlabel
+                                text: oField.ColumnLabel + ": ",
+                                tooltip: oField.ColumnLabel
                             })
                         }));
                     } else {
@@ -4387,8 +4338,8 @@ sap.ui.define([
                         this.byId(sIdBlockLayoutDisplayFields).addContent(new HBox({
                             items: new Label({
                                 id: sIdLbl,
-                                text: oField.columnlabel + ": ",
-                                tooltip: oField.columnlabel
+                                text: oField.ColumnLabel + ": ",
+                                tooltip: oField.ColumnLabel
                             })
                         }));
 
@@ -4396,13 +4347,13 @@ sap.ui.define([
                         aUpdatedLabelIds.push(sIdLbl);
                     }
                 } else {
-                    if (aCarouselData[0][oField.columnname] === aCarouselData[1][oField.columnname]) {
+                    if (aCarouselData[0][oField.ColumnName] === aCarouselData[1][oField.ColumnName]) {
                         // Add Label
                         this.byId(sIdBlockLayoutDisplayFields).addContent(new HBox({
                             items: new Label({
                                 id: sIdLbl,
-                                text: oField.columnlabel + ": ",
-                                tooltip: oField.columnlabel
+                                text: oField.ColumnLabel + ": ",
+                                tooltip: oField.ColumnLabel
                             })
                         }));
                     } else {
@@ -4410,8 +4361,8 @@ sap.ui.define([
                         this.byId(sIdBlockLayoutDisplayFields).addContent(new HBox({
                             items: new Label({
                                 id: sIdLbl,
-                                text: oField.columnlabel + ": ",
-                                tooltip: oField.columnlabel
+                                text: oField.ColumnLabel + ": ",
+                                tooltip: oField.ColumnLabel
                             })
                         }));
 
@@ -4427,13 +4378,13 @@ sap.ui.define([
                         items: new Text({
                             id: sIdInp,
                             text: {
-                                path: "carouselModel>" + oField.columnname,
+                                path: "carouselModel>" + oField.ColumnName,
                                 type: new sap.ui.model.type.Date({
                                     pattern: "dd.MM.yyyy"
                                 })
                             },
                             tooltip: {
-                                path: "carouselModel>" + oField.columnname,
+                                path: "carouselModel>" + oField.ColumnName,
                                 type: new sap.ui.model.type.Date({
                                     pattern: "dd.MM.yyyy"
                                 })
@@ -4445,10 +4396,10 @@ sap.ui.define([
                         items: new Text({
                             id: sIdInp,
                             text: {
-                                path: "carouselModel>" + oField.columnname
+                                path: "carouselModel>" + oField.ColumnName
                             },
                             tooltip: {
-                                path: "carouselModel>" + oField.columnname,
+                                path: "carouselModel>" + oField.ColumnName,
                                 formatter: function (sValue) {
                                     return sValue + "";
                                 }
@@ -4460,10 +4411,10 @@ sap.ui.define([
                         items: new Text({
                             id: sIdInp,
                             text: {
-                                path: "carouselModel>" + oField.columnname
+                                path: "carouselModel>" + oField.ColumnName
                             },
                             tooltip: {
-                                path: "carouselModel>" + oField.columnname
+                                path: "carouselModel>" + oField.ColumnName
                             }
                         })
                     }));
@@ -4528,18 +4479,18 @@ sap.ui.define([
 
             aPrimaryKeys.forEach(function (oPrimaryKey, index) {
                 if (index === aPrimaryKeys.length - 1) {
-                    var sDataType = (oPrimaryKey.columndatatype || "").toUpperCase();
+                    var sDataType = (oPrimaryKey.ColumnDataType || "").toUpperCase();
                     if (sDataType.includes("INTEGER") || sDataType.includes("INT") || sDataType === "NUMC" || sDataType === "DEC") {
-                        sPath = sPath + oPrimaryKey.columnname + "=" + this.oSelectedTableData[oPrimaryKey.columnname] + ")";
+                        sPath = sPath + oPrimaryKey.ColumnName + "=" + this.oSelectedTableData[oPrimaryKey.ColumnName] + ")";
                     } else {
-                        sPath = sPath + oPrimaryKey.columnname + "='" + this.oSelectedTableData[oPrimaryKey.columnname] + "')";
+                        sPath = sPath + oPrimaryKey.ColumnName + "='" + this.oSelectedTableData[oPrimaryKey.ColumnName] + "')";
                     }
                 } else {
-                    var sDataType = (oPrimaryKey.columndatatype || "").toUpperCase();
+                    var sDataType = (oPrimaryKey.ColumnDataType || "").toUpperCase();
                     if (sDataType.includes("INTEGER") || sDataType.includes("INT") || sDataType === "NUMC" || sDataType === "DEC") {
-                        sPath = sPath + oPrimaryKey.columnname + "=" + this.oSelectedTableData[oPrimaryKey.columnname] + ",";
+                        sPath = sPath + oPrimaryKey.ColumnName + "=" + this.oSelectedTableData[oPrimaryKey.ColumnName] + ",";
                     } else {
-                        sPath = sPath + oPrimaryKey.columnname + "='" + this.oSelectedTableData[oPrimaryKey.columnname] + "',";
+                        sPath = sPath + oPrimaryKey.ColumnName + "='" + this.oSelectedTableData[oPrimaryKey.ColumnName] + "',";
                     }
                 }
             }, this);
