@@ -1340,46 +1340,50 @@ sap.ui.define([
                                 aCntrlUiConfigData = oSavedAppState.getData().aCntrlUiConfigData;
 
                                 // Set the models
-                                this.fn_setGlobalModel(new JSONModel(oSavedAppState.getData().aUniqueRepositoriesData), "oUniqueRepositoriesModel");
-                                this.fn_setGlobalModel(new JSONModel(oSavedAppState.getData().aUniqueTablesData), "oUniqueTablesModel");
+                                if (this.getOwnerComponent()) {
+                                    this.fn_setGlobalModel(new JSONModel(oSavedAppState.getData().aUniqueRepositoriesData), "oUniqueRepositoriesModel");
+                                    this.fn_setGlobalModel(new JSONModel(oSavedAppState.getData().aUniqueTablesData), "oUniqueTablesModel");
+                                }
 
                                 // Get selected table label
                                 oSelectedTableData = oSavedAppState.getData().aUniqueTablesData[this.sTableId];
 
                                 if (oSelectedTableData) {
-                                    // Set the title of the page
-                                    oViewTableResultModel.setProperty("/pageTitle", this.fn_getResourceBundle().getText("tableResultPageTitle", [oSelectedTableData.tableName]));
-                                    oViewTableResultModel.setProperty("/tableTooltip", this.fn_getResourceBundle().getText("tableResultPageTitle", [oSelectedTableData.tableName]));
-                                    // Fetch the field configuration data based on the selected table directly from backend
-                                    // [V4 MIGRATION] Replaced V2 oModel.read() with native OData V4 bindList().requestContexts().
-                                    // /CntrlUIConfig is a @readonly EntitySet (central-service.cds line 14). bindList() is correct.
-                                    // Filter on tablename is preserved. All downstream logic is unchanged.
-                                    var that = this;
-                                    var aConfigFilters = [new sap.ui.model.Filter("TableName", sap.ui.model.FilterOperator.EQ, oSelectedTableData.tableId)];
-                                    this.fn_getGlobalModel().bindList("/CntrlUIConfig", null, null, aConfigFilters).requestContexts(0, Infinity).then(function (aContexts) {
-                                        var aFieldsData = aContexts.map(function (oCtx) { return oCtx.getObject(); });
-                                        if (aFieldsData.length !== 0) {
-                                            aFieldsData.sort(function (a, b) {
-                                                var aSeq = a.ColumnSeqNo !== undefined ? a.ColumnSeqNo : a.ColumnSeqNo;
-                                                var bSeq = b.ColumnSeqNo !== undefined ? b.ColumnSeqNo : b.ColumnSeqNo;
-                                                return aSeq - bSeq;
-                                            });
-                                            oCompleteFieldsModel.setData(aFieldsData);
-                                            if (!that.fn_getGlobalModel("oFieldsDataModel")) {
-                                                that.fn_setGlobalModel(oCompleteFieldsModel, "oFieldsDataModel");
+                                    if (this.getOwnerComponent()) {
+                                        // Set the title of the page
+                                        oViewTableResultModel.setProperty("/pageTitle", this.fn_getResourceBundle().getText("tableResultPageTitle", [oSelectedTableData.tableName]));
+                                        oViewTableResultModel.setProperty("/tableTooltip", this.fn_getResourceBundle().getText("tableResultPageTitle", [oSelectedTableData.tableName]));
+
+                                        // Fetch the field configuration data based on the selected table directly from backend
+                                        // [V4 MIGRATION] Replaced V2 oModel.read() with native OData V4 bindList().requestContexts().
+                                        // /CntrlUIConfig is a @readonly EntitySet (central-service.cds line 14). bindList() is correct.
+                                        // Filter on tablename is preserved. All downstream logic is unchanged.
+                                        var aConfigFilters = [new sap.ui.model.Filter("TableName", sap.ui.model.FilterOperator.EQ, oSelectedTableData.tableId)];
+                                        this.fn_getGlobalModel().bindList("/CntrlUIConfig", null, null, aConfigFilters).requestContexts(0, Infinity).then(function (aContexts) {
+                                            var aFieldsData = aContexts.map(function (oCtx) { return oCtx.getObject(); });
+                                            if (aFieldsData.length !== 0) {
+                                                aFieldsData.sort(function (a, b) {
+                                                    var aSeq = a.ColumnSeqNo !== undefined ? a.ColumnSeqNo : a.ColumnSeqNo;
+                                                    var bSeq = b.ColumnSeqNo !== undefined ? b.ColumnSeqNo : b.ColumnSeqNo;
+                                                    return aSeq - bSeq;
+                                                });
+                                                oCompleteFieldsModel.setData(aFieldsData);
+                                                if (!this.fn_getGlobalModel("oFieldsDataModel")) {
+                                                    this.fn_setGlobalModel(oCompleteFieldsModel, "oFieldsDataModel");
+                                                } else {
+                                                    this.fn_getGlobalModel("oFieldsDataModel").setData(aFieldsData);
+                                                }
+                                                this._fn_populateSearchForm(aFieldsData);
+                                                this._fn_readTableUrl();
                                             } else {
-                                                that.fn_getGlobalModel("oFieldsDataModel").setData(aFieldsData);
+                                                this.fn_getLogReference().error("Table Result Controller: Table configuration not maintained properly at the backend");
+                                                this.fn_closeBusyDialog();
                                             }
-                                            that._fn_populateSearchForm(aFieldsData);
-                                            that._fn_readTableUrl();
-                                        } else {
-                                            that.fn_getLogReference().error("Table Result Controller: Table configuration not maintained properly at the backend");
-                                            that.fn_closeBusyDialog();
-                                        }
-                                    }).catch(function (err) {
-                                        that.fn_getLogReference().error("Table Result Controller: Backend error reading CntrlUIConfig");
-                                        that.fn_closeBusyDialog();
-                                    });
+                                        }.bind(this)).catch(function (err) {
+                                            this.fn_getLogReference().error("Table Result Controller: Backend error reading CntrlUIConfig");
+                                            this.fn_closeBusyDialog();
+                                        }.bind(this));
+                                    }
                                 } else {
                                     // Show error message in console
                                     this.fn_getLogReference().error("Table Result Controller: Unable to read selected table info from navigation");
@@ -1417,8 +1421,7 @@ sap.ui.define([
                             // Fetch the configuration data based on the selected table directly from backend
                             // [V4 MIGRATION] Replaced V2 oModel.read() with native OData V4 bindList().requestContexts().
                             // /CntrlUIConfig is a @readonly EntitySet (central-service.cds line 14). bindList() is correct.
-                            // Filter on tablename is preserved. All downstream logic is unchanged.
-                            var that = this;
+                            // Filter on tablename is preserved. All downstream logic is unchanged
                             var aConfigFilters = [new sap.ui.model.Filter("TableName", sap.ui.model.FilterOperator.EQ, oSelectedTableData.tableId)];
                             this.fn_getGlobalModel().bindList("/CntrlUIConfig", null, null, aConfigFilters).requestContexts(0, Infinity).then(function (aContexts) {
                                 var aFieldsData = aContexts.map(function (oCtx) { return oCtx.getObject(); });
@@ -1429,21 +1432,21 @@ sap.ui.define([
                                         return aSeq - bSeq;
                                     });
                                     oCompleteFieldsModel.setData(aFieldsData);
-                                    if (!that.fn_getGlobalModel("oFieldsDataModel")) {
-                                        that.fn_setGlobalModel(oCompleteFieldsModel, "oFieldsDataModel");
+                                    if (!this.fn_getGlobalModel("oFieldsDataModel")) {
+                                        this.fn_setGlobalModel(oCompleteFieldsModel, "oFieldsDataModel");
                                     } else {
-                                        that.fn_getGlobalModel("oFieldsDataModel").setData(aFieldsData);
+                                        this.fn_getGlobalModel("oFieldsDataModel").setData(aFieldsData);
                                     }
-                                    that._fn_populateSearchForm(aFieldsData);
-                                    that._fn_readTableUrl();
+                                    this._fn_populateSearchForm(aFieldsData);
+                                    this._fn_readTableUrl();
                                 } else {
-                                    that.fn_getLogReference().error("Table Result Controller: Unable to read the field data of the selected table from the backend");
-                                    that.fn_closeBusyDialog();
+                                    this.fn_getLogReference().error("Table Result Controller: Unable to read the field data of the selected table from the backend");
+                                    this.fn_closeBusyDialog();
                                 }
-                            }).catch(function (err) {
-                                that.fn_getLogReference().error("Table Result Controller: Backend error reading CntrlUIConfig");
-                                that.fn_closeBusyDialog();
-                            });
+                            }.bind(this)).catch(function (err) {
+                                this.fn_getLogReference().error("Table Result Controller: Backend error reading CntrlUIConfig");
+                                this.fn_closeBusyDialog();
+                            }.bind(this));
                         } else {
                             // oSelectedTableData is null — close busy dialog and go home
                             this.fn_closeBusyDialog();

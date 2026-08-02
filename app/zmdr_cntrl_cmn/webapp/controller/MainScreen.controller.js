@@ -3,7 +3,7 @@ sap.ui.define([
     "sap/ui/model/json/JSONModel",
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
-    "com/intapptics/zmdrcntrlcmn/utils/ODataV4Client",
+    "sap/ui/model/odata/v4/ODataModel",
     "sap/ui/core/Fragment",
     "sap/ui/core/message/Message",
     "sap/ui/core/library",
@@ -1224,11 +1224,6 @@ sap.ui.define([
                 oMessage; // Message object for message manager
 
             /** Method Implementation */
-            // Get the table model reference
-            oTableModel = new ODataModel({
-                serviceUrl: this.sTableServiceUrl
-            }).getNativeModel();
-
             // Get the primary fields
             aPrimaryKeys = this.aFieldDetails.filter(function (oField) {
                 return oField.PrimaryKeyFlag === "Y";
@@ -1241,7 +1236,7 @@ sap.ui.define([
             aFilters.push(new Filter("VersionActive", FilterOperator.EQ, "Y"));
 
             // Read active data to compare
-            var oListBinding = oTableModel.bindList("/" + this.sTableEntitySet, null, null, aFilters);
+            var oListBinding = this.oTableModel.bindList("/" + this.sTableEntitySet, null, null, aFilters);
             oListBinding.requestContexts(0, 2).then(function (aContexts) {
                 // Check if data is available
                 if (aContexts.length === 1) {
@@ -1366,7 +1361,6 @@ sap.ui.define([
 
             /** Define Variables */
             var oComponentData = this.getOwnerComponent().getComponentData(), // Stores the component data
-                // oContextData = this.getOwnerComponent().getModel("context") ? this.getOwnerComponent().getModel("context").getData() : "", // Stores the context data
                 oCntrlUiConfigModel, // Central UI Comfiguration data model
                 sAppKey, // Stores the app state key passed while navigation
                 iStartIndex, // Start index of the string to cut
@@ -1401,7 +1395,7 @@ sap.ui.define([
             if (oComponentData && oComponentData.startupParameters) {
                 // Safely read action type
                 sActionType = oComponentData.startupParameters.sActionType ? oComponentData.startupParameters.sActionType[0] : "";
-                if(sActionType === "") {
+                if (sActionType === "") {
                     await this.getOwnerComponent().contextLoaded;
                     var oContextData = this.getOwnerComponent().getModel("context").getData();
                     sActionType = oContextData.sActionType || "";
@@ -1413,10 +1407,10 @@ sap.ui.define([
                 } else {
                     this.sActionType = sActionType;
                 }
-                
+
                 // Read who is calling the component
                 this.sActionedBy = oComponentData.startupParameters.sActionedBy ? oComponentData.startupParameters.sActionedBy[0] : "";
-                if(this.sActionedBy === "") {
+                if (this.sActionedBy === "") {
                     this.sActionedBy = oContextData.sActionedBy || "";
                 }
 
@@ -1576,10 +1570,17 @@ sap.ui.define([
                             this.byId("obatHdr2").setVisible(true);
 
                             // Get the table service URL
-                            this.sTableServiceUrl = oSavedAppState.getData().sTableServiceUrl;
+                            sTableServiceUrl = oSavedAppState.getData().sTableServiceUrl;
                             this.sTableEntitySet = oSavedAppState.getData().sTableEntitySet;
-                            if (this.sTableEntitySet && this.sTableEntitySet.indexOf("/") === 0) {
-                                this.sTableEntitySet = this.sTableEntitySet.substring(1);
+                            if (sTableServiceUrl) {
+                                var sResolvedServiceUri = this.getOwnerComponent().getManifestObject().resolveUri(sTableServiceUrl, "sap.app");
+                                this.oTableModel = new ODataModel({
+                                    serviceUrl: sResolvedServiceUri,
+                                    synchronizationMode: "None",   // required for OData V4
+                                    autoExpandSelect: true,
+                                    operationMode: "Server",
+                                    earlyRequests: true   // triggers early metadata + CSRF fetch
+                                });
                             }
 
                             // Get the field details — filter by tablename (not tablelabel) and normalize keys to lowercase
@@ -1665,11 +1666,6 @@ sap.ui.define([
 
                     // Get workflow id and workitem id
                     this.sWorkflowID = oContextData.sWorkflowID || "";
-                    // this.iWorkitemID = oComponentData.startupParameters.iWorkitemID ? oComponentData.startupParameters.iWorkitemID[0] : 0;
-
-                    // if (this.iWorkitemID) {
-                    // Claim the task
-                    // this._fn_claimApproverTask();
 
                     if (this.sSelectedTableName) {
                         // Clear any previous filters
@@ -1678,18 +1674,32 @@ sap.ui.define([
                         // Prepare the filter
                         aFilters.push(new Filter("TableName", FilterOperator.EQ, this.sSelectedTableName));
 
-                        // Get table fields data
-                        var oListBinding = oCntrlUiConfigModel.bindList("/CntrlUIConfig", null, null, aFilters);
+                        // Get table visibility data
+                        var oListBinding = oCntrlUiConfigModel.bindList("/CntrlUIVis", null, null, aFilters);
                         oListBinding.requestContexts(0, Infinity).then(function (aContexts) {
-                            // Get field details
-                            this.aFieldDetails = aContexts.map(function (oCtx) { return oCtx.getObject(); });
+                            // Get data
+                            var aTableVis = aContexts.map(function (oCtx) { return oCtx.getObject(); });
 
                             // Get repository name and tablelabel
-                            this.sRepositoryName = this.aFieldDetails[0].RepositoryLabel;
-                            this.sTableLabel = this.aFieldDetails[0].TableLabel;
+                            this.sRepositoryName = aTableVis[0].RepositoryLabel;
+                            this.sTableLabel = aTableVis[0].TableLabel;
 
                             // Set page title
                             this.fn_getLocalModel("mainScreenViewModel").setProperty("/pageTitle", this.fn_getResourceBundle().getText("approverTitle", [sActionType, this.sRepositoryName, this.sTableLabel, this.sWorkflowID]));
+                        }.bind(this)).catch(function (oError) {
+                            // Set error in message strip
+                            this.byId("msgStripMainScreen").setText("<strong>Error: </strong><em>Error while processing. For more info </em>");
+                            this.byId("msgStripMainScreen").setType("Error");
+                            this.byId("msgStripMainScreen").setVisible(true);
+
+                            this.fn_showServiceError(oError);
+                        }.bind(this));
+
+                        // Get table fields data
+                        oListBinding = oCntrlUiConfigModel.bindList("/CntrlUIConfig", null, null, aFilters);
+                        oListBinding.requestContexts(0, Infinity).then(function (aContexts) {
+                            // Get field details
+                            this.aFieldDetails = aContexts.map(function (oCtx) { return oCtx.getObject(); });
 
                             // Sort fields data
                             this.aFieldDetails.sort(function (oVal1, oVal2) {
@@ -1725,25 +1735,6 @@ sap.ui.define([
                         // Add message in message manager
                         sap.ui.getCore().getMessageManager().addMessages(oMessage);
                     }
-                    // } else {
-                    //     // Set error in message strip
-                    //     this.byId("msgStripMainScreen").setText("<strong>Error: </strong><em>Error while processing. For more info </em>");
-                    //     this.byId("msgStripMainScreen").setType("Error");
-                    //     this.byId("msgStripMainScreen").setVisible(true);
-
-                    //     oMessage = new Message({
-                    //         id: "sIdTechError",
-                    //         message: "Error during processing",
-                    //         type: MessageType.Error,
-                    //         additionalText: "Approver task issue",
-                    //         description: "Workitem ID is missing in the task parameters passed",
-                    //         target: "/TechnicalError",
-                    //         processor: this.fn_getLocalModel("messageModel")
-                    //     });
-
-                    //     // Add message in message manager
-                    //     sap.ui.getCore().getMessageManager().addMessages(oMessage);
-                    // }
                 } else {
                     // Log error message
                     this.fn_getLogReference().error("Main Screen Controller: App initiator is neither Requestor nor Approver");
@@ -3038,19 +3029,19 @@ sap.ui.define([
             this.fn_getLogReference().info("Main Screen Controller: Entering _fn_readCustomValidation method");
 
             /** Define variables */
-            var oValidationModel = this.fn_getGlobalModel("ZMDGCPCNTRLVAL01_CDS"),
+            var oValidationModel = this.fn_getGlobalModel(),
                 oCustomValModel = new JSONModel();
 
             /** Method Implementation */
             // Read validation data
-            var oListBinding = oValidationModel.bindList("/ZMDGCPCNTRLVAL01Set", null, null, [new Filter("p_tabname", FilterOperator.EQ, this.sSelectedTableName)]);
+            var oListBinding = oValidationModel.bindList("/CntrlUIVal", null, null, [new Filter("TableName", FilterOperator.EQ, this.sSelectedTableName)]);
             oListBinding.requestContexts(0, Infinity).then(function (aContexts) {
                 var aResults = aContexts.map(function (c) { return c.getObject(); });
                 // Check if custom validation exists
                 if (aResults.length > 0) {
                     // Sort the validations based on its index
                     aResults.sort(function (oVal1, oVal2) {
-                        return oVal1.valindex - oVal2.valindex;
+                        return oVal1.ValidationIndex - oVal2.ValidationIndex;
                     });
 
                     // Set data into local json model
@@ -3154,15 +3145,15 @@ sap.ui.define([
 
             /** Method Implementation */
             aCustomVals.forEach(function (oCustomVal) {
-                if (oCustomVal.operation === "REGEX") {
+                if (oCustomVal.Operation === "REGEX") {
                     this._fn_customValidationRegex(oCustomVal);
-                } else if (oCustomVal.operation === "DATEAFTER") {
+                } else if (oCustomVal.Operation === "DATEAFTER") {
                     this._fn_customValidationDateafter(oCustomVal);
-                } else if (oCustomVal.operation === "DATENOTBEFORETODAY") {
+                } else if (oCustomVal.Operation === "DATENOTBEFORETODAY") {
                     this._fn_customValidationDatenotbeforetoday(oCustomVal);
-                } else if (oCustomVal.operation === "HASVALUE") {
+                } else if (oCustomVal.Operation === "HASVALUE") {
                     this._fn_customValidationHasvalue(oCustomVal);
-                } else if (oCustomVal.operation === "LOOKUP") {
+                } else if (oCustomVal.Operation === "LOOKUP") {
                     bCheckLookup = true;
                     this._fn_customValidationLookup(oCustomVal);
                 } else {
@@ -3171,7 +3162,7 @@ sap.ui.define([
                         message: "Custom Validation Failed",
                         type: MessageType.Error,
                         additionalText: "Operation not handled",
-                        description: "Custom validation '" + oCustomVal.operation + "' not handled in UI.",
+                        description: "Custom validation '" + oCustomVal.Operation + "' not handled in UI.",
                         target: "/CustomValidation",
                         processor: this.fn_getLocalModel("messageModel")
                     });
@@ -3237,30 +3228,30 @@ sap.ui.define([
             this.fn_getLogReference().info("Main Screen Controller: Entering _fn_customValidationRegex method");
 
             /** Define variables */
-            var sSourceFieldId = "inp" + this._fn_getFieldId(oCustomVal.sourcecolname), // Stores source field id
+            var sSourceFieldId = "inp" + this._fn_getFieldId(oCustomVal.SourceColName), // Stores source field id
                 regex, // Stores regex expression
                 bRegexValidation, // Regex validation flag
                 oMessage; // Stores message for message manager
 
             /** Method Implementation */
-            if (oTableData[oCustomVal.sourcecolname]) {
+            if (oTableData[oCustomVal.SourceColName]) {
                 // Get regex
-                regex = new RegExp(oCustomVal.sourcecolvalue);
+                regex = new RegExp(oCustomVal.SourceColValue);
 
-                bRegexValidation = regex.test(oTableData[oCustomVal.sourcecolname]);
+                bRegexValidation = regex.test(oTableData[oCustomVal.SourceColName]);
 
                 if (!bRegexValidation) {
                     // Set value state
                     if (sap.ui.getCore().byId(sSourceFieldId)) {
                         sap.ui.getCore().byId(sSourceFieldId).setValueState("Error");
-                        sap.ui.getCore().byId(sSourceFieldId).setValueText(oCustomVal.errormessage);
+                        sap.ui.getCore().byId(sSourceFieldId).setValueText(oCustomVal.ErrorMessage);
 
                         oMessage = new Message({
                             id: sSourceFieldId,
                             message: "Custom validation failed",
                             type: MessageType.Error,
-                            additionalText: oCustomVal.sourcecolumnlabel,
-                            description: oCustomVal.errormessage,
+                            additionalText: oCustomVal.SourceColumnLabel,
+                            description: oCustomVal.ErrorMessage,
                             target: "/CustomValidation",
                             processor: this.fn_getLocalModel("messageModel")
                         });
@@ -3281,7 +3272,7 @@ sap.ui.define([
                             id: sSourceFieldId,
                             message: "Custom validation successful",
                             type: MessageType.Success,
-                            additionalText: oCustomVal.sourcecolumnlabel,
+                            additionalText: oCustomVal.SourceColumnLabel,
                             description: "Custom REGEX validation on field " + oCustomVal.ColumnLabel + " is successful",
                             target: "/CustomValidation",
                             processor: this.fn_getLocalModel("messageModel")
@@ -3314,29 +3305,29 @@ sap.ui.define([
             this.fn_getLogReference().info("Main Screen Controller: Entering _fn_customValidationDateafter method");
 
             /** Define variables */
-            var sSourceFieldId = "inp" + this._fn_getFieldId(oCustomVal.sourcecolname), // Stores source field id
+            var sSourceFieldId = "inp" + this._fn_getFieldId(oCustomVal.SourceColName), // Stores source field id
                 oTime1, // Stores converted time of destination field
                 oTime2, // Stores converted time of source field
                 oMessage; // Stores message for message manager
 
             /** Method Implementation */
-            if (oTableData[oCustomVal.sourcecolname] && oTableData[oCustomVal.destcolname]) {
+            if (oTableData[oCustomVal.SourceColName] && oTableData[oCustomVal.DestColName]) {
                 // Get time
-                oTime1 = parseInt(oTableData[oCustomVal.destcolname].split("(")[1].split(")")[0], 10);
-                oTime2 = parseInt(oTableData[oCustomVal.sourcecolname].split("(")[1].split(")")[0], 10);
+                oTime1 = parseInt(oTableData[oCustomVal.DestColName].split("(")[1].split(")")[0], 10);
+                oTime2 = parseInt(oTableData[oCustomVal.SourceColName].split("(")[1].split(")")[0], 10);
 
                 if (oTime1 > oTime2) {
                     // Set value state
                     if (sap.ui.getCore().byId(sSourceFieldId)) {
                         sap.ui.getCore().byId(sSourceFieldId).setValueState("Error");
-                        sap.ui.getCore().byId(sSourceFieldId).setValueText(oCustomVal.errormessage);
+                        sap.ui.getCore().byId(sSourceFieldId).setValueText(oCustomVal.ErrorMessage);
 
                         oMessage = new Message({
                             id: sSourceFieldId,
                             message: "Custom validation failed",
                             type: MessageType.Error,
-                            additionalText: oCustomVal.sourcecolumnlabel,
-                            description: oCustomVal.errormessage,
+                            additionalText: oCustomVal.SourceColumnLabel,
+                            description: oCustomVal.ErrorMessage,
                             target: "/CustomValidation",
                             processor: this.fn_getLocalModel("messageModel")
                         });
@@ -3357,8 +3348,8 @@ sap.ui.define([
                             id: sSourceFieldId,
                             message: "Custom validation successful",
                             type: MessageType.Success,
-                            additionalText: oCustomVal.sourcecolumnlabel,
-                            description: "Custom DATEAFTER between fields " + oCustomVal.sourcecolumnlabel + " and " + oCustomVal.destcolumnlabel + " is successful",
+                            additionalText: oCustomVal.SourceColumnLabel,
+                            description: "Custom DATEAFTER between fields " + oCustomVal.SourceColumnLabel + " and " + oCustomVal.DestColumnLabel + " is successful",
                             target: "/CustomValidation",
                             processor: this.fn_getLocalModel("messageModel")
                         });
@@ -3390,28 +3381,28 @@ sap.ui.define([
             this.fn_getLogReference().info("Main Screen Controller: Entering _fn_customValidationDatenotbeforetoday method");
 
             /** Define variables */
-            var sSourceFieldId = "inp" + this._fn_getFieldId(oCustomVal.sourcecolname), // Stores source field id
+            var sSourceFieldId = "inp" + this._fn_getFieldId(oCustomVal.SourceColName), // Stores source field id
                 oTime1, // Stores converted time of destination field
                 oTime2 = new Date().getTime(), // Stores converted time of source field
                 oMessage; // Stores message for message manager
 
             /** Method Implementation */
-            if (oTableData[oCustomVal.sourcecolname]) {
+            if (oTableData[oCustomVal.SourceColName]) {
                 // Get time
-                oTime1 = parseInt(oTableData[oCustomVal.sourcecolname].split("(")[1].split(")")[0], 10);
+                oTime1 = parseInt(oTableData[oCustomVal.SourceColName].split("(")[1].split(")")[0], 10);
 
                 if (oTime1 < oTime2) {
                     // Set value state
                     if (sap.ui.getCore().byId(sSourceFieldId)) {
                         sap.ui.getCore().byId(sSourceFieldId).setValueState("Error");
-                        sap.ui.getCore().byId(sSourceFieldId).setValueText(oCustomVal.errormessage);
+                        sap.ui.getCore().byId(sSourceFieldId).setValueText(oCustomVal.ErrorMessage);
 
                         oMessage = new Message({
                             id: sSourceFieldId,
                             message: "Custom validation failed",
                             type: MessageType.Error,
-                            additionalText: oCustomVal.sourcecolumnlabel,
-                            description: oCustomVal.errormessage,
+                            additionalText: oCustomVal.SourceColumnLabel,
+                            description: oCustomVal.ErrorMessage,
                             target: "/CustomValidation",
                             processor: this.fn_getLocalModel("messageModel")
                         });
@@ -3432,8 +3423,8 @@ sap.ui.define([
                             id: sSourceFieldId,
                             message: "Custom validation successful",
                             type: MessageType.Success,
-                            additionalText: oCustomVal.sourcecolumnlabel,
-                            description: "Custom DATENOTBEFORETODAY validation for field " + oCustomVal.sourcecolumnlabel + " is successful",
+                            additionalText: oCustomVal.SourceColumnLabel,
+                            description: "Custom DATENOTBEFORETODAY validation for field " + oCustomVal.SourceColumnLabel + " is successful",
                             target: "/CustomValidation",
                             processor: this.fn_getLocalModel("messageModel")
                         });
@@ -3445,7 +3436,7 @@ sap.ui.define([
                 }
             } else {
                 // Log info
-                this.fn_getResourceBundle().info("Main Screen Controller: Custom validation DATENOTBEFORETODAY is skipped as there is no data input by user in field - " + oCustomVal.sourcecolumnlabel + ".");
+                this.fn_getResourceBundle().info("Main Screen Controller: Custom validation DATENOTBEFORETODAY is skipped as there is no data input by user in field - " + oCustomVal.SourceColumnLabel + ".");
             }
 
             // Log info
@@ -3465,12 +3456,12 @@ sap.ui.define([
             this.fn_getLogReference().info("Main Screen Controller: Entering _fn_customValidationHasvalue method");
 
             /** Define variables */
-            var sDestFieldId = "inp" + this._fn_getFieldId(oCustomVal.destcolname), // Stores destination field id
+            var sDestFieldId = "inp" + this._fn_getFieldId(oCustomVal.DestColName), // Stores destination field id
                 oMessage; // Stores message for message manager
 
             /** Method Implementation */
-            if (oTableData[oCustomVal.sourcecolname]) {
-                if (oTableData[oCustomVal.destcolname]) {
+            if (oTableData[oCustomVal.SourceColName]) {
+                if (oTableData[oCustomVal.DestColName]) {
                     // Clear the value state
                     if (sap.ui.getCore().byId(sDestFieldId)) {
                         sap.ui.getCore().byId(sDestFieldId).setValueState("None");
@@ -3479,8 +3470,8 @@ sap.ui.define([
                             id: sDestFieldId,
                             message: "Custom validation successful",
                             type: MessageType.Success,
-                            additionalText: oCustomVal.sourcecolumnlabel,
-                            description: "Custom HASVALUE validation on field " + oCustomVal.destcolumnlabel + " is successful",
+                            additionalText: oCustomVal.SourceColumnLabel,
+                            description: "Custom HASVALUE validation on field " + oCustomVal.DestColumnLabel + " is successful",
                             target: "/CustomValidation",
                             processor: this.fn_getLocalModel("messageModel")
                         });
@@ -3493,14 +3484,14 @@ sap.ui.define([
                     // Set value state
                     if (sap.ui.getCore().byId(sDestFieldId)) {
                         sap.ui.getCore().byId(sDestFieldId).setValueState("Error");
-                        sap.ui.getCore().byId(sDestFieldId).setValueText(oCustomVal.errormessage);
+                        sap.ui.getCore().byId(sDestFieldId).setValueText(oCustomVal.ErrorMessage);
 
                         oMessage = new Message({
                             id: sDestFieldId,
                             message: "Custom validation failed",
                             type: MessageType.Error,
-                            additionalText: oCustomVal.sourcecolumnlabel,
-                            description: oCustomVal.errormessage,
+                            additionalText: oCustomVal.SourceColumnLabel,
+                            description: oCustomVal.ErrorMessage,
                             target: "/CustomValidation",
                             processor: this.fn_getLocalModel("messageModel")
                         });
@@ -3515,7 +3506,7 @@ sap.ui.define([
                 }
             } else {
                 // Log info
-                this.fn_getResourceBundle().info("Main Screen Controller: Custom validation HASVALUE is skipped as there is no value in the source column " + oCustomVal.sourcecolumnlabel + ".");
+                this.fn_getResourceBundle().info("Main Screen Controller: Custom validation HASVALUE is skipped as there is no value in the source column " + oCustomVal.SourceColumnLabel + ".");
             }
 
             // Log info
@@ -3535,7 +3526,7 @@ sap.ui.define([
             this.fn_getLogReference().info("Main Screen Controller: Entering _fn_customValidationLookup method");
 
             /** Define variables */
-            var sSourceFieldId = "inp" + this._fn_getFieldId(oCustomVal.sourcecolname), // Stores source field id
+            var sSourceFieldId = "inp" + this._fn_getFieldId(oCustomVal.SourceColName), // Stores source field id
                 iLastIndex, // Stores index of last "/"
                 sServiceUrl, // Stores service url of lookup validation
                 sEntitySet, // Stores entity set of lookup validation
@@ -3544,13 +3535,13 @@ sap.ui.define([
                 oMessage; // Stores message for message manager
 
             /** Method Implementation */
-            if (oTableData[oCustomVal.sourcecolname]) {
+            if (oTableData[oCustomVal.SourceColName]) {
                 // Get the last index of "/"
-                iLastIndex = oCustomVal.destcolvalue.lastIndexOf("/");
+                iLastIndex = oCustomVal.DestColValue.lastIndexOf("/");
 
                 // Prepare service url and entity set
-                sServiceUrl = oCustomVal.destcolvalue.substring(0, iLastIndex);
-                sEntitySet = oCustomVal.destcolvalue.substring(iLastIndex, oCustomVal.destcolvalue.length);
+                sServiceUrl = oCustomVal.DestColValue.substring(0, iLastIndex);
+                sEntitySet = oCustomVal.DestColValue.substring(iLastIndex, oCustomVal.DestColValue.length);
 
                 // Create lookup odata model
                 oLkpModel = new ODataModel({
@@ -3558,7 +3549,7 @@ sap.ui.define([
                 }).getNativeModel();
 
                 // Prepare filter to validate lookup
-                aFilters.push(new Filter(oCustomVal.destcolname, FilterOperator.EQ, oTableData[oCustomVal.sourcecolname]));
+                aFilters.push(new Filter(oCustomVal.DestColName, FilterOperator.EQ, oTableData[oCustomVal.SourceColName]));
 
                 // Read lookup model
                 var oListBinding = oLkpModel.bindList("/" + sEntitySet, null, null, aFilters);
@@ -3586,14 +3577,14 @@ sap.ui.define([
                         // Set value state
                         if (sap.ui.getCore().byId(sSourceFieldId)) {
                             sap.ui.getCore().byId(sSourceFieldId).setValueState("Error");
-                            sap.ui.getCore().byId(sSourceFieldId).setValueText(oCustomVal.errormessage);
+                            sap.ui.getCore().byId(sSourceFieldId).setValueText(oCustomVal.ErrorMessage);
 
                             oMessage = new Message({
                                 id: sSourceFieldId,
                                 message: "Custom validation failed",
                                 type: MessageType.Error,
-                                additionalText: oCustomVal.sourcecolumnlabel,
-                                description: oCustomVal.errormessage,
+                                additionalText: oCustomVal.SourceColumnLabel,
+                                description: oCustomVal.ErrorMessage,
                                 target: "/CustomValidation",
                                 processor: this.fn_getLocalModel("messageModel")
                             });
@@ -3687,11 +3678,6 @@ sap.ui.define([
             // Open busy dialog
             this.fn_openBusyDialog();
 
-            // Create the table model
-            oTableModel = new ODataModel({
-                serviceUrl: this.sTableServiceUrl
-            }).getNativeModel();
-
             // Get the primary keys
             aPrimaryKeys = this.aFieldDetails.filter(function (oField) {
                 return oField.PrimaryKeyFlag === "Y";
@@ -3707,15 +3693,15 @@ sap.ui.define([
             });
             aFilters.push(new Filter({
                 filters: [
-                    new Filter("VERSION_ACTIVE", FilterOperator.EQ, "Y"),
-                    new Filter("VERSION_ACTIVE", FilterOperator.EQ, "I"),
-                    new Filter("VERSION_ACTIVE", FilterOperator.EQ, "G")
+                    new Filter("VersionActive", FilterOperator.EQ, "Y"),
+                    new Filter("VersionActive", FilterOperator.EQ, "I"),
+                    new Filter("VersionActive", FilterOperator.EQ, "G")
                 ],
                 and: false
             }));
 
             // Read in-progress data
-            var oListBinding = oTableModel.bindList("/" + this.sTableEntitySet, null, null, aFilters);
+            var oListBinding = this.oTableModel.bindList(this.sTableEntitySet, null, null, aFilters);
             oListBinding.requestContexts(0, 1).then(function (aContexts) {
                 if (aContexts.length === 0) {
                     // Log info
@@ -3749,7 +3735,7 @@ sap.ui.define([
                     this.byId("msgStripMainScreen").setType("Error");
                     this.byId("msgStripMainScreen").setVisible(true);
 
-                    if (oInProgressData.VERSION_ACTIVE === "Y") {
+                    if (oInProgressData.VersionActive === "Y") {
                         // Set error text in message strip
                         this.byId("msgStripMainScreen").setText("<strong>Error: </strong><em>Error while processing. For more info </em>");
 
@@ -3775,8 +3761,8 @@ sap.ui.define([
                             id: "createInProgress",
                             message: "Workflow exists for same entry",
                             type: MessageType.Error,
-                            additionalText: oInProgressData.WORKFLOW_ID,
-                            description: "Workflow " + oInProgressData.WORKFLOW_ID + "is in progress for the same inputted key details. Please get the existing workflow completed before raising any new request.",
+                            additionalText: oInProgressData.WorkflowId,
+                            description: "Workflow " + oInProgressData.WorkflowId + "is in progress for the same inputted key details. Please get the existing workflow completed before raising any new request.",
                             target: "/CheckInProgressCreate",
                             processor: this.fn_getLocalModel("messageModel")
                         });
@@ -3825,7 +3811,7 @@ sap.ui.define([
             // oTableModel = this.getOwnerComponent().getModel();
 
             // Create data at backend system
-            var oListBinding = this.oTableModel.bindList("/" + this.sTableEntitySet);
+            var oListBinding = this.oTableModel.bindList(this.sTableEntitySet);
             var oContext = oListBinding.create(oTableData);
             oContext.created().then(function () {
                 var oData = oContext.getObject() || {};
@@ -3920,7 +3906,7 @@ sap.ui.define([
                 UserRemarks: this.sUserRemarks,
                 WorkflowIdentifier: "CENTRAL"
             };            // [FIXED] Use fetch() instead of OData V4 bindContext/batch to avoid 403 errors
-            var that = this;
+
             var sServiceUrl = sap.ui.require.toUrl("com/intapptics/zmdrcntrlcmn") + "/mdrapi/workflow/";
             var sTriggerUrl = sServiceUrl + "TriggerWorkflowSet";
 
@@ -3951,7 +3937,7 @@ sap.ui.define([
                 });
             }).then(function (oResult) {
                 // Close the user comments dialog
-                that.byId("dlgComment").close();
+                this.byId("dlgComment").close();
 
                 // Set the message
                 oMessage = new Message({
@@ -3959,16 +3945,16 @@ sap.ui.define([
                     message: "Workflow triggered successfully",
                     type: MessageType.Success,
                     additionalText: sWorkflowId,
-                    description: that.sActionType + " request for table " + that.sTableLabel + " is successfully submitted for approval process with process reference number " + sWorkflowId,
+                    description: this.sActionType + " request for table " + this.sTableLabel + " is successfully submitted for approval process with process reference number " + sWorkflowId,
                     target: "/TriggerWF",
-                    processor: that.fn_getLocalModel("messageModel")
+                    processor: this.fn_getLocalModel("messageModel")
                 });
                 sap.ui.getCore().getMessageManager().addMessages(oMessage);
 
                 // Set message to message strip
-                that.byId("msgStripMainScreen").setText("<strong>Success: </strong><em>Workflow </em><strong>" + sWorkflowId + "</strong><em> is initiated successfully. For more info </em>");
-                that.byId("msgStripMainScreen").setType("Success");
-                that.byId("msgStripMainScreen").setVisible(true);
+                this.byId("msgStripMainScreen").setText("<strong>Success: </strong><em>Workflow </em><strong>" + sWorkflowId + "</strong><em> is initiated successfully. For more info </em>");
+                this.byId("msgStripMainScreen").setType("Success");
+                this.byId("msgStripMainScreen").setVisible(true);
 
                 // Disable the form (if it exists)
                 if (oForm) {
@@ -3980,24 +3966,24 @@ sap.ui.define([
                 }
 
                 // Disable the submit button and enable create button only for create scenario
-                that.byId("btnSubmit").setVisible(false);
-                if (that.sActionType === "Create") {
-                    that.byId("btnCreate").setVisible(true);
+                this.byId("btnSubmit").setVisible(false);
+                if (this.sActionType === "Create") {
+                    this.byId("btnCreate").setVisible(true);
                 } else {
-                    that.byId("btnCreate").setVisible(false);
+                    this.byId("btnCreate").setVisible(false);
                 }
 
                 // Close busy dialog
-                that.fn_closeBusyDialog();
-            }).catch(function (oError) {
+                this.fn_closeBusyDialog();
+            }.bind(this)).catch(function (oError) {
                 // Set error in message strip
-                that.byId("msgStripMainScreen").setText("<strong>Error: </strong><em>Error while processing. " + oError.message + "</em>");
-                that.byId("msgStripMainScreen").setType("Error");
-                that.byId("msgStripMainScreen").setVisible(true);
+                this.byId("msgStripMainScreen").setText("<strong>Error: </strong><em>Error while processing. " + oError.message + "</em>");
+                this.byId("msgStripMainScreen").setType("Error");
+                this.byId("msgStripMainScreen").setVisible(true);
 
                 // Close busy dialog
-                that.fn_closeBusyDialog();
-            });
+                this.fn_closeBusyDialog();
+            }.bind(this));
 
             // Log info
             this.fn_getLogReference().info("Main Screen Controller: Exiting _fn_triggerWorkflow method");
@@ -4060,19 +4046,53 @@ sap.ui.define([
                 iLastIndex; // Stores index of last "/"
 
             /** Method Implementation */
-            oUrlModel = this.fn_getGlobalModel("ZMDGCPCNTRLURL01_CDS");
+            oUrlModel = this.fn_getGlobalModel();
 
             // Get service url
-            var oListBinding = oUrlModel.bindList("/ZMDGCPCNTRLURL01Set", null, null, [new Filter("p_tabname", FilterOperator.EQ, this.sSelectedTableName)]);
+            var oListBinding = oUrlModel.bindList("/CntrlUIUrl", null, null, [new Filter("TableName", FilterOperator.EQ, this.sSelectedTableName)]);
             oListBinding.requestContexts(0, 1).then(function (aContexts) {
                 if (aContexts.length > 0) {
-                    var oData = aContexts[0].getObject();
-                    // Get the last index of "/"
-                    iLastIndex = oData.serviceurl.lastIndexOf("/");
+                    var aUrlData = aContexts[0].getObject();
+                    // Check if the service URL starts with a forward slash
+                    if (this.fn_getGlobalModel().getServiceUrl().startsWith("/")) {
+                        aUrlData[0].OdataUrl.split("/").forEach(function (sUrlPart, index) {
+                            if (index === aUrlData[0].OdataUrl.split("/").length - 1) {
+                                this.sTableEntitySet = "/" + sUrlPart;
+                            } else if (index === 0) {
+                                sTableServiceUrl = "/";
+                            } else {
+                                sTableServiceUrl = sTableServiceUrl + sUrlPart + "/";
+                            }
+                        }.bind(this));
+                    } else {
+                        aUrlData[0].OdataUrl.split("/").forEach(function (sUrlPart, index) {
+                            if (index === aUrlData[0].OdataUrl.split("/").length - 1) {
+                                this.sTableEntitySet = "/" + sUrlPart;
+                            } else if (index === 0) {
+                                sTableServiceUrl = "";
+                            } else {
+                                sTableServiceUrl = sTableServiceUrl + sUrlPart + "/";
+                            }
+                        }.bind(this));
+                    }
 
-                    // Set the service url and entity set
-                    this.sTableServiceUrl = oData.serviceurl.substring(0, iLastIndex);
-                    this.sTableEntitySet = oData.serviceurl.substring(iLastIndex + 1, oData.serviceurl.length);
+                    // Log information
+                    this.fn_getLogReference().info("Table Result Controller: Service URL - " + sTableServiceUrl);
+                    this.fn_getLogReference().info("Table Result Controller: Entity Set - " + this.sTableEntitySet);
+
+                    // Resolve the service URL as per manifest
+                    var sResolvedServiceUri = this.getOwnerComponent().getManifestObject().resolveUri(sTableServiceUrl, "sap.app");
+
+                    this.fn_getLogReference().info("Table Result Controller: Resolved Service URL - " + sResolvedServiceUri);
+
+                    // Odata model of the selected table - use the global model which has proper authentication context
+                    this.oTableModel = new ODataModel({
+                        serviceUrl: sResolvedServiceUri,
+                        synchronizationMode: "None",   // required for OData V4
+                        autoExpandSelect: true,
+                        operationMode: "Server",
+                        earlyRequests: true   // triggers early metadata + CSRF fetch
+                    });
 
                     // Get workflow data
                     this._fn_readWfData();
@@ -4108,21 +4128,15 @@ sap.ui.define([
 
             /** Define variables */
             var aFilters = [], // Stores filter information
-                oTableModel, // Stores odata model of selected table
                 oMessage; // Stores message for message manager
 
             /** Method Implementation */
-            // Prepare the table model
-            oTableModel = new ODataModel({
-                serviceUrl: this.sTableServiceUrl
-            }).getNativeModel();
-
             // Add filters
             aFilters.push(new Filter("WorkflowId", FilterOperator.EQ, this.sWorkflowID));
             aFilters.push(new Filter("VersionActive", FilterOperator.EQ, "I"));
 
             // Read data from backend
-            var oListBinding = oTableModel.bindList("/" + this.sTableEntitySet, null, null, aFilters);
+            var oListBinding = oTableModel.bindList(this.sTableEntitySet, null, null, aFilters);
             oListBinding.requestContexts(0, 2).then(function (aContexts) {
                 if (aContexts.length === 1) {
                     // Set the table data
@@ -4474,13 +4488,8 @@ sap.ui.define([
                 aMessagesRemove; // Array to hold message information to be removed
 
             /** Method Implementation */
-            // Prepare table model
-            oTableModel = new ODataModel({
-                serviceUrl: this.sTableServiceUrl
-            }).getNativeModel();
-
             // Set update group
-            oTableModel.setSubmitBatchMode(sap.ui.model.odata.v4.SubmitMode.Auto);
+            this.oTableModel.setSubmitBatchMode(sap.ui.model.odata.v4.SubmitMode.Auto);
 
             // Get the primary key fields
             aPrimaryKeys = this.aFieldDetails.filter(function (oField) {
@@ -4516,7 +4525,7 @@ sap.ui.define([
                 };
 
                 // Update the table data
-                var oContextBinding = oTableModel.bindContext("/" + sTableEntitySet);
+                var oContextBinding = this.oTableModel.bindContext("/" + sTableEntitySet);
                 oContextBinding.requestObject().then(function () {
                     var oContext = oContextBinding.getBoundContext();
                     for (var sKey in oTableData) {
