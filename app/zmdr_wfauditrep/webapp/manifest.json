@@ -17,7 +17,7 @@
     },
     "dataSources": {
       "mainService": {
-        "uri": "/mdrapi/reporting/",
+        "uri": "mdrapi/reporting/",
         "type": "OData",
         "settings": {
           "annotations": [],

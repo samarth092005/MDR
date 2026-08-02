@@ -106,20 +106,20 @@ module.exports = cds.service.impl(async function (srv) {
         const { WFAudit } = db.entities('zmdr'); // using 'zmdr' namespace
         
         try {
-            const count = await db.run(SELECT.from(WFAudit).where({ workflowid: d.workflowId })).then(r => r.length);
+            const count = await db.run(SELECT.from(WFAudit).where({ WorkflowId: d.workflowId })).then(r => r.length);
             const sequenceid = `${d.workflowId}-${count + 1}`;
             
             await db.run(INSERT.into(WFAudit).entries({
                 SequenceId:    sequenceid,
                 WorkflowId:    d.workflowId,
-                entityid:      d.entityId || '',
-                actiontime:    new Date().toISOString(),
-                operationtype: d.operationType,
-                entityname:    d.entityName || '',
-                wfstage:       d.wfStage || '',
-                action:        d.action,
-                userremarks:   d.userRemarks || '',
-                actioninguser: d.actioningUser || '',
+                EntityId:      d.entityId || '',
+                ActionTime:    new Date().toISOString(),
+                OperationType: d.operationType,
+                EntityName:    d.entityName || '',
+                WfStage:       d.wfStage || '',
+                Action:        d.action,
+                UserRemarks:   d.userRemarks || '',
+                ActioningUser: d.actioningUser || '',
             }));
             return { seqid: sequenceid, success: true };
         } catch (err) {
@@ -131,18 +131,18 @@ module.exports = cds.service.impl(async function (srv) {
 
     // Specific Audit Writers
     srv.on('pushInprogressAudit', async (req) => {
-        const { workflowId, currentStage, approverId, tablename } = req.data;
-        return srv.send('insertWFAudit', { workflowId, wfStage: currentStage, actioningUser: approverId, action: 'INPROGRESS' });
+        const { workflowId, entityId, entityName, currentStage, approverId, tablename } = req.data;
+        return srv.send('insertWFAudit', { workflowId, entityId, entityName, wfStage: currentStage, action: 'INPROGRESS', actioningUser: approverId });
     });
     
     srv.on('pushApprovedAudit', async (req) => {
-        const { workflowId, currentStage, approverId, approverRemarks } = req.data;
-        return srv.send('insertWFAudit', { workflowId, wfStage: currentStage, actioningUser: approverId, action: 'APPROVED', userRemarks: approverRemarks });
+        const { workflowId, entityId, entityName, currentStage, approverId, approverRemarks } = req.data;
+        return srv.send('insertWFAudit', { workflowId, entityId, entityName, wfStage: currentStage, action: 'APPROVED', actioningUser: approverId, userRemarks: approverRemarks });
     });
 
     srv.on('pushRejectedAudit', async (req) => {
-        const { workflowId, currentStage, approverId, approverRemarks, action } = req.data;
-        return srv.send('insertWFAudit', { workflowId, wfStage: currentStage, actioningUser: approverId, action: action || 'REJECTED', userRemarks: approverRemarks });
+        const { workflowId, entityId, entityName, currentStage, approverId, approverRemarks, action } = req.data;
+        return srv.send('insertWFAudit', { workflowId, entityId, entityName, wfStage: currentStage, action: 'REJECTED', actioningUser: approverId, userRemarks: approverRemarks });
     });
 
     srv.on('completeWFAudit', async (req) => {
@@ -163,12 +163,12 @@ module.exports = cds.service.impl(async function (srv) {
         const { MDRWorkflowLink } = db.entities('zmdr');
         
         try {
-            const existing = await db.run(SELECT.one.from(MDRWorkflowLink).where({ mdr_workflow_id: mdrWorkflowId, tablename }));
+            const existing = await db.run(SELECT.one.from(MDRWorkflowLink).where({ MdrWorkflowId: mdrWorkflowId, TableName: tablename }));
             if (!existing) {
                 await db.run(INSERT.into(MDRWorkflowLink).entries({ 
-                    mdr_workflow_id: mdrWorkflowId, 
-                    tablename, 
-                    bpa_instance_id: bpaInstanceId 
+                    MdrWorkflowId: mdrWorkflowId, 
+                    TableName: tablename, 
+                    BpaInstanceId: bpaInstanceId 
                 }));
             }
             return { success: true };

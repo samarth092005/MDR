@@ -1360,13 +1360,13 @@ sap.ui.define([
          * @memberof com.intapptics.zmdrcntrlcmn.view.MainScreen
          * @private
          */
-        _fn_onObjectMatched: function (oEvent) {
+        _fn_onObjectMatched: async function (oEvent) {
             // Log message
             this.fn_getLogReference().info("Main Screen Controller: Entering _fn_onObjectMatched method");
 
             /** Define Variables */
             var oComponentData = this.getOwnerComponent().getComponentData(), // Stores the component data
-                oContextData = this.getOwnerComponent().getModel("context").getData(), // Stores the context data
+                // oContextData = this.getOwnerComponent().getModel("context") ? this.getOwnerComponent().getModel("context").getData() : "", // Stores the context data
                 oCntrlUiConfigModel, // Central UI Comfiguration data model
                 sAppKey, // Stores the app state key passed while navigation
                 iStartIndex, // Start index of the string to cut
@@ -1402,13 +1402,9 @@ sap.ui.define([
                 // Safely read action type
                 sActionType = oComponentData.startupParameters.sActionType ? oComponentData.startupParameters.sActionType[0] : "";
                 if(sActionType === "") {
+                    await this.getOwnerComponent().contextLoaded;
+                    var oContextData = this.getOwnerComponent().getModel("context").getData();
                     sActionType = oContextData.sActionType || "";
-                }
-
-                // Read who is calling the component
-                this.sActionedBy = oComponentData.startupParameters.sActionedBy ? oComponentData.startupParameters.sActionedBy[0] : "";
-                if(sActionedBy === "") {
-                    sActionedBy = oContextData.sActionedBy || "";
                 }
 
                 // Get user action type
@@ -1416,6 +1412,12 @@ sap.ui.define([
                     this.sActionType = "Amend";
                 } else {
                     this.sActionType = sActionType;
+                }
+                
+                // Read who is calling the component
+                this.sActionedBy = oComponentData.startupParameters.sActionedBy ? oComponentData.startupParameters.sActionedBy[0] : "";
+                if(this.sActionedBy === "") {
+                    this.sActionedBy = oContextData.sActionedBy || "";
                 }
 
                 if (this.sActionedBy === "Requestor") {
