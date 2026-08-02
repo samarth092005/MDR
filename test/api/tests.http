@@ -1,0 +1,16 @@
+@baseUrl = http://localhost:4004
+
+### Insert WFAudit record — replace 'workflow' with your actual service path
+POST {{baseUrl}}/mdrapi/workflow/insertWFAudit
+Content-Type: application/json
+
+{
+  "workflowId": "TRV-0001",
+  "entityId": "T-0001",
+  "operationType": "CREATE",
+  "entityName": "Travels",
+  "wfStage": "Approval",
+  "action": "SUBMIT",
+  "userRemarks": "Test entry from tests.http",
+  "actioningUser": "myid@example.com"
+}
