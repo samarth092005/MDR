@@ -1366,6 +1366,7 @@ sap.ui.define([
 
             /** Define Variables */
             var oComponentData = this.getOwnerComponent().getComponentData(), // Stores the component data
+                oContextData = this.getOwnerComponent().getModel("context").getData(), // Stores the context data
                 oCntrlUiConfigModel, // Central UI Comfiguration data model
                 sAppKey, // Stores the app state key passed while navigation
                 iStartIndex, // Start index of the string to cut
@@ -1400,9 +1401,15 @@ sap.ui.define([
             if (oComponentData && oComponentData.startupParameters) {
                 // Safely read action type
                 sActionType = oComponentData.startupParameters.sActionType ? oComponentData.startupParameters.sActionType[0] : "";
+                if(sActionType === "") {
+                    sActionType = oContextData.sActionType || "";
+                }
 
                 // Read who is calling the component
                 this.sActionedBy = oComponentData.startupParameters.sActionedBy ? oComponentData.startupParameters.sActionedBy[0] : "";
+                if(sActionedBy === "") {
+                    sActionedBy = oContextData.sActionedBy || "";
+                }
 
                 // Get user action type
                 if (sActionType === "Reopen") {
@@ -1641,21 +1648,21 @@ sap.ui.define([
                     }
 
                     // Get previous stage
-                    this.sPreviousStage = oComponentData.startupParameters.sPrvStage ? oComponentData.startupParameters.sPrvStage[0] : "";
-                    if (oComponentData.startupParameters.sNextStage && oComponentData.startupParameters.sNextStage[0] === "END") {
+                    this.sPreviousStage = oContextData.sPreviousStage || "";
+                    if (oContextData.sNextStage === "END") {
                         this.sFinalApproval = "Y";
                     } else {
                         this.sFinalApproval = "N";
                     }
 
                     // Read table name
-                    this.sSelectedTableName = oComponentData.startupParameters.sTablename ? oComponentData.startupParameters.sTablename[0] : "";
+                    this.sSelectedTableName = oContextData.sTablename || "";
 
                     // Set form title
                     this.fn_getLocalModel("mainScreenViewModel").setProperty("/formTitle", this.fn_getResourceBundle().getText("approverFormHeading"));
 
                     // Get workflow id and workitem id
-                    this.sWorkflowID = oComponentData.startupParameters.sWorkflowID ? oComponentData.startupParameters.sWorkflowID[0] : "";
+                    this.sWorkflowID = oContextData.sWorkflowID || "";
                     // this.iWorkitemID = oComponentData.startupParameters.iWorkitemID ? oComponentData.startupParameters.iWorkitemID[0] : 0;
 
                     // if (this.iWorkitemID) {
