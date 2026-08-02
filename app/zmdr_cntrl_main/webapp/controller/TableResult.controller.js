@@ -450,7 +450,7 @@ sap.ui.define([
 
                 // Filter the searchfields from complete fields data
                 aSearchFields = aFields.filter(function (oField) {
-                    return oField.searchfieldflag === "Y";
+                    return oField.SearchFieldFlag === "Y";
                 });
 
                 // Loop into search fields and prepare the filter
@@ -1331,8 +1331,10 @@ sap.ui.define([
                                 // Set the page number
                                 this.sPageNumber = oSavedAppState.getData().sPageNumber;
 
-                                // Set the page size
-                                this.byId("cbxPageSize").setSelectedKey(oSavedAppState.getData().sPageSizeKey);
+                                if (this.byId("cbxPageSize")) {
+                                    // Set the page size
+                                    this.byId("cbxPageSize").setSelectedKey(oSavedAppState.getData().sPageSizeKey);
+                                }
 
                                 // Get the configuration data
                                 aCntrlUiConfigData = oSavedAppState.getData().aCntrlUiConfigData;
@@ -1739,7 +1741,7 @@ sap.ui.define([
                     this.fn_getLogReference().info("Table Result Controller: Entity Set - " + this.sEntitySet);
 
                     // Resolve the service URL as per manifest
-                    var sResolvedServiceUri =  this.getOwnerComponent().getManifestObject().resolveUri(this.sServiceUrl, "sap.app");
+                    var sResolvedServiceUri = this.getOwnerComponent().getManifestObject().resolveUri(this.sServiceUrl, "sap.app");
 
                     this.fn_getLogReference().info("Table Result Controller: Resolved Service URL - " + sResolvedServiceUri);
 
@@ -1748,7 +1750,8 @@ sap.ui.define([
                         serviceUrl: sResolvedServiceUri,
                         synchronizationMode: "None",   // required for OData V4
                         autoExpandSelect: true,
-                        operationMode: "Server"
+                        operationMode: "Server",
+                        earlyRequests: true   // triggers early metadata + CSRF fetch
                     });
 
                     // Read data of the selected table
