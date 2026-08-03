@@ -14,3 +14,16 @@ Content-Type: application/json
   "userRemarks": "Test entry from tests.http",
   "actioningUser": "myid@example.com"
 }
+
+### Resolve approvers — verify multi-row array output
+POST {{baseUrl}}/mdrapi/workflow/resolveApprovers
+Content-Type: application/json
+
+{
+  "tablename": "ZMDR_BPMASTER",
+  "currentStage": "STAGE1",
+  "processId": "TRV-0001",
+  "requesterRole": "REQUESTOR",
+  "requestorId": "myid@example.com",
+  "apprClass": "TRAVEL_APPROVAL"
+}

@@ -36,16 +36,27 @@ async function insertVersionedRow(params) {
   await insertRow(db, tablename, row);
 }
 
+function getEntity(name) {
+  const zEntities = cds.entities ? cds.entities('zmdr') : null;
+  return (zEntities && zEntities[name]) || (cds.entities && cds.entities[name]) || (cds.entities && cds.entities[`zmdr.${name}`]);
+}
+
 // storeBulkTemp: for non-versioned tables, store row in BulkTemp holding area
 // Replaces ABAP INSERT INTO ZMDR_BULKTEMP in ZMDR_FM_PROCESS_BULK_DATA
 async function storeBulkTemp(params) {
   const { tablename, rowString, workflowid, actiontype } = params;
   const db = await cds.connect.to('db');
-  const { BulkTemp } = db.entities;  // config table — CAP ORM
-  await db.run(INSERT.into(BulkTemp).entries({
-    Tablename: tablename, BulkData: rowString, WorkflowId: workflowid, ActionType: actiontype,
-    InitiationDate: new Date().toISOString(), RequestStatus: 'INPROGRESS',
-  }));
+  const BulkTemp = getEntity('BulkTemp') || db.entities?.BulkTemp;
+  if (BulkTemp) {
+    await db.run(INSERT.into(BulkTemp).entries({
+      Tablename: tablename, tablename,
+      BulkData: rowString, bulkdata: rowString,
+      WorkflowId: workflowid, workflowid,
+      ActionType: actiontype, actiontype,
+      InitiationDate: new Date().toISOString(), initiationdate: new Date().toISOString(),
+      RequestStatus: 'INPROGRESS', requeststatus: 'INPROGRESS',
+    }));
+  }
 }
 
 // applyBulkTempApproved: on APPROVE of non-versioned table, apply BulkTemp to real table
@@ -53,12 +64,12 @@ async function storeBulkTemp(params) {
 async function applyBulkTempApproved(params) {
   const { tablename, workflowid, lineitemConfig, keyFields, isOverwriteNull, userId } = params;
   const db = await cds.connect.to('db');
-  const { BulkTemp } = db.entities;
+  const BulkTemp = getEntity('BulkTemp') || db.entities?.BulkTemp;
   const now = new Date().toISOString();
 
-  const tempRows = await db.run(  // CAP ORM — BulkTemp is config table
-    SELECT.from(BulkTemp).where({ WorkflowId: workflowid, Tablename: tablename, RequestStatus: 'INPROGRESS' })
-  );
+  const tempRows = BulkTemp ? await db.run(  // CAP ORM — BulkTemp is config table
+    SELECT.from(BulkTemp).where(`(WorkflowId = '${workflowid}' or workflowid = '${workflowid}') and (Tablename = '${tablename}' or tablename = '${tablename}') and (RequestStatus = 'INPROGRESS' or requeststatus = 'INPROGRESS')`)
+  ) : [];
   for (const tr of tempRows) {
     const splitData = tr.BulkData.split('«');
     const { clause, values: kv } = buildKeyWhere(splitData, lineitemConfig, keyFields);

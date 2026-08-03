@@ -1182,43 +1182,43 @@ sap.ui.define([
                                     // Set the parameters into the app state
                                     oAppState.setData(oStateToSave);
 
-                                    // Save the data
-                                    oAppState.save();
+                                    // Save the data and wait for completion before navigation
+                                    var pSave = oAppState.saveAsync ? oAppState.saveAsync() : Promise.resolve(oAppState.save());
+                                    return Promise.resolve(pSave).then(function () {
+                                        // Get reference of the hash changer service
+                                        oHashChanger = sap.ui.core.routing.HashChanger.getInstance();
 
-                                    // Get reference of the hash changer service
-                                    oHashChanger = sap.ui.core.routing.HashChanger.getInstance();
+                                        // Get the current hash
+                                        sCurrentHash = oHashChanger.getHash();
 
-                                    // Get the current hash
-                                    sCurrentHash = oHashChanger.getHash();
+                                        // Check if any app state is already present in the current hash using regex
+                                        aAppStateKeys = /(?:sap-iapp-state=)([^&=]+)/.exec(sCurrentHash);
 
-                                    // Check if any app state is already present in the current hash using regex
-                                    aAppStateKeys = /(?:sap-iapp-state=)([^&=]+)/.exec(sCurrentHash);
+                                        if (aAppStateKeys) {
+                                            // Split the current hash and remove the current app state
+                                            sCurrentHash = sCurrentHash.split("?")[0];
+                                        }
 
-                                    if (aAppStateKeys) {
-                                        // Split the current hash and remove the current app state
-                                        sCurrentHash = sCurrentHash.split("?")[0];
-                                    }
+                                        // Prepare the new hash by adding the new app state
+                                        sNewHash = sCurrentHash + "?sap-iapp-state=" + oAppState.getKey();
 
-                                    // Prepare the new hash by adding the new app state
-                                    sNewHash = sCurrentHash + "?sap-iapp-state=" + oAppState.getKey();
+                                        // Replace hash
+                                        oHashChanger.replaceHash(sNewHash);
 
-                                    // Replace hash
-                                    oHashChanger.replaceHash(sNewHash);
-
-                                    // Navigate to the child app
-                                    oNavServiceToCommonApp.toExternal({
-                                        target: {
-                                            semanticObject: "zmdr_central_cmn",
-                                            action: "manage"
-                                        },
-                                        params: {
-                                            sActionedBy: "Requestor",
-                                            sActionType: sBtnText
-                                        },
-                                        appStateKey: oAppState.getKey()
+                                        // Navigate to the child app
+                                        oNavServiceToCommonApp.toExternal({
+                                            target: {
+                                                semanticObject: "zmdr_central_cmn",
+                                                action: "manage"
+                                            },
+                                            params: {
+                                                sActionedBy: "Requestor",
+                                                sActionType: sBtnText
+                                            },
+                                            appStateKey: oAppState.getKey()
+                                        });
                                     });
-                                })
-
+                                });
                         });
                 } else {
                     // Running in standalone mode without Fiori Launchpad

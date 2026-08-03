@@ -86,7 +86,9 @@
       "i18n": {
         "type": "sap.ui.model.resource.ResourceModel",
         "settings": {
-          "bundleName": "com.intapptics.zmdrcntrlcmn.i18n.i18n"
+          "bundleName": "com.intapptics.zmdrcntrlcmn.i18n.i18n",
+          "supportedLocales": [""],
+          "fallbackLocale": ""
         }
       },
       "": {

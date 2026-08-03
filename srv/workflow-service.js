@@ -91,11 +91,28 @@ module.exports = cds.service.impl(async function (srv) {
         //     approverId: req.user.id || 'APPROVER',
         //     nextStage: '' // Blank means final stage
         // };
-        return {
-            approverEmail: 'Abhinandan.d@abhiyantatech.com',
-            approverId: 'Abhinandan.d@abhiyantatech.com',
-            nextStage: '' // Blank means final stage
-        };
+        // return {
+        //     approverEmail: 'Abhinandan.d@abhiyantatech.com',
+        //     approverId: 'Abhinandan.d@abhiyantatech.com',
+        //     nextStage: '' // Blank means final stage
+        // };
+        return [
+            {
+                approverEmail: 'Abhinandan.d@abhiyantatech.com',
+                approverId: 'Abhinandan.d@abhiyantatech.com',
+                nextStage: '' // Blank means final stage
+            },
+            {
+                approverEmail: 'abhinandan.d@abhiyantatech.com',
+                approverId: 'abhinandan.d@abhiyantatech.com',
+                nextStage: '' // Blank means final stage
+            },
+            {
+                approverEmail: 'lokesh.j@abhiyantatech.com',
+                approverId: 'lokesh.j@abhiyantatech.com',
+                nextStage: '' // Blank means final stage
+            }
+        ]
     });
 
     // ── insertWFAudit (generic audit writer) ─────────────────────────────

@@ -47,28 +47,36 @@ module.exports = cds.service.impl(async function (srv) {
         return { bpaInstanceId, message: 'Workflow triggered' };
     });
 
+function getEntity(name) {
+    const zEntities = cds.entities ? cds.entities('zmdr') : null;
+    return (zEntities && zEntities[name]) || (cds.entities && cds.entities[name]) || (cds.entities && cds.entities[`zmdr.${name}`]);
+}
+
     srv.on('getBulkRequestData', async req => {
         const { tablename, workflowid, versionactive, uniquewf, requesterrole } = req.data;
         const db = await cds.connect.to('db');
-        const { BulkHdrConfig, BulkTemp } = db.entities;
+        const BulkHdrConfig = getEntity('BulkHdrConfig') || db.entities?.BulkHdrConfig;
+        const BulkTemp = getEntity('BulkTemp') || db.entities?.BulkTemp;
 
-        if (uniquewf === 'Y') {
+        if (uniquewf === 'Y' && BulkTemp) {
             // BulkTemp = config table — CAP ORM
             const rows = await db.run(SELECT.from(BulkTemp).where({ tablename, requeststatus: 'INPROGRESS' }));
-            const wfids = [...new Set(rows.map(r => r.workflowid))].map(wf => ({ workflowid: wf, remarks: '' }));
+            const wfids = [...new Set(rows.map(r => r.workflowid || r.WorkflowId))].map(wf => ({ workflowid: wf, remarks: '' }));
             return { data: [], olddata: [], wfids, message: '', type: 'S' };
         }
 
-        const hdr = await db.run(SELECT.one.from(BulkHdrConfig).where({ tablename, requesterrole }));
-        if (hdr?.isversioned === 'Y') {
+        const hdr = BulkHdrConfig ? await db.run(SELECT.one.from(BulkHdrConfig).where({ TableName: tablename, RequesterRole: requesterrole })) : null;
+        if (hdr?.isversioned === 'Y' || hdr?.Versioned === 'Y') {
             // Versioned: dynamic table — raw SQL
             const va = versionactive || 'G';
             const rows = await readRows(db, tablename, '"WORKFLOW_ID" = ? AND "VERSION_ACTIVE" = ?', [workflowid, va]);
             return { data: rows.map(r => ({ data: Object.values(r).join('«') })), olddata: [], wfids: [], message: '', type: 'S' };
-        } else {
+        } else if (BulkTemp) {
             // Non-versioned: BulkTemp = config table — CAP ORM
             const rows = await db.run(SELECT.from(BulkTemp).where({ workflowid, tablename, requeststatus: 'INPROGRESS' }));
-            return { data: rows.map(r => ({ data: r.bulkdata })), olddata: [], wfids: [], message: '', type: 'S' };
+            return { data: rows.map(r => ({ data: r.bulkdata || r.BulkData })), olddata: [], wfids: [], message: '', type: 'S' };
+        } else {
+            return { data: [], olddata: [], wfids: [], message: '', type: 'S' };
         }
     });
 
@@ -76,12 +84,14 @@ module.exports = cds.service.impl(async function (srv) {
         const { tablename, workflowid, wfstage, action,
             requesterrole, bpaInstanceId, approverremarks, isOverwriteNull } = req.data;
         const db = await cds.connect.to('db');
-        const { BulkHdrConfig, BulkItmConfig, BulkTemp } = db.entities;
+        const BulkHdrConfig = getEntity('BulkHdrConfig') || db.entities?.BulkHdrConfig;
+        const BulkItmConfig = getEntity('BulkItmConfig') || db.entities?.BulkItmConfig;
+        const BulkTemp = getEntity('BulkTemp') || db.entities?.BulkTemp;
         const userId = req.user.id;
 
         // Config reads — CAP ORM
-        const hdr = await db.run(SELECT.one.from(BulkHdrConfig).where({ TableName: tablename, RequesterRole: requesterrole }));
-        const lineitemConfig = await db.run(SELECT.from(BulkItmConfig).where({ Tablename: tablename, RequesterRole: requesterrole }).orderBy('Colseqno'));
+        const hdr = BulkHdrConfig ? await db.run(SELECT.one.from(BulkHdrConfig).where({ TableName: tablename, RequesterRole: requesterrole })) : null;
+        const lineitemConfig = BulkItmConfig ? await db.run(SELECT.from(BulkItmConfig).where({ Tablename: tablename, RequesterRole: requesterrole }).orderBy('Colseqno')) : [];
         const keyFields = lineitemConfig.filter(c => c.IsMatching === 'Y').map(c => c.Columnname);
 
         if (action === 'APPROVED') {

@@ -34,7 +34,7 @@ annotate service.WFAuditReport with @(
         },
         {
             $Type      : 'UI.DataField',
-            Value      : Actiontime,
+            Value      : ActionTime,
             Label      : 'Action Time',
             ![@HTML5.CssDefaults] : { width: '10rem' }
         },

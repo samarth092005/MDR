@@ -72,11 +72,17 @@ module.exports = cds.service.impl(async function (srv) {
             
             // 2. Database Update Logic
             const db = await cds.connect.to('db');
-            const { MDRWorkflowLink } = db.entities;
-            const link = await db.run(SELECT.one.from(MDRWorkflowLink).where({ mdr_workflow_id: workflowid }));
+            const entities = cds.entities('zmdr') || cds.entities;
+            const MDRWorkflowLink = entities.MDRWorkflowLink || entities['zmdr.MDRWorkflowLink'] || db.entities?.MDRWorkflowLink;
+            let link = null;
+            if (MDRWorkflowLink) {
+                link = await db.run(
+                    SELECT.one.from(MDRWorkflowLink).where(`MdrWorkflowId = '${workflowid}' or mdr_workflow_id = '${workflowid}'`)
+                ).catch(() => null);
+            }
             
             // Use link if found, otherwise fallback to ZMDR_GLACCOUNT for the demo
-            const tablename = (link && link.tablename) ? link.tablename : 'ZMDR_GLACCOUNT';
+            const tablename = (link && (link.TableName || link.tablename)) ? (link.TableName || link.tablename) : 'ZMDR_GLACCOUNT';
             
             if (action && action.toUpperCase().includes('APPROV')) {
                 console.log(`[Central] Decision APPROVED. Moving draft to live table: ${workflowid} for ${tablename}`);
@@ -105,17 +111,30 @@ module.exports = cds.service.impl(async function (srv) {
     });
 
     srv.before('CREATE', '*', async (req) => {
-        console.log(`[Central Handler] BEFORE CREATE triggered for entity: ${req.target.name}`);
-        console.log("Payload before:", JSON.stringify(req.data, null, 2));
-        
-        // Auto-assign In-flight status for new drafts/amendments if missing
-        if (req.target.elements.VERSION_ACTIVE && !req.data.VERSION_ACTIVE) {
-            req.data.VERSION_ACTIVE = 'I';
-        }
-        
-        // Generate actual workflow ID if not populated
-        if (req.target.elements.WORKFLOW_ID && !req.data.WORKFLOW_ID) {
-            req.data.WORKFLOW_ID = await generateWorkflowId('CENTRAL');
+        try {
+            console.log(`[Central Handler] BEFORE CREATE triggered for entity: ${req.target.name}`);
+            console.log("Payload before:", JSON.stringify(req.data, null, 2));
+            
+            // Auto-assign In-flight status for new drafts/amendments if missing
+            if (req.target.elements?.VersionActive && !req.data.VersionActive) {
+                req.data.VersionActive = 'I';
+            }
+            
+            // Generate actual workflow ID if not populated
+            if (req.target.elements?.WorkflowId && !req.data.WorkflowId) {
+                req.data.WorkflowId = await generateWorkflowId('CENTRAL');
+            }
+
+            if (req.target.elements?.VersionStartDate && !req.data.VersionStartDate) {
+                req.data.VersionStartDate = new Date().toISOString();
+            }
+
+            // Auto-assign default BpId if entity requires BpId and none provided
+            if (req.target.elements?.BpId && !req.data.BpId) {
+                req.data.BpId = 'BP' + Date.now().toString().slice(-8);
+            }
+        } catch (err) {
+            console.error("[Central Handler] Error in BEFORE CREATE hook:", err);
         }
     });
 

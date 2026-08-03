@@ -136,29 +136,61 @@ sap.ui.define([
             }
 
             // Set operation type to table data
-            oTableData["OPERATIONTYPE"] = sOperationType;
+            // [COMMENTED] Do not add non-entity property OPERATIONTYPE to oTableData to prevent OData V4 400 Bad Request
+            // oTableData["OPERATIONTYPE"] = sOperationType;
 
             // Get value of all fields
+            // [ORIGINAL CODE COMMENTED]
+            // this.aFieldDetails.forEach(function (oField) {
+            //     var sColName = oField.ColumnName;
+            //     if (!sColName) return; // Skip if no column name
+            //     // Prepare input id
+            //     sIdInp = "inp" + this._fn_getFieldId(sColName);
+            //     // Check field
+            //     if (sap.ui.getCore().byId(sIdInp) && sap.ui.getCore().byId(sIdInp).getValue()) {
+            //         var sDataType = (oField.ColumnDataType || oField.Columndatatype || "").toUpperCase();
+            //         if (sDataType.includes("INTEGER") || sDataType.includes("INT") || sDataType === "NUMC" || sDataType === "DEC") {
+            //             if (!oField.lkpodata) {
+            //                 oTableData[sColName] = parseInt(sap.ui.getCore().byId(sIdInp).getValue(), 10);
+            //             }
+            //         } else if (sDataType.includes("DATS") || sDataType.includes("DATE")) {
+            //             oTableData[sColName] = "\/Date(" + new Date(sap.ui.getCore().byId(sIdInp).getValue()).getTime() + ")\/";
+            //         } else {
+            //             if (!oField.lkpodata) {
+            //                 oTableData[sColName] = sap.ui.getCore().byId(sIdInp).getValue();
+            //             }
+            //         }
+            //     }
+            // }, this);
+            // [FIXED] Properly check lookup existence (string or array) and read all field values into oTableData
             this.aFieldDetails.forEach(function (oField) {
                 var sColName = oField.ColumnName;
+                if (!sColName) return;
 
-                if (!sColName) return; // Skip if no column name
-
-                // Prepare input id
                 sIdInp = "inp" + this._fn_getFieldId(sColName);
+                var oControl = sap.ui.getCore().byId(sIdInp);
+                if (oControl && typeof oControl.getValue === "function") {
+                    var sVal = oControl.getValue();
+                    if (sVal !== undefined && sVal !== null && sVal !== "") {
+                        var sDataType = (oField.ColumnDataType || oField.Columndatatype || "").toUpperCase();
+                        var bHasLookup = (typeof oField.lkpodata === "string" && oField.lkpodata.trim().length > 0) ||
+                                         (Array.isArray(oField.lkpodata) && oField.lkpodata.length > 0);
 
-                // Check field
-                if (sap.ui.getCore().byId(sIdInp) && sap.ui.getCore().byId(sIdInp).getValue()) {
-                    var sDataType = (oField.ColumnDataType || oField.Columndatatype || "").toUpperCase();
-                    if (sDataType.includes("INTEGER") || sDataType.includes("INT") || sDataType === "NUMC" || sDataType === "DEC") {
-                        if (!oField.lkpodata) {
-                            oTableData[sColName] = parseInt(sap.ui.getCore().byId(sIdInp).getValue(), 10);
-                        }
-                    } else if (sDataType.includes("DATS") || sDataType.includes("DATE")) {
-                        oTableData[sColName] = "\/Date(" + new Date(sap.ui.getCore().byId(sIdInp).getValue()).getTime() + ")\/";
-                    } else {
-                        if (!oField.lkpodata) {
-                            oTableData[sColName] = sap.ui.getCore().byId(sIdInp).getValue();
+                        if (sDataType.includes("INTEGER") || sDataType.includes("INT") || sDataType === "NUMC" || sDataType === "DEC") {
+                            if (!bHasLookup) {
+                                oTableData[sColName] = parseInt(sVal, 10);
+                            }
+                        } else if (sDataType.includes("DATS") || sDataType.includes("DATE")) {
+                            var d = new Date(sVal);
+                            if (!isNaN(d.getTime())) {
+                                oTableData[sColName] = d.toISOString().split("T")[0];
+                            } else {
+                                oTableData[sColName] = sVal;
+                            }
+                        } else {
+                            if (!bHasLookup) {
+                                oTableData[sColName] = sVal;
+                            }
                         }
                     }
                 }
@@ -1361,17 +1393,23 @@ sap.ui.define([
 
             /** Define Variables */
             var oComponentData = this.getOwnerComponent().getComponentData(), // Stores the component data
-                oCntrlUiConfigModel, // Central UI Comfiguration data model
+                oCntrlUiConfigModel, // Central UI Configuration data model
                 sAppKey, // Stores the app state key passed while navigation
                 iStartIndex, // Start index of the string to cut
                 iEndIndex, // End index of the string to cut
                 oMessage, // Stores message object for message manager
                 sHash = sap.ui.core.routing.HashChanger.getInstance().getHash(), // Stores current hash
                 sActionType, // Action performed by user
-                aAppStateKeys, // Arrayo of app state keys
+                aAppStateKeys, // Array of app state keys
                 sAppStateKey, // App state key
-                oNavService = sap.ushell && sap.ushell.Container ? sap.ushell.Container.getService("CrossApplicationNavigation") : null, // Stores reference of navigation service
+                oNavService = null, // Stores reference of navigation service
                 aFilters = []; // Stores filter array
+
+            if (sap.ushell && sap.ushell.Container) {
+                oNavService = sap.ushell.Container.getServiceAsync ?
+                    await sap.ushell.Container.getServiceAsync("CrossApplicationNavigation") :
+                    sap.ushell.Container.getService("CrossApplicationNavigation");
+            }
 
             /** Temporary Debug Logs */
             console.log("ComponentData:", oComponentData);
@@ -1380,17 +1418,6 @@ sap.ui.define([
             console.log("Hash:", window.location.hash);
 
             /** Method Implementation */
-            // // LOCAL DEV MOCK: If running locally without Launchpad, inject default startup parameters to enable testing
-            // if (!oComponentData || !oComponentData.startupParameters) {
-            //     this.fn_getLogReference().info("Main Screen Controller: Running locally - injecting mock startup parameters for development.");
-            //     oComponentData = oComponentData || {};
-            //     oComponentData.startupParameters = {
-            //         sActionType: ["Create"],
-            //         sActionedBy: ["Requestor"],
-            //         sTablename: ["ZMDR_GLACCOUNT"]
-            //     };
-            // }
-
             // Check if mandatory startup parameters are passed
             if (oComponentData && oComponentData.startupParameters) {
                 // Safely read action type
@@ -1418,222 +1445,160 @@ sap.ui.define([
                     // Reset the value of the global table data
                     oTableData = {};
 
-                    var bHasXappState = oComponentData.startupParameters && oComponentData.startupParameters["sap-xapp-state"] && oComponentData.startupParameters["sap-xapp-state"][0];
+                    // Set button visibilities for Requestor
+                    this.byId("btnSubmit").setVisible(this.sActionType !== "Display");
+                    this.byId("btnApprove").setVisible(false);
+                    this.byId("btnReject").setVisible(false);
+                    this.byId("btnRelease").setVisible(false);
+                    this.byId("btnSeeChanges").setVisible(false);
+                    this.byId("btnCreate").setVisible(false);
 
-                    if (sHash && !bHasXappState) {
-                        // Get the app state keys
-                        aAppStateKeys = /(?:sap-iapp-state=)([^&=]+)/.exec(sHash);
-
-                        if (aAppStateKeys) {
-                            //Get the app state key
-                            sAppStateKey = aAppStateKeys[1];
-
-                            // Get the navigation service
-                            oNavService.getAppState(this.getOwnerComponent(), sAppStateKey).done(function (oSavedAppState) {
-                                if (oSavedAppState.getData()) {
-                                    // Log info
-                                    this.fn_getLogReference().info("Main Screen Controler: Start of reading app state data")
-
-                                    // Get error flag value
-                                    this.bErrorFlag = oSavedAppState.getData().bErrorFlag;
-
-                                    if (this.bErrorFlag) {
-                                        // Get user action
-                                        this.sActionType = oSavedAppState.getData().sActionType;
-
-                                        // Set buttons visibility
-                                        this.byId("btnSubmit").setVisible(true);
-                                        this.byId("btnApprove").setVisible(false);
-                                        this.byId("btnReject").setVisible(false);
-                                        this.byId("btnRelease").setVisible(false);
-                                        this.byId("btnSeeChanges").setVisible(false);
-                                        this.byId("btnCreate").setVisible(false);
-
-                                        // Set message strip
-                                        this.byId("msgStripMainScreen").setType("Error");
-                                    } else {
-                                        // Set action type
-                                        this.sActionType = "Display";
-
-                                        // Set buttons visibility
-                                        this.byId("btnSubmit").setVisible(false);
-                                        this.byId("btnApprove").setVisible(false);
-                                        this.byId("btnReject").setVisible(false);
-                                        this.byId("btnRelease").setVisible(false);
-                                        this.byId("btnSeeChanges").setVisible(false);
-                                        if (this.sActionType === "Create") {
-                                            this.byId("btnCreate").setVisible(true);
-                                        } else {
-                                            this.byId("btnCreate").setVisible(false);
-                                        }
-
-                                        // Set message strip
-                                        this.byId("msgStripMainScreen").setType("Success");
-                                    }
-
-                                    // Set text to message strip
-                                    this.byId("msgStripMainScreen").setText(oSavedAppState.getData().sMsgStripText);
-                                    this.byId("msgStripMainScreen").setVisible(true);
-
-                                    // Get selected table data
-                                    this.oSelectedTableData = oSavedAppState.getData().oTableData;
-
-                                    // Log info
-                                    this.fn_getLogReference().info("Main Screen Controler: End of reading app state data")
-                                } else {
-                                    // Close busy dialog
-                                    this.fn_closeBusyDialog();
-
-                                    // Navigate to main app
-                                    /* eslint-disable sap-cross-application-navigation */
-                                    try {
-                                        oNavService.toExternal({
-                                            target: {
-                                                semanticObject: "zmdr_central_main",
-                                                action: "manage"
-                                            }
-                                        });
-                                    } catch (e) {
-                                        this.fn_getLogReference().warning("Main Screen Controller: Cross-app navigation failed, falling back to history");
-                                        window.history.back();
-                                    }
-                                }
-                            }.bind(this));
-                        } else {
-                            // Log error
-                            this.fn_getLogReference().error("Main Screen Controller: Unable to read app state key from hash");
-                        }
-                    } else {
-                        // Set buttons visibility
-                        this.byId("btnSubmit").setVisible(true);
-                        this.byId("btnApprove").setVisible(false);
-                        this.byId("btnReject").setVisible(false);
-                        this.byId("btnRelease").setVisible(false);
-                        this.byId("btnSeeChanges").setVisible(false);
-
-                        // Log info
-                        this.fn_getLogReference().info("Main Screen Controller: User action is " + this.sActionType);
-                    }
-
-                    // Set page title
+                    // Set page title and form title
                     this.fn_getLocalModel("mainScreenViewModel").setProperty("/pageTitle", this.sActionType);
-
-                    // Set form title
                     this.fn_getLocalModel("mainScreenViewModel").setProperty("/formTitle", this.fn_getResourceBundle().getText("requestorFormHeading"));
 
-                    // Read sap-xapp-state key directly from startupParameters (reliable FLP Sandbox approach)
-                    // Fallback: parse from current URL hash if not in startupParameters
-                    if (oComponentData.startupParameters["sap-xapp-state"] && oComponentData.startupParameters["sap-xapp-state"][0]) {
+                    // Extract app state key (sap-xapp-state or sap-iapp-state)
+                    if (oComponentData.startupParameters && oComponentData.startupParameters["sap-xapp-state"] && oComponentData.startupParameters["sap-xapp-state"][0]) {
                         sAppKey = oComponentData.startupParameters["sap-xapp-state"][0];
+                    } else if (oComponentData.startupParameters && oComponentData.startupParameters["sap-iapp-state"] && oComponentData.startupParameters["sap-iapp-state"][0]) {
+                        sAppKey = oComponentData.startupParameters["sap-iapp-state"][0];
                     } else {
-                        // Fallback: extract from current URL
-                        var sCurrentHash = window.location.href;
-                        var aXappMatch = /sap-xapp-state=([^&?#]+)/.exec(sCurrentHash);
-                        sAppKey = aXappMatch ? aXappMatch[1] : "";
+                        var sCurrentUrl = window.location.href;
+                        var aKeyMatch = /(?:sap-xapp-state|sap-iapp-state)=([^&?#]+)/.exec(sCurrentUrl);
+                        sAppKey = aKeyMatch ? aKeyMatch[1] : "";
                     }
 
-                    // LOCAL DEV MOCK: Bypass Launchpad getAppState if running locally
-                    if (!oNavService) {
-                        this.fn_getLogReference().info("Main Screen Controller: Simulating Cross-App State for Local Dev");
-                        this.sRepositoryName = "Mock Repository";
-                        this.sTableLabel = "GL Accounts";
-                        this.sSelectedTableName = "ZMDR_GLACCOUNT";
-                        this.sTableServiceUrl = "/v2/odata/v4/mdr/"; // Typical CAP OData v2 path
-                        this.sTableEntitySet = "ZMDR_GLACCOUNT";
-
-                        this.byId("obatHdr1").setText(this.sRepositoryName).setVisible(true);
-                        this.byId("obatHdr2").setText(this.sTableLabel).setVisible(true);
-                        return; // Bypass the getAppState block
-                    }
-
-                    oNavService.getAppState(this.getOwnerComponent(), sAppKey).done(function (oSavedAppState) {
-                        if (oSavedAppState.getData()) {
-                            // Log info
-                            this.fn_getLogReference().info("Main Screen Controler: Start of reading app state data")
-
-                            // Close busy dialog opened in parent app
-                            if (sap.ui.getCore().byId(oSavedAppState.getData().sBusyDialogId)) {
-                                sap.ui.getCore().byId(oSavedAppState.getData().sBusyDialogId).close();
-                            }
-
-                            // Read repository and table label
-                            this.sRepositoryName = oSavedAppState.getData().aUniqueRepositoriesData[oSavedAppState.getData().sRepositoryId].repositoryName;
-                            var oTableEntry = oSavedAppState.getData().aUniqueTablesData[oSavedAppState.getData().sTableId];
-                            this.sTableLabel = oTableEntry.tableName;   // e.g. "GL Accounts"
-                            this.sSelectedTableName = oTableEntry.tableId; // e.g. "ZMDR_GLACCOUNT"
-
-                            // Set the repository name and table label to object header of the page
-                            this.byId("obatHdr1").setText(this.sRepositoryName);
-                            this.byId("obatHdr1").setVisible(true);
-
-                            this.byId("obatHdr2").setText(this.sTableLabel);
-                            this.byId("obatHdr2").setVisible(true);
-
-                            // Get the table service URL
-                            sTableServiceUrl = oSavedAppState.getData().sTableServiceUrl;
-                            this.sTableEntitySet = oSavedAppState.getData().sTableEntitySet;
-                            if (sTableServiceUrl) {
-                                var sResolvedServiceUri = this.getOwnerComponent().getManifestObject().resolveUri(sTableServiceUrl, "sap.app");
-                                this.oTableModel = new ODataModel({
-                                    serviceUrl: sResolvedServiceUri,
-                                    synchronizationMode: "None",   // required for OData V4
-                                    autoExpandSelect: true,
-                                    operationMode: "Server",
-                                    earlyRequests: true   // triggers early metadata + CSRF fetch
-                                });
-                            }
-
-                            // Get the field details — filter by tablename (not tablelabel) and normalize keys to lowercase
-                            this.aFieldDetails = oSavedAppState.getData().aCntrlUiConfigData.filter(function (oCntrlUiConfigData) {
-                                return oCntrlUiConfigData.TableName === this.sSelectedTableName;
-                            }, this);
-
-                            if (this.sActionType !== "Display") {
-                                if (this.sActionType !== "Create") {
-                                    this.oSelectedTableData = oSavedAppState.getData().oSelectedTableData;
-                                } else {
-                                    if (!this.bErrorFlag) {
-                                        this.oSelectedTableData = {};
+                    // Handle cross application navigation service & app state
+                    var oSavedAppState = null;
+                    if (oNavService && sAppKey) {
+                        try {
+                            if (oNavService.getAppStateAsync) {
+                                oSavedAppState = await oNavService.getAppStateAsync(this.getOwnerComponent(), sAppKey);
+                            } else if (oNavService.getAppState) {
+                                oSavedAppState = await new Promise(function (resolve, reject) {
+                                    var res = oNavService.getAppState(this.getOwnerComponent(), sAppKey);
+                                    if (res && res.done) {
+                                        res.done(resolve).fail(reject);
+                                    } else if (res && res.then) {
+                                        res.then(resolve, reject);
+                                    } else {
+                                        resolve(res);
                                     }
-                                }
+                                }.bind(this));
                             }
+                        } catch (e) {
+                            this.fn_getLogReference().error("Main Screen Controller: Error retrieving app state: " + (e.message || e));
+                        }
+                    }
 
-                            // Log info
-                            this.fn_getLogReference().info("Main Screen Controler: End of reading app state data")
+                    var oStateData = oSavedAppState && oSavedAppState.getData ? oSavedAppState.getData() : null;
 
-                            // Failsafe: Ensure oSelectedTableData is always at least an empty object to prevent crashes
-                            if (!this.oSelectedTableData) {
-                                this.oSelectedTableData = {};
-                            }
+                    if (oStateData) {
+                        this.fn_getLogReference().info("Main Screen Controller: Successfully read app state data");
 
-                            // Prepare form
-                            if (this.sActionType !== "Display") {
-                                if (this.bFirstFlag) {
-                                    this.bFirstFlag = false;
-                                    this._fn_dynamicFormPreparation();
-                                }
+                        // Close parent busy dialog if id provided
+                        if (oStateData.sBusyDialogId && sap.ui.getCore().byId(oStateData.sBusyDialogId)) {
+                            sap.ui.getCore().byId(oStateData.sBusyDialogId).close();
+                        }
+
+                        // Check if returning with error/message flag
+                        if (oStateData.bErrorFlag) {
+                            this.bErrorFlag = oStateData.bErrorFlag;
+                            this.sActionType = oStateData.sActionType || this.sActionType;
+                            this.byId("msgStripMainScreen").setType("Error");
+                            this.byId("msgStripMainScreen").setText(oStateData.sMsgStripText || "Error occurred");
+                            this.byId("msgStripMainScreen").setVisible(true);
+                        }
+
+                        // Read repository name and table label safely
+                        if (oStateData.aUniqueRepositoriesData && oStateData.sRepositoryId && oStateData.aUniqueRepositoriesData[oStateData.sRepositoryId]) {
+                            this.sRepositoryName = oStateData.aUniqueRepositoriesData[oStateData.sRepositoryId].repositoryName ||
+                                oStateData.aUniqueRepositoriesData[oStateData.sRepositoryId].RepositoryName || "";
+                        }
+                        if (oStateData.aUniqueTablesData && oStateData.sTableId && oStateData.aUniqueTablesData[oStateData.sTableId]) {
+                            var oTableEntry = oStateData.aUniqueTablesData[oStateData.sTableId];
+                            this.sTableLabel = oTableEntry.tableName || oTableEntry.TableName || oTableEntry.tableId || "";
+                            this.sSelectedTableName = oTableEntry.tableId || oTableEntry.TableId || oTableEntry.tableName || "";
+                        }
+
+                        if (this.sRepositoryName) {
+                            this.byId("obatHdr1").setText(this.sRepositoryName).setVisible(true);
+                        }
+                        if (this.sTableLabel) {
+                            this.byId("obatHdr2").setText(this.sTableLabel).setVisible(true);
+                        }
+
+                        // Table service URL and entity set
+                        var sTableServiceUrl = oStateData.sTableServiceUrl;
+                        this.sTableServiceUrl = sTableServiceUrl;
+                        this.sTableEntitySet = oStateData.sTableEntitySet;
+                        if (sTableServiceUrl) {
+                            var sResolvedServiceUri = this.getOwnerComponent().getManifestObject().resolveUri(sTableServiceUrl, "sap.app");
+                            this.oTableModel = new ODataModel({
+                                serviceUrl: sResolvedServiceUri,
+                                synchronizationMode: "None",
+                                autoExpandSelect: true,
+                                operationMode: "Server",
+                                earlyRequests: true
+                            });
+                        }
+
+                        // Normalize and filter field details
+                        var aAllFields = oStateData.aCntrlUiConfigData || [];
+                        var aMatchedFields = aAllFields.filter(function (oField) {
+                            var sTName = oField.TableName || oField.tableName || oField.TABLENAME || "";
+                            var sTId = oField.TableId || oField.tableId || oField.TABLEID || "";
+                            return sTName === this.sSelectedTableName || sTId === this.sSelectedTableName;
+                        }, this);
+
+                        if (aMatchedFields.length === 0 && aAllFields.length > 0) {
+                            aMatchedFields = aAllFields;
+                        }
+
+                        this.aFieldDetails = aMatchedFields.map(this._fn_normalizeField.bind(this));
+                        this.aFieldDetails.sort(function (a, b) {
+                            return (a.ColumnSeqNo || 0) - (b.ColumnSeqNo || 0);
+                        });
+
+                        // Selected table data
+                        if (this.sActionType !== "Display") {
+                            if (this.sActionType !== "Create") {
+                                this.oSelectedTableData = oStateData.oSelectedTableData || oStateData.oTableData || {};
                             } else {
-                                this._fn_dynamicFormPreparation();
+                                if (!this.bErrorFlag) {
+                                    this.oSelectedTableData = {};
+                                }
                             }
                         } else {
-                            // Close busy dialog
-                            this.fn_closeBusyDialog();
-
-                            // Navigate to main app
-                            /* eslint-disable sap-cross-application-navigation */
-                            try {
-                                oNavService.toExternal({
-                                    target: {
-                                        semanticObject: "zmdr_central_main",
-                                        action: "manage"
-                                    }
-                                });
-                            } catch (e) {
-                                this.fn_getLogReference().warning("Main Screen Controller: Cross-app navigation failed, falling back to history");
-                                window.history.back();
-                            }
+                            this.oSelectedTableData = oStateData.oSelectedTableData || oStateData.oTableData || {};
                         }
-                    }.bind(this));
+
+                        if (!this.oSelectedTableData) {
+                            this.oSelectedTableData = {};
+                        }
+
+                        // Pre-populate oTableData with selected record data for Amend/Reopen/Display
+                        if (this.sActionType !== "Create") {
+                            oTableData = Object.assign({}, this.oSelectedTableData);
+                        }
+
+                        // Prepare form
+                        this._fn_dynamicFormPreparation();
+                    } else {
+                        // Close busy dialog if open
+                        this.fn_closeBusyDialog();
+
+                        // If selected table name is present in startupParameters, attempt direct fetch as fallback
+                        if (oComponentData.startupParameters && oComponentData.startupParameters.sTablename && oComponentData.startupParameters.sTablename[0]) {
+                            this.sSelectedTableName = oComponentData.startupParameters.sTablename[0];
+                            this._fn_readTableUrl();
+                        } else {
+                            this.fn_getLogReference().error("Main Screen Controller: App state data not found for key: " + sAppKey);
+                            this.byId("msgStripMainScreen").setText("<strong>Error: </strong><em>Navigation state could not be loaded. Please navigate from the Central Main application.</em>");
+                            this.byId("msgStripMainScreen").setType("Error");
+                            this.byId("msgStripMainScreen").setVisible(true);
+                        }
+                    }
                 } else if (this.sActionedBy === "Approver") {
                     // Get the UI Configuration Model Inforamtion
                     oCntrlUiConfigModel = this.fn_getGlobalModel();
@@ -1679,18 +1644,22 @@ sap.ui.define([
                         oListBinding.requestContexts(0, Infinity).then(function (aContexts) {
                             // Get data
                             var aTableVis = aContexts.map(function (oCtx) { return oCtx.getObject(); });
+                            if (aTableVis && aTableVis.length > 0) {
+                                // Get repository name and tablelabel
+                                this.sRepositoryName = aTableVis[0].RepositoryLabel || aTableVis[0].repositoryLabel || "";
+                                this.sTableLabel = aTableVis[0].TableLabel || aTableVis[0].tableLabel || "";
 
-                            // Get repository name and tablelabel
-                            this.sRepositoryName = aTableVis[0].RepositoryLabel;
-                            this.sTableLabel = aTableVis[0].TableLabel;
-
-                            // Set page title
-                            this.fn_getLocalModel("mainScreenViewModel").setProperty("/pageTitle", this.fn_getResourceBundle().getText("approverTitle", [sActionType, this.sRepositoryName, this.sTableLabel, this.sWorkflowID]));
+                                // Set page title
+                                this.fn_getLocalModel("mainScreenViewModel").setProperty("/pageTitle", this.fn_getResourceBundle().getText("approverTitle", [sActionType, this.sRepositoryName, this.sTableLabel, this.sWorkflowID]));
+                            }
                         }.bind(this)).catch(function (oError) {
                             // Set error in message strip
-                            this.byId("msgStripMainScreen").setText("<strong>Error: </strong><em>Error while processing. For more info </em>");
-                            this.byId("msgStripMainScreen").setType("Error");
-                            this.byId("msgStripMainScreen").setVisible(true);
+                            var oMsgStrip = this.byId("msgStripMainScreen");
+                            if (oMsgStrip) {
+                                oMsgStrip.setText("<strong>Error: </strong><em>Error while processing. For more info </em>");
+                                oMsgStrip.setType("Error");
+                                oMsgStrip.setVisible(true);
+                            }
 
                             this.fn_showServiceError(oError);
                         }.bind(this));
@@ -1699,20 +1668,23 @@ sap.ui.define([
                         oListBinding = oCntrlUiConfigModel.bindList("/CntrlUIConfig", null, null, aFilters);
                         oListBinding.requestContexts(0, Infinity).then(function (aContexts) {
                             // Get field details
-                            this.aFieldDetails = aContexts.map(function (oCtx) { return oCtx.getObject(); });
+                            this.aFieldDetails = aContexts.map(function (oCtx) { return this._fn_normalizeField(oCtx.getObject()); }.bind(this));
 
                             // Sort fields data
                             this.aFieldDetails.sort(function (oVal1, oVal2) {
                                 return oVal1.ColumnSeqNo - oVal2.ColumnSeqNo;
-                            })
+                            });
 
                             // Read table url
                             this._fn_readTableUrl();
                         }.bind(this)).catch(function (oError) {
                             // Set error in message strip
-                            this.byId("msgStripMainScreen").setText("<strong>Error: </strong><em>Error while processing. For more info </em>");
-                            this.byId("msgStripMainScreen").setType("Error");
-                            this.byId("msgStripMainScreen").setVisible(true);
+                            var oMsgStrip = this.byId("msgStripMainScreen");
+                            if (oMsgStrip) {
+                                oMsgStrip.setText("<strong>Error: </strong><em>Error while processing. For more info </em>");
+                                oMsgStrip.setType("Error");
+                                oMsgStrip.setVisible(true);
+                            }
 
                             this.fn_showServiceError(oError);
                         }.bind(this));
@@ -1897,6 +1869,62 @@ sap.ui.define([
 
             // Log info
             this.fn_getLogReference().info("Main Screen Controller: Exiting _fn_dynamicFormPreparation method");
+        },
+
+        /**
+         * Normalize field configuration metadata so both PascalCase and lowercase properties are available
+         * 
+         * @param {object} oRaw Raw field metadata
+         * @returns {object} Normalized field metadata
+         * 
+         * @memberof com.intapptics.zmdrcntrlcmn.view.MainScreen
+         * @private
+         */
+        _fn_normalizeField: function (oRaw) {
+            if (!oRaw) {
+                return {};
+            }
+            var o = Object.assign({}, oRaw);
+            o.TableName = o.TableName || o.tableName || o.TABLENAME || o.tablename || "";
+            o.tablename = o.TableName;
+            o.RepositoryId = o.RepositoryId || o.repositoryId || o.REPOSITORYID || o.repositoryid || "";
+            o.repositoryid = o.RepositoryId;
+            o.TableId = o.TableId || o.tableId || o.TABLEID || o.tableid || "";
+            o.tableid = o.TableId;
+            o.ColumnName = o.ColumnName || o.columnName || o.COLUMNNAME || o.columnname || "";
+            o.columnname = o.ColumnName;
+            o.ColumnLabel = o.ColumnLabel || o.columnLabel || o.COLUMNLABEL || o.columnlabel || o.ColumnName;
+            o.columnlabel = o.ColumnLabel;
+            o.ColumnSeqNo = o.ColumnSeqNo !== undefined ? o.ColumnSeqNo : (o.columnSeqNo !== undefined ? o.columnSeqNo : (o.columnseqno !== undefined ? o.columnseqno : 0));
+            o.columnseqno = o.ColumnSeqNo;
+            o.ColumnDataType = o.ColumnDataType || o.columnDataType || o.COLUMNDATATYPE || o.columndatatype || "STRING";
+            o.columndatatype = o.ColumnDataType;
+            o.SectionId = o.SectionId || o.sectionId || o.SECTIONID || o.sectionid || "secGeneral";
+            o.sectionid = o.SectionId;
+            o.SectionName = o.SectionName || o.sectionName || o.SECTIONNAME || o.sectionname || "General Information";
+            o.sectionname = o.SectionName;
+            o.SectionSequence = o.SectionSequence !== undefined ? o.SectionSequence : (o.sectionSequence !== undefined ? o.sectionSequence : (o.sectionsequence !== undefined ? o.sectionsequence : 1));
+            o.sectionsequence = o.SectionSequence;
+            o.PrimaryKeyFlag = (o.PrimaryKeyFlag || o.primaryKeyFlag || o.PRIMARYKEYFLAG || o.primarykeyflag || "N").toUpperCase();
+            o.primarykeyflag = o.PrimaryKeyFlag;
+            o.MandatoryFlag = (o.MandatoryFlag || o.mandatoryFlag || o.MANDATORYFLAG || o.mandatoryflag || "N").toUpperCase();
+            o.mandatoryflag = o.MandatoryFlag;
+            o.EditableFlag = (o.EditableFlag || o.editableFlag || o.EDITABLEFLAG || o.editableflag || "Y").toUpperCase();
+            o.editableflag = o.EditableFlag;
+            o.VisibilityFlag = (o.VisibilityFlag || o.visibilityFlag || o.VISIBILITYFLAG || o.visibilityflag || "Y").toUpperCase();
+            o.visibilityflag = o.VisibilityFlag;
+            o.DisplayFieldOf = o.DisplayFieldOf || o.displayFieldOf || o.DISPLAYFIELDOF || o.displayfieldof || "";
+            o.displayfieldof = o.DisplayFieldOf;
+            o.FieldSize = o.FieldSize || o.fieldSize || o.FIELDSIZE || o.fieldsize || "40";
+            o.fieldsize = o.FieldSize;
+            o.Defaultvalue = o.Defaultvalue || o.defaultValue || o.DEFAULTVALUE || o.defaultvalue || "";
+            o.defaultvalue = o.Defaultvalue;
+            // [ORIGINAL CODE COMMENTED]
+            // o.LkpoData = o.LkpoData || o.lkpodata || o.lkpoData || [];
+            // [FIXED] Default to empty string instead of empty array so !oField.lkpodata works correctly
+            o.LkpoData = o.LkpoData || o.lkpodata || o.lkpoData || "";
+            o.lkpodata = o.LkpoData;
+            return o;
         },
 
         /** 
@@ -2874,8 +2902,20 @@ sap.ui.define([
                 // Prepare field id
                 sFieldId = "inp" + this._fn_getFieldId(oField.ColumnName);
 
-                // Check if value present
-                if (oTableData[oField.ColumnName] || oTableData[oField.ColumnName] === 0) {
+                // [ORIGINAL CODE COMMENTED]
+                // if (oTableData[oField.ColumnName] || oTableData[oField.ColumnName] === 0) {
+                // [FIXED] Check value in oTableData or directly in the UI field
+                var vVal = oTableData[oField.ColumnName];
+                var oCtrl = sap.ui.getCore().byId(sFieldId);
+                var sCtrlVal = oCtrl && typeof oCtrl.getValue === "function" ? oCtrl.getValue() : null;
+
+                var bHasVal = (vVal !== undefined && vVal !== null && vVal !== "") ||
+                              (sCtrlVal !== undefined && sCtrlVal !== null && sCtrlVal !== "");
+
+                if (bHasVal) {
+                    if ((vVal === undefined || vVal === null || vVal === "") && sCtrlVal) {
+                        oTableData[oField.ColumnName] = sCtrlVal;
+                    }
                     // Clear the value state of the field
                     if (sap.ui.getCore().byId(sFieldId)) {
                         sap.ui.getCore().byId(sFieldId).setValueState("None");
@@ -2951,8 +2991,13 @@ sap.ui.define([
 
                 // Check if value present
                 if (oTableData[oField.ColumnName]) {
-                    // Get date reference
-                    oDate = new Date(parseInt(oTableData[oField.ColumnName].split("(")[1].split(")")[0], 10));
+                    // Get date reference safely (handling /Date(...)/, ISO strings, and standard Date)
+                    var rawDate = oTableData[oField.ColumnName];
+                    if (typeof rawDate === "string" && rawDate.indexOf("/Date(") !== -1) {
+                        oDate = new Date(parseInt(rawDate.split("(")[1].split(")")[0], 10));
+                    } else {
+                        oDate = new Date(rawDate);
+                    }
 
                     if (oDate instanceof Date && !isNaN(oDate.valueOf())) {
                         // Clear the value state of the field
@@ -3811,8 +3856,24 @@ sap.ui.define([
             // oTableModel = this.getOwnerComponent().getModel();
 
             // Create data at backend system
+            // [FIXED] Filter payload to only table columns and avoid non-entity keys like OPERATIONTYPE
+            var oPayload = {};
+            this.aFieldDetails.forEach(function (oField) {
+                var sCol = oField.ColumnName;
+                if (sCol && oTableData[sCol] !== undefined && oTableData[sCol] !== null && oTableData[sCol] !== "") {
+                    oPayload[sCol] = oTableData[sCol];
+                }
+            });
+
+            // Set new VersionStartDate if amending or creating
+            if (!oPayload.VersionStartDate || this.sActionType === "Amend") {
+                oPayload.VersionStartDate = new Date().toISOString();
+            }
+
             var oListBinding = this.oTableModel.bindList(this.sTableEntitySet);
-            var oContext = oListBinding.create(oTableData);
+            // [ORIGINAL CODE COMMENTED]
+            // var oContext = oListBinding.create(oTableData);
+            var oContext = oListBinding.create(oPayload);
             oContext.created().then(function () {
                 var oData = oContext.getObject() || {};
                 // Get the message reference post creation of table data at the backend
@@ -4043,7 +4104,8 @@ sap.ui.define([
 
             /** Define variables */
             var oUrlModel, // Stores odata model of table service
-                iLastIndex; // Stores index of last "/"
+                iLastIndex, // Stores index of last "/"
+                sTableServiceUrl = ""; // Stores table service URL
 
             /** Method Implementation */
             oUrlModel = this.fn_getGlobalModel();
@@ -4052,11 +4114,13 @@ sap.ui.define([
             var oListBinding = oUrlModel.bindList("/CntrlUIUrl", null, null, [new Filter("TableName", FilterOperator.EQ, this.sSelectedTableName)]);
             oListBinding.requestContexts(0, 1).then(function (aContexts) {
                 if (aContexts.length > 0) {
-                    var aUrlData = aContexts[0].getObject();
+                    var aUrlData = aContexts.map(function (oCtx) { return oCtx.getObject(); });
+                    var sOdataUrl = (aUrlData[0] && (aUrlData[0].OdataUrl || aUrlData[0].odataUrl)) || "";
+
                     // Check if the service URL starts with a forward slash
                     if (this.fn_getGlobalModel().getServiceUrl().startsWith("/")) {
-                        aUrlData[0].OdataUrl.split("/").forEach(function (sUrlPart, index) {
-                            if (index === aUrlData[0].OdataUrl.split("/").length - 1) {
+                        sOdataUrl.split("/").forEach(function (sUrlPart, index) {
+                            if (index === sOdataUrl.split("/").length - 1) {
                                 this.sTableEntitySet = "/" + sUrlPart;
                             } else if (index === 0) {
                                 sTableServiceUrl = "/";
@@ -4065,8 +4129,8 @@ sap.ui.define([
                             }
                         }.bind(this));
                     } else {
-                        aUrlData[0].OdataUrl.split("/").forEach(function (sUrlPart, index) {
-                            if (index === aUrlData[0].OdataUrl.split("/").length - 1) {
+                        sOdataUrl.split("/").forEach(function (sUrlPart, index) {
+                            if (index === sOdataUrl.split("/").length - 1) {
                                 this.sTableEntitySet = "/" + sUrlPart;
                             } else if (index === 0) {
                                 sTableServiceUrl = "";
@@ -4077,13 +4141,13 @@ sap.ui.define([
                     }
 
                     // Log information
-                    this.fn_getLogReference().info("Table Result Controller: Service URL - " + sTableServiceUrl);
-                    this.fn_getLogReference().info("Table Result Controller: Entity Set - " + this.sTableEntitySet);
+                    this.fn_getLogReference().info("Main Screen Controller: Service URL - " + sTableServiceUrl);
+                    this.fn_getLogReference().info("Main Screen Controller: Entity Set - " + this.sTableEntitySet);
 
                     // Resolve the service URL as per manifest
                     var sResolvedServiceUri = this.getOwnerComponent().getManifestObject().resolveUri(sTableServiceUrl, "sap.app");
 
-                    this.fn_getLogReference().info("Table Result Controller: Resolved Service URL - " + sResolvedServiceUri);
+                    this.fn_getLogReference().info("Main Screen Controller: Resolved Service URL - " + sResolvedServiceUri);
 
                     // Odata model of the selected table - use the global model which has proper authentication context
                     this.oTableModel = new ODataModel({
@@ -4102,9 +4166,12 @@ sap.ui.define([
                 }
             }.bind(this)).catch(function (oError) {
                 // Set error in message strip
-                this.byId("msgStripMainScreen").setText("<strong>Error: </strong><em>Error while processing. For more info </em>");
-                this.byId("msgStripMainScreen").setType("Error");
-                this.byId("msgStripMainScreen").setVisible(true);
+                var oMsgStrip = this.byId("msgStripMainScreen");
+                if (oMsgStrip) {
+                    oMsgStrip.setText("<strong>Error: </strong><em>Error while processing. For more info </em>");
+                    oMsgStrip.setType("Error");
+                    oMsgStrip.setVisible(true);
+                }
 
                 this.fn_showServiceError(oError);
 
@@ -4135,10 +4202,11 @@ sap.ui.define([
             aFilters.push(new Filter("WorkflowId", FilterOperator.EQ, this.sWorkflowID));
             aFilters.push(new Filter("VersionActive", FilterOperator.EQ, "I"));
 
-            // Read data from backend
-            var oListBinding = oTableModel.bindList(this.sTableEntitySet, null, null, aFilters);
+            // Read data from backend using this.oTableModel or fallback to global model
+            var oModel = this.oTableModel || this.fn_getGlobalModel();
+            var oListBinding = oModel.bindList(this.sTableEntitySet, null, null, aFilters);
             oListBinding.requestContexts(0, 2).then(function (aContexts) {
-                if (aContexts.length === 1) {
+                if (aContexts.length >= 1) {
                     // Set the table data
                     this.oSelectedTableData = aContexts[0].getObject();
 
@@ -4149,9 +4217,12 @@ sap.ui.define([
                     // this._fn_readRemarks(); //to do
                 } else {
                     // Set error in message strip
-                    this.byId("msgStripMainScreen").setText("<strong>Error: </strong><em>Error while processing. For more info </em>");
-                    this.byId("msgStripMainScreen").setType("Error");
-                    this.byId("msgStripMainScreen").setVisible(true);
+                    var oMsgStrip = this.byId("msgStripMainScreen");
+                    if (oMsgStrip) {
+                        oMsgStrip.setText("<strong>Error: </strong><em>Error while processing. For more info </em>");
+                        oMsgStrip.setType("Error");
+                        oMsgStrip.setVisible(true);
+                    }
 
                     // Set the message
                     oMessage = new Message({
@@ -4173,9 +4244,12 @@ sap.ui.define([
                 }
             }.bind(this)).catch(function (oError) {
                 // Set error in message strip
-                this.byId("msgStripMainScreen").setText("<strong>Error: </strong><em>Error while processing. For more info </em>");
-                this.byId("msgStripMainScreen").setType("Error");
-                this.byId("msgStripMainScreen").setVisible(true);
+                var oMsgStrip = this.byId("msgStripMainScreen");
+                if (oMsgStrip) {
+                    oMsgStrip.setText("<strong>Error: </strong><em>Error while processing. For more info </em>");
+                    oMsgStrip.setType("Error");
+                    oMsgStrip.setVisible(true);
+                }
 
                 this.fn_showServiceError(oError);
 
@@ -4531,8 +4605,8 @@ sap.ui.define([
                     for (var sKey in oTableData) {
                         oContext.setProperty(sKey, oTableData[sKey]);
                     }
-                    return oTableModel.submitBatch(oTableModel.getUpdateGroupId());
-                }).then(function () {
+                    return this.oTableModel.submitBatch(this.oTableModel.getUpdateGroupId());
+                }.bind(this)).then(function () {
                     aMessages = sap.ui.getCore().getMessageManager().getMessageModel().getData();
                     aMessagesRemove = aMessages.filter(function (oMessage) {
                         return oMessage.code === "";
@@ -4543,9 +4617,12 @@ sap.ui.define([
                     this._fn_completeWorkflowTask();
                 }.bind(this)).catch(function (oError) {
                     // Set error in message strip
-                    this.byId("msgStripMainScreen").setText("<strong>Error: </strong><em>Error while processing. For more info </em>");
-                    this.byId("msgStripMainScreen").setType("Error");
-                    this.byId("msgStripMainScreen").setVisible(true);
+                    var oMsgStrip = this.byId("msgStripMainScreen");
+                    if (oMsgStrip) {
+                        oMsgStrip.setText("<strong>Error: </strong><em>Error while processing. For more info </em>");
+                        oMsgStrip.setType("Error");
+                        oMsgStrip.setVisible(true);
+                    }
 
                     this.fn_showServiceError(oError);
 
@@ -4554,7 +4631,7 @@ sap.ui.define([
                 }.bind(this));
             } else {
                 // Remove the data from backend
-                var oContextBinding = oTableModel.bindContext("/" + sTableEntitySet);
+                var oContextBinding = this.oTableModel.bindContext("/" + sTableEntitySet);
                 oContextBinding.requestObject().then(function () {
                     var oContext = oContextBinding.getBoundContext();
                     return oContext.delete();
@@ -4569,9 +4646,12 @@ sap.ui.define([
                     this._fn_completeWorkflowTask();
                 }.bind(this)).catch(function (oError) {
                     // Set error in message strip
-                    this.byId("msgStripMainScreen").setText("<strong>Error: </strong><em>Error while processing. For more info </em>");
-                    this.byId("msgStripMainScreen").setType("Error");
-                    this.byId("msgStripMainScreen").setVisible(true);
+                    var oMsgStrip = this.byId("msgStripMainScreen");
+                    if (oMsgStrip) {
+                        oMsgStrip.setText("<strong>Error: </strong><em>Error while processing. For more info </em>");
+                        oMsgStrip.setType("Error");
+                        oMsgStrip.setVisible(true);
+                    }
 
                     this.fn_showServiceError(oError);
 

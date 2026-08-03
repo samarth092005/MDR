@@ -100,12 +100,13 @@ async function validateRow(params) {
     // 3. Validation index rules — REGEX and conditional LOOKUP
     if (cfg.ValidationIndex) {
       const indices = cfg.ValidationIndex.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+      const zEntities = cds.entities ? cds.entities('zmdr') : null;
+      const BulkDataValidation = (zEntities && zEntities.BulkDataValidation) || (cds.entities && cds.entities.BulkDataValidation) || (cds.entities && cds.entities['zmdr.BulkDataValidation']) || db.entities?.BulkDataValidation;
       for (const idx of indices) {
-        const { BulkDataValidation } = db.entities;  // config table — CAP ORM
-        const rules = await db.run(
+        const rules = BulkDataValidation ? await db.run(
           SELECT.from(BulkDataValidation)
                 .where({ Tablename: tablename, SourceColName: cfg.Columnname, ValIndex: idx })
-        );
+        ) : [];
         for (const rule of rules) {
           if (rule.Operation === 'REGEX' && rule.SourceColValue) {
             if (!new RegExp(rule.SourceColValue).test(val))

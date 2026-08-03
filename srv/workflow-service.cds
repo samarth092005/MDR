@@ -59,11 +59,17 @@ service WorkflowService @(
   action saveBPALinkage(mdrWorkflowId: String, bpaInstanceId: String,
          tablename: String) returns { success: Boolean };
 
-  action resolveApprovers(tablename: String, currentStage: String,
-         processId: String, requesterRole: String, requestorId: String,
-         apprClass: String) returns {
-           approverEmail: String; approverId: String; nextStage: String;
-         };
+       action resolveApprovers(tablename: String,
+                               currentStage: String,
+                               processId: String,
+                               requesterRole: String,
+                               requestorId: String,
+                               apprClass: String)
+       returns array of {
+              approverEmail : String;
+              approverId    : String;
+              nextStage     : String;
+       };
 
   action pushInprogressAudit(workflowId: String, currentStage: String,
          approverId: String, tablename: String) returns { success: Boolean };

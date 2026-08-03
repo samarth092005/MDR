@@ -18,23 +18,29 @@ const { generateWorkflowId } = require('./wf-id');
 //  zmdr_BulkTemp      : Tablename, BulkData, WorkflowId, ActionType,
 //                       InitiationDate, RequestStatus
 
+function getEntity(name) {
+    const zEntities = cds.entities ? cds.entities('zmdr') : null;
+    return (zEntities && zEntities[name]) || (cds.entities && cds.entities[name]) || (cds.entities && cds.entities[`zmdr.${name}`]);
+}
+
 async function processBulkData(params) {
     const { tablename, requesterrole, dataload, overwriteWithNull,
         futureVersion, workflowid: inputWfId, rowData, userId } = params;
     const db = await cds.connect.to('db');
-    const { BulkHdrConfig, BulkItmConfig } = db.entities;
+    const BulkHdrConfig = getEntity('BulkHdrConfig') || db.entities?.BulkHdrConfig;
+    const BulkItmConfig = getEntity('BulkItmConfig') || db.entities?.BulkItmConfig;
 
     // Config reads — use PascalCase element names that match the DB columns
-    const hdrConfig = await db.run(
+    const hdrConfig = BulkHdrConfig ? await db.run(
         SELECT.one.from(BulkHdrConfig).where({ TableName: tablename, RequesterRole: requesterrole })
-    );
+    ) : null;
     if (!hdrConfig) throw new Error(`No config for ${tablename}/${requesterrole}`);
 
-    const lineitemConfig = await db.run(
+    const lineitemConfig = BulkItmConfig ? await db.run(
         SELECT.from(BulkItmConfig)
               .where({ Tablename: tablename, RequesterRole: requesterrole })
               .orderBy('Colseqno')
-    );
+    ) : [];
     if (!lineitemConfig.length) throw new Error('No column config found');
 
     // hdrConfig.Versioned matches the DB column name

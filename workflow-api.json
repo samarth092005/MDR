@@ -1148,12 +1148,24 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/WorkflowService.return_WorkflowService_resolveApprovers"
+                  "type": "object",
+                  "title": "Collection of return_WorkflowService_resolveApprovers",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/WorkflowService.return_WorkflowService_resolveApprovers"
+                          }
+                        ],
+                        "nullable": true
+                      }
                     }
-                  ],
-                  "nullable": true
+                  }
                 }
               }
             }
