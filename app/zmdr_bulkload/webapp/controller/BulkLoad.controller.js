@@ -10,7 +10,8 @@ sap.ui.define([
     "sap/m/Button",
     "sap/ui/model/json/JSONModel",
     "sap/ui/model/Filter",
-    "sap/ui/model/FilterOperator"
+    "sap/ui/model/FilterOperator",
+    "sap/ui/core/util/File"
 ], (
     BaseController,
     MessageBox,
@@ -23,7 +24,8 @@ sap.ui.define([
     Button,
     JSONModel,
     Filter,
-    FilterOperator
+    FilterOperator,
+    FileUtil
 ) => {
     "use strict";
 
@@ -130,8 +132,13 @@ sap.ui.define([
             if (this.rowDataArr.length > 0) {
                 if (this.noOfColumns === this.columnCount) {
                     var errors = [];
+                    var cleanStr = function (s) {
+                        return String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+                    };
                     for (var i = 0; i < this.odataHead.length; i++) {
-                        if (this.temphead[i] !== this.odataHead[i]) {
+                        var uploadedCol = cleanStr(this.temphead[i]);
+                        var expectedCol = cleanStr(this.odataHead[i]);
+                        if (uploadedCol !== expectedCol) {
                             errors.push(this.temphead[i]);
                             this.getView().byId("btn_validate").setEnabled(false);
                             this.getView().byId("cb_overwritenull").setEnabled(false);
@@ -139,11 +146,12 @@ sap.ui.define([
                     }
                     if (errors.length > 0) {
                         MessageBox.error(
-                            "Excel has following invalid column(s) " + errors
+                            "Excel has following invalid column(s) " + errors.join(", ")
                         );
                         this.getView().byId("btn_reload").setVisible(true);
                     } else {
                         this.getView().byId("btn_validate").setVisible(true);
+                        this.getView().byId("btn_validate").setEnabled(true);
                         this.getView().byId("btn_reload").setVisible(true);
                     }
                 } else {
@@ -199,15 +207,38 @@ sap.ui.define([
                 type: 'binary'
             });
 
+            this._saveFile(wbout, (this.tableName || "Template") + ".xlsx");
+        },
+
+        _saveFile: function (wbout, fileName) {
             function s2ab(s) {
                 var buf = new ArrayBuffer(s.length);
                 var view = new Uint8Array(buf);
                 for (var i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
                 return buf;
             }
-            saveAs(new Blob([s2ab(wbout)], {
-                type: "application/octet-stream"
-            }), this.tableName + '.xlsx');
+
+            var sType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+            var baseName = fileName.replace(/\.xlsx$/i, "");
+
+            if (FileUtil && typeof FileUtil.save === "function") {
+                FileUtil.save(s2ab(wbout), baseName, "xlsx", sType, "utf-8");
+            } else if (typeof saveAs === "function") {
+                saveAs(new Blob([s2ab(wbout)], { type: sType }), fileName);
+            } else {
+                var oBlob = new Blob([s2ab(wbout)], { type: sType });
+                var sUrl = window.URL.createObjectURL(oBlob);
+                var oLink = document.createElement("a");
+                oLink.style.display = "none";
+                oLink.href = sUrl;
+                oLink.download = fileName;
+                document.body.appendChild(oLink);
+                oLink.click();
+                setTimeout(function () {
+                    document.body.removeChild(oLink);
+                    window.URL.revokeObjectURL(sUrl);
+                }, 200);
+            }
         },
 
         onFileUpload: function (oEvent) {
@@ -236,6 +267,7 @@ sap.ui.define([
                     var data = wb.Sheets[tableName[0]];
 
                     this.format_excel_data(wb.Sheets[wb.SheetNames[0]], data);
+                    this.handleUploadComplete();
                 }.bind(this);
                 reader.readAsArrayBuffer(file);
             }
@@ -309,7 +341,7 @@ sap.ui.define([
 
                 var oModel1 = new JSONModel();
                 var filter = new Filter(
-                    "Tablename",
+                    "TableName",
                     FilterOperator.EQ,
                     this.tableName
                 );
@@ -463,6 +495,8 @@ sap.ui.define([
                             var headerData = [{
                                 Validcount: oResult.validCount || 0,
                                 Invalidcount: oResult.invalidCount || 0,
+                                Createcount: oResult.createCount || 0,
+                                Updatecount: oResult.updateCount || 0,
                                 TotalCount: (oResult.validCount || 0) + (oResult.invalidCount || 0)
                             }];
                             var oHeaderDataModel = new JSONModel(headerData);
@@ -471,7 +505,14 @@ sap.ui.define([
                             // Handle invalid data
                             if (oResult.invalidData && oResult.invalidData.length > 0) {
                                 this.getView().byId("btn_downloadinvaliddata").setVisible(true);
-                                var oInvalidDataModel = new JSONModel(oResult.invalidData);
+                                var normalizedInvalidData = oResult.invalidData.map(function (item) {
+                                    return {
+                                        Code: item.Code || item.code || "",
+                                        Message: item.Message || item.message || "",
+                                        Rownumber: item.Rownumber || item.rownumber || ""
+                                    };
+                                });
+                                var oInvalidDataModel = new JSONModel(normalizedInvalidData);
                                 this.InvalidDataModel = oInvalidDataModel;
                                 this.getOwnerComponent().setModel(oInvalidDataModel, "oInvalidDataModel");
                             } else {
@@ -527,12 +568,17 @@ sap.ui.define([
 
             this.categoryName = oEvent.getSource().getSelectedKey();
 
+            var seenTables = {};
             for (var i = 0; i < tabEntry.length; i++) {
-                filteredTable.push({
-                    TableName: tabEntry[i].TableName,
-                    Description: tabEntry[i].TableDescription,
-                    Key: tabEntry[i].TableName + "+" + tabEntry[i].RequesterRole,
-                });
+                var sTab = tabEntry[i].TableName;
+                if (!seenTables[sTab]) {
+                    seenTables[sTab] = true;
+                    filteredTable.push({
+                        TableName: tabEntry[i].TableName,
+                        Description: tabEntry[i].TableDescription,
+                        Key: tabEntry[i].TableName + "+" + tabEntry[i].RequesterRole,
+                    });
+                }
             }
 
             oUniquTableModel = new JSONModel(filteredTable);
@@ -659,7 +705,7 @@ sap.ui.define([
             this.tableName = oEvent.getSource().getValue();
             var aFilters = [];
             var filterTable = new Filter(
-                "Tablename",
+                "TableName",
                 FilterOperator.EQ,
                 oEvent.getSource().getValue()
             );
@@ -694,13 +740,15 @@ sap.ui.define([
                 this.getOwnerComponent().setModel(oModelConfig, "oModelConfig");
                 this.configArray = oModelConfig.getData();
                 this.noOfColumns = this.configArray.length;
-                this.futureAllowed = tabEntry[0].IsFutureVersionAllowed;
-                this.tableappr = tabEntry[0].IsTableLevelApproval;
+                if (tabEntry && tabEntry.length > 0) {
+                    this.futureAllowed = tabEntry[0].IsFutureVersionAllowed;
+                    this.tableappr = tabEntry[0].IsTableLevelApproval;
 
-                this.workflowReq = tabEntry[0].IsWorkflowVisible;
-                this.preserveNull = tabEntry[0].IsOverwrireWithNull;
-                this.versioned = tabEntry[0].Versioned;
-                this.updatezonly = tabEntry[0].IsUpdateZTableOnly;
+                    this.workflowReq = tabEntry[0].IsWorkflowVisible;
+                    this.preserveNull = tabEntry[0].IsOverwrireWithNull;
+                    this.versioned = tabEntry[0].Versioned;
+                    this.updatezonly = tabEntry[0].IsUpdateZTableOnly;
+                }
                 this.updateztabonly = "N";
 
                 if (this.workflowReq === "X") {
@@ -736,11 +784,16 @@ sap.ui.define([
                 }
 
                 this.odataHead = [];
-                for (var i = 1; i < this.configArray.length + 1; i++) {
-                    for (var j = 0; j < this.configArray.length; j++) {
-                        if (this.configArray[j].Colseqno === i) {
-                            this.odataHead.push(this.configArray[j].Columnname);
-                        }
+                // Sort columns by sequence number
+                this.configArray.sort(function (a, b) {
+                    var seqA = (a.ColumnSeqNo !== undefined && a.ColumnSeqNo !== null) ? a.ColumnSeqNo : (a.Colseqno || 0);
+                    var seqB = (b.ColumnSeqNo !== undefined && b.ColumnSeqNo !== null) ? b.ColumnSeqNo : (b.Colseqno || 0);
+                    return seqA - seqB;
+                });
+                for (var j = 0; j < this.configArray.length; j++) {
+                    var colName = this.configArray[j].ColumnName || this.configArray[j].Columnname;
+                    if (colName) {
+                        this.odataHead.push(colName);
                     }
                 }
 
@@ -792,9 +845,10 @@ sap.ui.define([
                 .getProperty("/");
 
             for (var i = 0; i < length; i++) {
-                dataStr.push(
-                    data[i].Code + "«" + data[i].Message + "«" + data[i].Rownumber
-                );
+                var sCode = data[i].Code || data[i].code || "";
+                var sMsg = data[i].Message || data[i].message || "";
+                var sRowNum = data[i].Rownumber || data[i].rownumber || "";
+                dataStr.push(sCode + "«" + sMsg + "«" + sRowNum);
             }
 
             for (var j = 0; j < length + 1; j++) {
@@ -808,18 +862,7 @@ sap.ui.define([
                 type: "binary",
             });
 
-            function s2ab(s) {
-                var buf = new ArrayBuffer(s.length);
-                var view = new Uint8Array(buf);
-                for (var i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
-                return buf;
-            }
-            saveAs(
-                new Blob([s2ab(wbout)], {
-                    type: "application/octet-stream",
-                }),
-                this.tableName + "_InvalidRecords_" + datetime + ".xlsx"
-            );
+            this._saveFile(wbout, this.tableName + "_InvalidRecords_" + datetime + ".xlsx");
         },
 
         onSubmit: function (oEvent) {

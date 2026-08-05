@@ -36,12 +36,34 @@ async function processBulkData(params) {
     ) : null;
     if (!hdrConfig) throw new Error(`No config for ${tablename}/${requesterrole}`);
 
-    const lineitemConfig = BulkItmConfig ? await db.run(
-        SELECT.from(BulkItmConfig)
-              .where({ Tablename: tablename, RequesterRole: requesterrole })
-              .orderBy('Colseqno')
-    ) : [];
-    if (!lineitemConfig.length) throw new Error('No column config found');
+    let lineitemConfig = [];
+    if (BulkItmConfig) {
+        try {
+            lineitemConfig = await db.run(
+                SELECT.from(BulkItmConfig)
+                      .where({ TableName: tablename, RequesterRole: requesterrole })
+                      .orderBy('ColumnSeqNo')
+            );
+        } catch (e) {
+            lineitemConfig = await db.run(
+                SELECT.from(BulkItmConfig)
+                      .where({ Tablename: tablename, RequesterRole: requesterrole })
+                      .orderBy('Colseqno')
+            );
+        }
+    }
+    if (!lineitemConfig || !lineitemConfig.length) throw new Error('No column config found');
+
+    // Normalize property names across both camelCase/PascalCase
+    lineitemConfig.forEach(c => {
+        c.ColumnName = c.ColumnName || c.Columnname || c.COLUMNNAME;
+        c.Columnname = c.ColumnName;
+        c.Colseqno = (c.ColumnSeqNo !== undefined && c.ColumnSeqNo !== null) ? c.ColumnSeqNo : (c.Colseqno || c.columnseqno || 0);
+        c.ColumnSeqNo = c.Colseqno;
+        c.LookupTableName = c.LookupTableName || c.LookupTablename || c.LOOKUPTABLENAME;
+        c.LookupTablename = c.LookupTableName;
+    });
+    lineitemConfig.sort((a, b) => a.Colseqno - b.Colseqno);
 
     // hdrConfig.Versioned matches the DB column name
     const isVersioned = hdrConfig.Versioned === 'Y';
@@ -59,9 +81,10 @@ async function processBulkData(params) {
 
         if (splitData.length !== lineitemConfig.length) {
             invalidData.push({
-                code: rowCode,
+                code: rowCode, Code: rowCode,
                 message: `Column count ${splitData.length} does not match config ${lineitemConfig.length}`,
-                rownumber: i + 1
+                Message: `Column count ${splitData.length} does not match config ${lineitemConfig.length}`,
+                rownumber: i + 1, Rownumber: i + 1
             });
             continue;
         }
@@ -73,13 +96,25 @@ async function processBulkData(params) {
                 lineitemConfig, keyFields,
             });
             if (inProg) {
-                invalidData.push({ code: rowCode, message: 'In-progress records exist for this key', rownumber: i + 1 });
+                invalidData.push({
+                    code: rowCode, Code: rowCode,
+                    message: 'In-progress records exist for this key',
+                    Message: 'In-progress records exist for this key',
+                    rownumber: i + 1, Rownumber: i + 1
+                });
                 continue;
             }
         }
 
         const { valid, message } = await validateRow({ splitData, lineitemConfig, keyFields, tablename });
-        if (!valid) { invalidData.push({ code: rowCode, message, rownumber: i + 1 }); continue; }
+        if (!valid) {
+            invalidData.push({
+                code: rowCode, Code: rowCode,
+                message, Message: message,
+                rownumber: i + 1, Rownumber: i + 1
+            });
+            continue;
+        }
 
         // Determine create vs amend — use CAP ORM to avoid raw SQL table name issues
         const entity = getEntityDef(tablename);

@@ -91,8 +91,15 @@ function getEntity(name) {
 
         // Config reads — CAP ORM
         const hdr = BulkHdrConfig ? await db.run(SELECT.one.from(BulkHdrConfig).where({ TableName: tablename, RequesterRole: requesterrole })) : null;
-        const lineitemConfig = BulkItmConfig ? await db.run(SELECT.from(BulkItmConfig).where({ Tablename: tablename, RequesterRole: requesterrole }).orderBy('Colseqno')) : [];
-        const keyFields = lineitemConfig.filter(c => c.IsMatching === 'Y').map(c => c.Columnname);
+        let lineitemConfig = [];
+        if (BulkItmConfig) {
+            try {
+                lineitemConfig = await db.run(SELECT.from(BulkItmConfig).where({ TableName: tablename, RequesterRole: requesterrole }).orderBy('ColumnSeqNo'));
+            } catch (e) {
+                lineitemConfig = await db.run(SELECT.from(BulkItmConfig).where({ Tablename: tablename, RequesterRole: requesterrole }).orderBy('Colseqno'));
+            }
+        }
+        const keyFields = lineitemConfig.filter(c => c.IsMatching === 'Y').map(c => c.ColumnName || c.Columnname);
 
         if (action === 'APPROVED') {
             if (hdr?.Versioned === 'Y')
@@ -106,7 +113,7 @@ function getEntity(name) {
             if (hdr?.Versioned === 'Y')
                 await rejectVersionedTable({ tablename, workflowid });  // raw SQL
             else
-                await db.run(UPDATE(BulkTemp).set({ RequestStatus: 'REJECTED' }).where({ WorkflowId: workflowid, Tablename: tablename }));  // CAP ORM
+                await db.run(UPDATE(BulkTemp).set({ RequestStatus: 'REJECTED' }).where({ WorkflowId: workflowid, TableName: tablename }));  // CAP ORM
         }
 
         await insertWFAudit({

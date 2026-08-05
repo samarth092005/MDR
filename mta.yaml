@@ -50,6 +50,7 @@ modules:
         - "zmdr_cntrl_main/"
         - "zmdr_cntrl_cmn/"
         - "zmdr_wfauditrep/"
+        - "zmdr_bulkapprover/"
         - "node_modules/"
     parameters:
       keep-existing-routes: true
@@ -92,6 +93,10 @@ modules:
         - artifacts:
             - zmdr_wfauditrep.zip
           name: zmdr_wfauditrep
+          target-path: resources/
+        - artifacts:
+            - zmdr_bulkapprover.zip
+          name: zmdr_bulkapprover
           target-path: resources/
 
   - name: mdr-cap-btp-destinations
@@ -182,6 +187,18 @@ modules:
         - npm install --no-workspaces
         - npm run build
         - bash -c "cp xs-app.json dist/ && cd dist && zip -r zmdr_wfauditrep.zip *"
+      supported-platforms: []
+
+  - name: zmdr_bulkapprover
+    type: html5
+    path: app/zmdr_bulkapprover
+    build-parameters:
+      build-result: dist
+      builder: custom
+      commands:
+        - npm install --no-workspaces
+        - npm run build
+        - bash -c "cp xs-app.json dist/ && cd dist && zip -r zmdr_bulkapprover.zip *"
       supported-platforms: []
 
 resources:

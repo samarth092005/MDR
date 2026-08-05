@@ -48,30 +48,53 @@ function buildKeyWhere(splitData, lineitemConfig, keyFields) {
   return { clause: parts.join(' AND '), values };
 }
 
-// getEntityDef: resolve a CDS entity definition by short name.
+// getEntityDef: resolve a CDS entity definition by short name or alias.
 // Works even when the entity is in the zmdr namespace or any other namespace.
-// This is preferred over db.entities which can be unreliable across CAP versions.
 function getEntityDef(tablename) {
-  const defs = (cds.model && cds.model.definitions) || {};
-  // Try: exact name, zmdr prefix, then any entity whose short name matches
-  return defs[tablename]
+  if (!cds.model) return null;
+  const defs = cds.model.definitions || {};
+  const cleanName = tablename.replace(/^zmdr[._]/i, '');
+
+  let entity = defs[tablename]
     || defs[`zmdr.${tablename}`]
+    || defs[`zmdr.${cleanName}`]
+    || defs[`BulkService.${tablename}`]
     || Object.values(defs).find(
-         d => d && d.kind === 'entity' && d.name && d.name.split('.').pop() === tablename
+         d => d && (d.kind === 'entity' || d.kind === 'type') && d.name && (
+           d.name.split('.').pop().toUpperCase() === tablename.toUpperCase() ||
+           d.name.split('.').pop().toUpperCase() === cleanName.toUpperCase()
+         )
        );
+
+  // If this entity is a projection (e.g. BulkService.ZMDR_BPMASTER -> zmdr.BPMaster), resolve the underlying base entity
+  while (entity && entity.target && defs[entity.target]) {
+    entity = defs[entity.target];
+  }
+
+  // Also check cds.entities
+  if (!entity && cds.entities) {
+    const z = cds.entities('zmdr');
+    entity = (z && (z[tablename] || z[cleanName])) || cds.entities[tablename] || cds.entities[cleanName];
+  }
+
+  return entity;
 }
 
 // getSqlTableName: resolve the physical SQL table name for raw DDL/DML.
 function getSqlTableName(db, tablename) {
   const entity = getEntityDef(tablename);
   if (entity) {
+    // In SQLite, CAP ignores @cds.persistence.table and names tables as <namespace>_<entityName> e.g. zmdr_BPMaster
+    if (db && (db.kind === 'sqlite' || !db.kind)) {
+      return entity.name.replace(/\./g, '_');
+    }
     const persistenceTable = entity['@cds.persistence.table'];
     if (persistenceTable && typeof persistenceTable === 'string') {
       return persistenceTable;
     }
     // CAP HDI generator by default replaces dots in namespace with underscores
     const name = entity.name.replace(/\./g, '_');
-    return db.kind === 'hana' ? name.toUpperCase() : name;
+    return (db && db.kind === 'hana') ? name.toUpperCase() : name;
   }
   return tablename;
 }
@@ -102,8 +125,15 @@ function mapToEntityElements(entity, obj) {
   if (!entity || !entity.elements) return obj;
   const mapped = {};
   for (const [k, v] of Object.entries(obj)) {
-    const elName = Object.keys(entity.elements).find(e => e.toUpperCase() === k.toUpperCase());
-    mapped[elName || k] = v;
+    const cleanKey = k.replace(/_/g, '').toUpperCase();
+    const elName = Object.keys(entity.elements).find(
+      e => e.toUpperCase() === k.toUpperCase() || e.replace(/_/g, '').toUpperCase() === cleanKey
+    );
+    if (elName) {
+      mapped[elName] = v;
+    } else {
+      mapped[k] = v;
+    }
   }
   return mapped;
 }
@@ -145,6 +175,13 @@ async function insertRow(db, tablename, rowObject) {
   if (entity) {
     try {
       const mappedRow = mapToEntityElements(entity, rowObject);
+      if (entity.elements) {
+        for (const k of Object.keys(mappedRow)) {
+          if (!entity.elements[k]) {
+            delete mappedRow[k];
+          }
+        }
+      }
       await db.run(INSERT.into(entity).entries(mappedRow));
       return;
     } catch (e) {

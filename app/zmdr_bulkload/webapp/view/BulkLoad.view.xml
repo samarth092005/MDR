@@ -102,7 +102,7 @@
                                         width="100%"
                                         icon="sap-icon://open-folder"
                                         tooltip="Upload the file"
-                                        uploadOnChange="true"
+                                        uploadOnChange="false"
                                     />
                                 </f:fields>
                             </f:FormElement>

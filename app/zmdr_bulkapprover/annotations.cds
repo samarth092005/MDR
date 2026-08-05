@@ -1,0 +1,1 @@
+using BulkService as service from '../../srv/bulk-service';
