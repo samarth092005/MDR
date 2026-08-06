@@ -69,8 +69,8 @@ sap.ui.define(
               .getOwnerComponent()
               .getComponentData().startupParameters;
   
-            self.workflowId = params.WFID[0];
-            self.workItemId = params.WIID[0];
+            self.workflowId = params.sWorkflowID[0];
+            // self.workItemId = params.WIID[0];
   
             var oDataModel = this.getOwnerComponent().getModel();
             var d = {};
@@ -94,7 +94,7 @@ sap.ui.define(
             //   }
   
             d.Workflowid = self.workflowId;
-            d.WorkitemId = self.workItemId;
+            // d.WorkitemId = self.workItemId;
             //d.ActualAgent = self.oUserId;
             d.Action = "RESERVE";
   

@@ -158,34 +158,10 @@
       "title": "input",
       "type": "object",
       "required": [
-        "sActionType",
-        "sActionedBy",
-        "sPrvStage",
-        "sNextStage",
         "sTablename",
         "sWorkflowID"
       ],
       "properties": {
-        "sActionType": {
-          "type": "string",
-          "title": "Action Type",
-          "description": "Action Type like Create, Amend, Close or Reopen"
-        },
-        "sActionedBy": {
-          "type": "string",
-          "title": "Actioned By",
-          "description": "Actioned By Requestor or Approver"
-        },
-        "sPrvStage": {
-          "type": "string",
-          "title": "Previous Stage",
-          "description": "Previous Stage"
-        },
-        "sNextStage": {
-          "type": "string",
-          "title": "Next Stage",
-          "description": "Next Stage"
-        },
         "sTablename": {
           "type": "string",
           "title": "Table Name",
