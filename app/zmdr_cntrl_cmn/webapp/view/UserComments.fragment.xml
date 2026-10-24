@@ -1,0 +1,16 @@
+<core:FragmentDefinition xmlns:core="sap.ui.core" xmlns="sap.m" xmlns:f="sap.f" xmlns:l="sap.ui.layout" xmlns:cards="sap.f.cards">
+    <Dialog id="dlgComment" title="{i18n>usrCmntsTitle}" draggable="true" resizable="true" contentHeight="150px" contentWidth="500px">
+        <content>
+            <VBox id="vbxDlgComment">
+                <Label id="lblRemarks" class="sapUiSmallMarginTopButton sapUiSmallMarginBeginEnd" text="{i18n>lblRemarks}" required="true"></Label>
+                <TextArea id="txtRemarks" class="sapUiMediumMarginBeginEnd" rows="3" cols="60" growing="true" wrapping="Soft" required="true" placeholder="{i18n>txtRemarks}" tooltip="{i18n>txtRemarks}" width="85%"></TextArea>
+            </VBox>
+        </content>
+        <beginButton>
+            <Button id="btnOkDlg" text="{i18n>btnOkDlg}" tooltip="{i18n>btnOkDlg}" type="Emphasized" press="onPress_btnOkDlg"></Button>
+        </beginButton>
+        <endButton>
+            <Button id="btnCancelDlg" text="{i18n>btnCancelDlg}" tooltip="{i18n>btnCancelDlg}" type="Ghost" press="onPress_btnCancelDlg"></Button>
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

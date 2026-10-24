@@ -1,0 +1,8 @@
+<mvc:View controllerName="com.intapptics.zmdrcntrlcmn.controller.NotFound" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m">
+    <MessagePage id="notFoundMessagePage" title="{i18n>notFoundTitle}" text="{i18n>notFoundText}" enableFormattedText="true" icon="sap-icon://message-warning" 
+        description="Possible reasons:&lt;ul&gt;&lt;li&gt;Unable to resolve the pattern set while navigating to the app&lt;/li&gt;&lt;/ul&gt;&lt;strong&gt;Please raise an incident and contact support team if the issue persists.&lt;/strong&gt;">
+        <buttons>
+            <Button id="btnContactSupport" text="{i18n>btnContactSupport}" tooltip="{i18n>btnContactSupport}" type="Emphasized" press=".onPress_btnContactSupport" />
+        </buttons>
+    </MessagePage>
+</mvc:View>

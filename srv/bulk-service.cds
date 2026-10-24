@@ -1,43 +1,55 @@
-using zmdr from '../db/mdr-config';
+using zmdr as db from '../db/mdr-bulk';
+using from '../db/mdr-maintables';
 
 service BulkService @(
-  path    : '/api/bulk',
-  requires: 'authenticated-user'
+  path    : '/mdrapi/bulk',
+  // requires: 'authenticated-user'
 ) {
 
   // Config tables via CAP ORM
   @readonly
-  entity BulkHdrConfig   as projection on zmdr.BulkHdrConfig;
+  entity BulkHdrConfig as projection on db.BulkHdrConfig;
 
   @readonly
-  entity BulkItmConfig   as projection on zmdr.BulkItmConfig;
+  entity BulkItmConfig as projection on db.BulkItmConfig;
 
-  entity BulkTemp        as projection on zmdr.BulkTemp;
+  entity BulkTemp as projection on db.BulkTemp;
+
+  // Explicitly expose master data tables so they are definitively deployed
+  @readonly entity ZMDR_BPMASTER as projection on db.BPMaster;
+  @readonly entity ZMDR_GLACCOUNT as projection on db.GLAccount;
+
+  // Explicitly expose lookup tables
+  @readonly entity ZMDXCNAPPSTATS01 as projection on db.ApprovalStatus;
+  // @readonly entity ZMDR_BP_ROLE_REF as projection on db.ZMDR_BP_ROLE_REF;
+  // @readonly entity T005             as projection on db.T005;
+  // @readonly entity T002             as projection on db.T002;
+  // @readonly entity TCURC            as projection on db.TCURC;
+  // @readonly entity T052             as projection on db.T052;
+  // @readonly entity TINC             as projection on db.TINC;
+  // @readonly entity ZMDR_BP_STATUS   as projection on db.ZMDR_BP_STATUS;
 
   // Actions — dynamic tables handled inside handlers via raw parameterised SQL
 
   // Replaces: ZMDR_FM_PROCESS_BULK_DATA with IM_DATALOAD = N
-  action validateBulkData(tableName: String,
-                          requesterRole: String,
-                          rowData: array of {
-                            Data : String
-                          },
+  action validateBulkData(tablename: String,
+                          requesterrole: String,
+                          rowData: array of String,
                           overwriteWithNull: String,
                           futureVersion: String,
-                          workflowId: String)   
-  returns {
+                          workflowid: String)       returns {
     validCount   : Integer;
     invalidCount : Integer;
     createCount  : Integer;
     updateCount  : Integer;
-    workflowId   : String;
+    workflowid   : String;
     validData    : array of {
       data : String
     };
     invalidData  : array of {
       code      : String;
       message   : String;
-      rowNumber : Integer
+      rownumber : Integer
     };
   };
 
@@ -45,13 +57,12 @@ service BulkService @(
   action submitBulkData(tablename: String,
                         requesterrole: String,
                         validData: array of {
-                          data       : String
-                        },
+    data       : String
+  },
                         overwriteWithNull: String,
                         futureVersion: String,
                         workflowid: String,
-                        remarks: String)            
-  returns {
+                        remarks: String)            returns {
     workflowid : String;
     message    : String;
     type       : String
@@ -61,8 +72,8 @@ service BulkService @(
   action triggerBulkWorkflow(workflowid: String,
                              tablename: String,
                              entityname: String,
-                             requesterid: String,
-                             requesteremail: String,
+                             requestorid: String,
+                             requestoremail: String,
                              operationtype: String,
                              approverstage: String,
                              apprclass: String,

@@ -10,7 +10,8 @@ sap.ui.define([
     "sap/m/Button",
     "sap/ui/model/json/JSONModel",
     "sap/ui/model/Filter",
-    "sap/ui/model/FilterOperator"
+    "sap/ui/model/FilterOperator",
+    "sap/ui/core/util/File"
 ], (
     BaseController,
     MessageBox,
@@ -23,7 +24,8 @@ sap.ui.define([
     Button,
     JSONModel,
     Filter,
-    FilterOperator
+    FilterOperator,
+    FileUtil
 ) => {
     "use strict";
 
@@ -92,7 +94,7 @@ sap.ui.define([
 
                 //get all category
                 for (var i = 0; i < this.array.length; i++) {
-                    temp.push(this.array[i].category);
+                    temp.push(this.array[i].Category);
                 }
                 //push to array, unique category
                 for (var j = 0; j < temp.length; j++) {
@@ -112,7 +114,6 @@ sap.ui.define([
 
                 var oUniqueCategoryModel = new JSONModel(filteredCategory);
 
-
                 // Set to the component
                 this.getOwnerComponent().setModel(oUniqueCategoryModel, "oUniqueCategoryModel");
             }.bind(this)).catch(function (oError) {
@@ -131,8 +132,13 @@ sap.ui.define([
             if (this.rowDataArr.length > 0) {
                 if (this.noOfColumns === this.columnCount) {
                     var errors = [];
+                    var cleanStr = function (s) {
+                        return String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+                    };
                     for (var i = 0; i < this.odataHead.length; i++) {
-                        if (this.temphead[i] !== this.odataHead[i]) {
+                        var uploadedCol = cleanStr(this.temphead[i]);
+                        var expectedCol = cleanStr(this.odataHead[i]);
+                        if (uploadedCol !== expectedCol) {
                             errors.push(this.temphead[i]);
                             this.getView().byId("btn_validate").setEnabled(false);
                             this.getView().byId("cb_overwritenull").setEnabled(false);
@@ -140,11 +146,12 @@ sap.ui.define([
                     }
                     if (errors.length > 0) {
                         MessageBox.error(
-                            "Excel has following invalid column(s) " + errors
+                            "Excel has following invalid column(s) " + errors.join(", ")
                         );
                         this.getView().byId("btn_reload").setVisible(true);
                     } else {
                         this.getView().byId("btn_validate").setVisible(true);
+                        this.getView().byId("btn_validate").setEnabled(true);
                         this.getView().byId("btn_reload").setVisible(true);
                     }
                 } else {
@@ -182,7 +189,7 @@ sap.ui.define([
             var dataStr = [];
             var data = "";
             for (let i = 0; i < length; i++) {
-                if (i === length - 1) {
+                if (i == length - 1) {
                     data = data + this.odataHead[i];
                 } else {
                     data = data + this.odataHead[i] + ";";
@@ -200,15 +207,38 @@ sap.ui.define([
                 type: 'binary'
             });
 
+            this._saveFile(wbout, (this.tableName || "Template") + ".xlsx");
+        },
+
+        _saveFile: function (wbout, fileName) {
             function s2ab(s) {
                 var buf = new ArrayBuffer(s.length);
                 var view = new Uint8Array(buf);
                 for (var i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
                 return buf;
             }
-            saveAs(new Blob([s2ab(wbout)], {
-                type: "application/octet-stream"
-            }), this.tableName + '.xlsx');
+
+            var sType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+            var baseName = fileName.replace(/\.xlsx$/i, "");
+
+            if (FileUtil && typeof FileUtil.save === "function") {
+                FileUtil.save(s2ab(wbout), baseName, "xlsx", sType, "utf-8");
+            } else if (typeof saveAs === "function") {
+                saveAs(new Blob([s2ab(wbout)], { type: sType }), fileName);
+            } else {
+                var oBlob = new Blob([s2ab(wbout)], { type: sType });
+                var sUrl = window.URL.createObjectURL(oBlob);
+                var oLink = document.createElement("a");
+                oLink.style.display = "none";
+                oLink.href = sUrl;
+                oLink.download = fileName;
+                document.body.appendChild(oLink);
+                oLink.click();
+                setTimeout(function () {
+                    document.body.removeChild(oLink);
+                    window.URL.revokeObjectURL(sUrl);
+                }, 200);
+            }
         },
 
         onFileUpload: function (oEvent) {
@@ -230,12 +260,14 @@ sap.ui.define([
 
                     var wb = XLSX.read(arr, {
                         type: "base64",
+                        cellDates: true
                     });
 
                     var tableName = wb.SheetNames;
                     var data = wb.Sheets[tableName[0]];
 
                     this.format_excel_data(wb.Sheets[wb.SheetNames[0]], data);
+                    this.handleUploadComplete();
                 }.bind(this);
                 reader.readAsArrayBuffer(file);
             }
@@ -256,14 +288,19 @@ sap.ui.define([
                         sheet[
                         XLSX.utils.encode_cell({
                             r: rowNum,
-                            c: colNum
+                            c: colNum,
                         })
                         ];
                     if (cellData !== undefined) {
-                        cellDataVal =
-                            typeof cellData.v === "string"
-                                ? cellData.v.trim()
-                                : cellData.v;
+                        if (cellData.v instanceof Date) {
+                            // Safely convert JavaScript Date to HANA expected YYYY-MM-DD format
+                            var yyyy = cellData.v.getFullYear();
+                            var mm = String(cellData.v.getMonth() + 1).padStart(2, '0');
+                            var dd = String(cellData.v.getDate()).padStart(2, '0');
+                            cellDataVal = yyyy + "-" + mm + "-" + dd;
+                        } else {
+                            cellDataVal = typeof cellData.v === "string" ? cellData.v.trim() : cellData.v;
+                        }
                         cellDataVal = this._replaceNewLineChar(cellDataVal);
                     }
                     rowData = rowData + "«" + (cellData ? cellDataVal : '');
@@ -299,42 +336,48 @@ sap.ui.define([
             } else {
                 this.workflowidentered = this.byId("inp_workflow").getValue();
 
-                // var aFilters = [];
+                var aFilters = [];
                 var oGlobalBusyDialog = this.openBusyDialog();
 
-                // var oModel1 = new JSONModel();
-                // var filter = new Filter(
-                //     "tableName",
-                //     FilterOperator.EQ,
-                //     this.tableName
-                // );
-                // var filterStatus = new Filter(
-                //     "requestStatus",
-                //     FilterOperator.EQ,
-                //     "INPROGRESS"
-                // );
-                // aFilters.push(filter);
-                // aFilters.push(filterStatus);
+                var oModel1 = new JSONModel();
+                var filter = new Filter(
+                    "TableName",
+                    FilterOperator.EQ,
+                    this.tableName
+                );
+                var filterStatus = new Filter(
+                    "RequestStatus",
+                    FilterOperator.EQ,
+                    "INPROGRESS"
+                );
+                aFilters.push(filter);
+                aFilters.push(filterStatus);
 
-                // oBinding = this.oBulkModel.bindList("/BulkTemp", null, null, aFilters);
-                // oBinding.requestContexts().then(function (aContexts) {
-                //     // Convert contexts to data objects (replaces oData.results)
-                //     var aResults = aContexts.map(function (oContext) {
-                //         return oContext.getObject();
-                //     });
+                oBinding = this.oBulkModel.bindList("/BulkTemp", null, null, aFilters);
+                oBinding.requestContexts().then(function (aContexts) {
+                    // Convert contexts to data objects (replaces oData.results)
+                    var aResults = aContexts.map(function (oContext) {
+                        return oContext.getObject();
+                    });
 
-                //     oModel1.setData(aResults);
-                    // if (!oModel1.oData.length > 0) {
+                    oModel1.setData(aResults);
+                    if (!oModel1.oData.length > 0) {
                         var oDataModel = this.getOwnerComponent().getModel();
                         this.dataload = "N";
+                        // [DEFAULT VALUES] - Set defaults for optional fields if not set by user
+                        if (!this.preserveNull) this.preserveNull = "N";
+                        if (!this.futurever) this.futurever = "N";
+                        if (!this.workflowidentered) this.workflowidentered = "";
+                        if (!this.rolename) this.rolename = "";
+                        // [END DEFAULT VALUES]
                         var oEntry = {};
                         var oInData = {};
-                        oEntry.tableName = this.tableName;
-                        oEntry.source = "UI";
-                        oEntry.isDataLoad = this.dataload === 'Y' ? 'Y' : 'N';
-                        oEntry.isOverwriteWithNull = this.preserveNull === 'Y' ? 'Y' : 'N';
-                        oEntry.isFutureVersion = this.futurever === 'Y' ? 'Y' : 'N';
-                        oEntry.workflowId = this.workflowidentered;
+                        oEntry.Tablename = this.tableName;
+                        oEntry.Source = "UI";
+                        oEntry.Isdataload = this.dataload;// === 'Y' ? true : false;
+                        oEntry.Isoverwritewithnull = this.preserveNull;// === 'Y' ? true : false; // [FIXED: was this.Preservenull]
+                        oEntry.Isfutureversion = this.futurever;// === 'Y' ? true : false;
+                        oEntry.Workflowid = this.workflowidentered;
                         var itemData = [];
                         oEntry.NAVOUTINVALIDDATA = [];
                         var lv_res = {};
@@ -362,66 +405,121 @@ sap.ui.define([
 
                         oEntry.NAVOUTHEADER = [];
                         var lv_res4 = {};
-                        lv_res4.createCount = 0;
-                        lv_res4.updateCount = 0;
-                        lv_res4.validCount = 0;
-                        lv_res4.invalidCount = 0;
-                        lv_res4.workflowId = "";
-                        lv_res4.tableName = this.tableName;
+                        lv_res4.Createcount = 0;
+                        lv_res4.Updatecount = 0;
+                        lv_res4.Validcount = 0;
+                        lv_res4.Invalidcount = 0;
+                        lv_res4.Workflowid = "";
+                        lv_res4.Tablename = this.tableName;
 
                         oEntry.NAVOUTHEADER[0] = lv_res4;
 
                         for (var i = 0; i < this.rowDataArr.length; i++) {
-                            itemData.push({
-                                Data: this.rowDataArr[i],
-                            });
+                            itemData.push(this.rowDataArr[i]);
                         }
 
+                        console.log("rowDataArr length:", this.rowDataArr.length);
+                        console.log("itemData length:", itemData.length);
+                        console.log("First item:", itemData[0]);
+
                         oEntry.NAVINDATA = itemData;
-                        oEntry.requesterRole = this.rolename;
+                        oEntry.Requestorsaprole = this.rolename;
 
                         var oGBusyArray = this.openBusyDialog();
 
-                        // Get the bound action
-                        var oModel = this.getOwnerComponent().getModel();
-                        // var oAction = oModel.bindContext("/validateBulkData(...)");
+                        // [FIXED] Use direct fetch() instead of OData V4 bindContext
+                        // because CAP OData V4 has a known bug where Collection(Edm.String)
+                        // parameters arrive as undefined in req.data when called via $batch
+                        var sServiceUrl = this.getOwnerComponent().getModel().getServiceUrl();
+                        var sBaseUrl = sServiceUrl.endsWith("/") ? sServiceUrl.slice(0, -1) : sServiceUrl;
+                        var sActionUrl = sBaseUrl + "/rest/validateBulkData";
 
-                        // Set action parameters
-                        var oContext = oModel.bindContext("/validateBulkData(...)");
-                        oContext.setParameter("tableName", oEntry.tableName);
-                        oContext.setParameter("requesterRole", oEntry.requesterRole);
-                        oContext.setParameter("rowData", oEntry.NAVINDATA);
-                        oContext.setParameter("overwriteWithNull", oEntry.isOverwriteWithNull);
-                        oContext.setParameter("futureVersion", oEntry.isFutureVersion);
-                        oContext.setParameter("workflowId", oEntry.workflowId);
-
-                        oContext.execute().then(function () {
+                        fetch(sServiceUrl, {
+                            method: "GET",
+                            headers: {
+                                "X-CSRF-Token": "Fetch",
+                                "Accept": "application/json"
+                            }
+                        }).then(function (oTokenResponse) {
+                            var sCsrfToken = oTokenResponse.headers.get("X-CSRF-Token") || "";
+                            
+                            return fetch(sActionUrl, {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "Accept": "application/json",
+                                    "X-CSRF-Token": sCsrfToken
+                                },
+                                body: JSON.stringify({
+                                    tablename: oEntry.Tablename,
+                                    requesterrole: oEntry.Requestorsaprole,
+                                    rowData: oEntry.NAVINDATA,
+                                    overwriteWithNull: oEntry.Isoverwritewithnull,
+                                    futureVersion: oEntry.Isfutureversion,
+                                    workflowid: oEntry.Workflowid
+                                })
+                            });
+                        }).then(function (oResponse) {
+                            // Read as text first so we can debug if it's not JSON
+                            return oResponse.text().then(function (sText) {
+                                console.log("Backend response status:", oResponse.status);
+                                console.log("Backend response body:", sText);
+                                if (!oResponse.ok) {
+                                    throw new Error("Server error " + oResponse.status + ": " + sText);
+                                }
+                                // HTTP 204 No Content: CAP returns this when it cannot serialize
+                                // the complex return type of an OData action called via raw fetch.
+                                // This typically happens with inline anonymous return types containing
+                                // nested arrays. The action DID execute — we need to fix the backend
+                                // to return a serializable response.
+                                if (oResponse.status === 204 || !sText || sText.trim() === "") {
+                                    console.error("CAP returned 204/empty — action ran but response was not serialized. " +
+                                        "Check that the action is routed correctly and the return type is serializable.");
+                                    throw new Error("Server returned empty response (HTTP " + oResponse.status + "). " +
+                                        "The validation action executed but returned no data. Please check server logs.");
+                                }
+                                return JSON.parse(sText);
+                            });
+                        }).then(function (oResult) {
                             this.closeBusyDialog(oGBusyArray);
 
-                            var oResult = oContext.getBoundContext().getObject();
+                            // Plain REST endpoint returns direct JSON — no OData 'value' wrapper.
+                            // Keep as safe fallback in case OData path is used in the future.
+                            if (oResult && oResult.value) {
+                                oResult = oResult.value;
+                            }
 
                             this.getView().byId("table_validresult").setVisible(true);
 
-                            // Build header summary (replaces NAVOUTHEADER)
+                            // Build header summary
                             var headerData = [{
-                                Validcount: oResult.validCount,
-                                Invalidcount: oResult.invalidCount,
-                                TotalCount: oResult.validCount + oResult.invalidCount
+                                Validcount: oResult.validCount || 0,
+                                Invalidcount: oResult.invalidCount || 0,
+                                Createcount: oResult.createCount || 0,
+                                Updatecount: oResult.updateCount || 0,
+                                TotalCount: (oResult.validCount || 0) + (oResult.invalidCount || 0)
                             }];
                             var oHeaderDataModel = new JSONModel(headerData);
                             this.getOwnerComponent().setModel(oHeaderDataModel, "oHeaderDataModel");
 
-                            // Handle invalid data (replaces NAVOUTINVALIDDATA)
+                            // Handle invalid data
                             if (oResult.invalidData && oResult.invalidData.length > 0) {
                                 this.getView().byId("btn_downloadinvaliddata").setVisible(true);
-                                var oInvalidDataModel = new JSONModel(oResult.invalidData);
+                                var normalizedInvalidData = oResult.invalidData.map(function (item) {
+                                    return {
+                                        Code: item.Code || item.code || "",
+                                        Message: item.Message || item.message || "",
+                                        Rownumber: item.Rownumber || item.rownumber || ""
+                                    };
+                                });
+                                var oInvalidDataModel = new JSONModel(normalizedInvalidData);
                                 this.InvalidDataModel = oInvalidDataModel;
                                 this.getOwnerComponent().setModel(oInvalidDataModel, "oInvalidDataModel");
                             } else {
                                 this.getView().byId("btn_downloadinvaliddata").setVisible(false);
                             }
 
-                            // Handle valid data (replaces NAVOUTVALIDDATA)
+                            // Handle valid data
                             if (oResult.validData && oResult.validData.length > 0) {
                                 this.finalData = oResult.validData;
                                 this.validData = oResult.validData;
@@ -447,17 +545,17 @@ sap.ui.define([
                         }.bind(this));
                         this.getView().byId("cb_overwritenull").setEnabled(false);
                         this.getView().byId("btn_validate").setEnabled(false);
-                //     } else {
-                //         this.closeBusyDialog();
-                //         MessageBox.error(
-                //             "A request is in-progress for this table, please continue once it is approved"
-                //         );
-                //         this.getView().byId("btn_validate").setEnabled(false);
-                //     }
-                // }.bind(this)).catch(function (oError) {
-                //     this.closeBusyDialog(oGlobalBusyDialog);
-                //     console.error("Error loading BulkTempConfig:", oError);
-                // }.bind(this));
+                    } else {
+                        this.closeBusyDialog();
+                        MessageBox.error(
+                            "A request is in-progress for this table, please continue once it is approved"
+                        );
+                        this.getView().byId("btn_validate").setEnabled(false);
+                    }
+                }.bind(this)).catch(function (oError) {
+                    this.closeBusyDialog(oGlobalBusyDialog);
+                    console.error("Error loading BulkTempConfig:", oError);
+                }.bind(this));
             }
         },
 
@@ -465,17 +563,22 @@ sap.ui.define([
             var filteredTable = [];
             var oUniquTableModel = "";
             var tabEntry = this.array.filter(function (item) {
-                return item.category === oEvent.getSource().getSelectedKey();
+                return item.Category === oEvent.getSource().getSelectedKey();
             });
 
             this.categoryName = oEvent.getSource().getSelectedKey();
 
+            var seenTables = {};
             for (var i = 0; i < tabEntry.length; i++) {
-                filteredTable.push({
-                    TableName: tabEntry[i].tableName,
-                    Description: tabEntry[i].tableDescription,
-                    Key: tabEntry[i].tableName + "+" + tabEntry[i].requesterRole
-                });
+                var sTab = tabEntry[i].TableName;
+                if (!seenTables[sTab]) {
+                    seenTables[sTab] = true;
+                    filteredTable.push({
+                        TableName: tabEntry[i].TableName,
+                        Description: tabEntry[i].TableDescription,
+                        Key: tabEntry[i].TableName + "+" + tabEntry[i].RequesterRole,
+                    });
+                }
             }
 
             oUniquTableModel = new JSONModel(filteredTable);
@@ -591,22 +694,23 @@ sap.ui.define([
 
         selectedTable: function (oEvent) {
             var oBinding;
+
             var tabEntry = this.array.filter(function (item) {
                 return (
-                    item.tableName === oEvent.getSource().getValue() &&
-                    item.requesterRole === oEvent.getSource().getSelectedItem().getKey().split("+")[1]
+                    item.TableName === oEvent.getSource().getValue() &&
+                    item.RequesterRole === oEvent.getSource().getSelectedItem().getKey().split("+")[1]
                 );
             });
 
             this.tableName = oEvent.getSource().getValue();
             var aFilters = [];
             var filterTable = new Filter(
-                "tableName",
+                "TableName",
                 FilterOperator.EQ,
                 oEvent.getSource().getValue()
             );
             var filterRole = new Filter(
-                "requesterRole",
+                "RequesterRole",
                 FilterOperator.EQ,
                 oEvent.getSource().getSelectedItem().getKey().split("+")[1]
             );
@@ -636,13 +740,15 @@ sap.ui.define([
                 this.getOwnerComponent().setModel(oModelConfig, "oModelConfig");
                 this.configArray = oModelConfig.getData();
                 this.noOfColumns = this.configArray.length;
-                this.futureAllowed = tabEntry[0].isFutureVersionAllowed;
-                this.tableappr = tabEntry[0].isTableLevelApproval;
+                if (tabEntry && tabEntry.length > 0) {
+                    this.futureAllowed = tabEntry[0].IsFutureVersionAllowed;
+                    this.tableappr = tabEntry[0].IsTableLevelApproval;
 
-                this.workflowReq = tabEntry[0].isWorkflowVisible;
-                this.preserveNull = tabEntry[0].isOverwrireWithNull;
-                this.versioned = tabEntry[0].isVersioned;
-                this.updatezonly = tabEntry[0].isUpdateZTableOnly;
+                    this.workflowReq = tabEntry[0].IsWorkflowVisible;
+                    this.preserveNull = tabEntry[0].IsOverwrireWithNull;
+                    this.versioned = tabEntry[0].Versioned;
+                    this.updatezonly = tabEntry[0].IsUpdateZTableOnly;
+                }
                 this.updateztabonly = "N";
 
                 if (this.workflowReq === "X") {
@@ -678,11 +784,16 @@ sap.ui.define([
                 }
 
                 this.odataHead = [];
-                for (var i = 1; i < this.configArray.length + 1; i++) {
-                    for (var j = 0; j < this.configArray.length; j++) {
-                        if (this.configArray[j].colSeqNo === i) {
-                            this.odataHead.push(this.configArray[j].columnName);
-                        }
+                // Sort columns by sequence number
+                this.configArray.sort(function (a, b) {
+                    var seqA = (a.ColumnSeqNo !== undefined && a.ColumnSeqNo !== null) ? a.ColumnSeqNo : (a.Colseqno || 0);
+                    var seqB = (b.ColumnSeqNo !== undefined && b.ColumnSeqNo !== null) ? b.ColumnSeqNo : (b.Colseqno || 0);
+                    return seqA - seqB;
+                });
+                for (var j = 0; j < this.configArray.length; j++) {
+                    var colName = this.configArray[j].ColumnName || this.configArray[j].Columnname;
+                    if (colName) {
+                        this.odataHead.push(colName);
                     }
                 }
 
@@ -734,9 +845,10 @@ sap.ui.define([
                 .getProperty("/");
 
             for (var i = 0; i < length; i++) {
-                dataStr.push(
-                    data[i].Code + "«" + data[i].Message + "«" + data[i].Rownumber
-                );
+                var sCode = data[i].Code || data[i].code || "";
+                var sMsg = data[i].Message || data[i].message || "";
+                var sRowNum = data[i].Rownumber || data[i].rownumber || "";
+                dataStr.push(sCode + "«" + sMsg + "«" + sRowNum);
             }
 
             for (var j = 0; j < length + 1; j++) {
@@ -750,18 +862,7 @@ sap.ui.define([
                 type: "binary",
             });
 
-            function s2ab(s) {
-                var buf = new ArrayBuffer(s.length);
-                var view = new Uint8Array(buf);
-                for (var i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
-                return buf;
-            }
-            saveAs(
-                new Blob([s2ab(wbout)], {
-                    type: "application/octet-stream",
-                }),
-                this.tableName + "_InvalidRecords_" + datetime + ".xlsx"
-            );
+            this._saveFile(wbout, this.tableName + "_InvalidRecords_" + datetime + ".xlsx");
         },
 
         onSubmit: function (oEvent) {
@@ -769,90 +870,90 @@ sap.ui.define([
                 MessageBox.error(
                     "Please enter upto 10 digits number for workflow number!"
                 );
-            } else {
-                this.workflowidentered = this.byId("inp_workflow").getValue();
-
-                this.getView().byId("btn_submit").setEnabled(false);
-                this.getView().byId("btn_cancel").setEnabled(false);
-
-                this.openBusyDialog();
-
-                var oDataModel = this.getOwnerComponent().getModel();
-                this.dataload = "Y";
-
-                var oEntry = {};
-                oEntry.Tablename = this.tableName;
-                oEntry.Source = "UI";
-                oEntry.Isdataload = this.dataload;// === 'Y' ? true : false;
-                oEntry.Isoverwritewithnull = this.preserveNull;// === 'Y' ? true : false;
-                oEntry.Isfutureversion = this.futureAllowed;// === 'Y' ? true : false;
-                oEntry.Workflowid = this.workflowidentered;
-
-                var itemData = [];
-
-                for (var i = 0; i < this.finalData.length; i++) {
-                    itemData.push({
-                        Data: this.finalData[i].Data,
-                    });
-                }
-
-                oEntry.NAVINDATA = itemData;
-
-                oEntry.NAVOUTRETMESSAGE = [];
-                var lv_res4 = {};
-                lv_res4.Type = "";
-                lv_res4.Message = "";
-                oEntry.NAVOUTRETMESSAGE[0] = lv_res4;
-
-                oEntry.NAVOUTHEADER = [];
-                var lv_res5 = {};
-                lv_res5.Createcount = 0;
-                lv_res5.Updatecount = 0;
-                lv_res5.Validcount = 0;
-                lv_res5.Invalidcount = 0;
-                lv_res5.Workflowid = "";
-                lv_res5.Tablename = "";
-                oEntry.NAVOUTHEADER[0] = lv_res5;
-
-                oEntry.requesterSapRole = this.rolename;
-                oEntry.requesterRemarks = this.sValue;
-
-                oDataModel.create("/InHeaderSet", oEntry, {
-                    method: "POST",
-                    success: function (oData, oResponse) {
-                        this.closeBusyDialog();
-                        this.WorkflowId =
-                            oResponse.data.NAVOUTHEADER.results[0].Workflowid;
-
-                        /*var oUserData = this
-                          .getOwnerComponent()
-                          .getModel("usermodel")
-                          .getData();
-                        this.oUserId = oUserData.id;
-                        this.ReqEmailId = oUserData.email; */
-
-                        //this.onTriggerWF();
-
-                        MessageBox.information(
-                            "Request submitted successfully with workflow Id " +
-                            oResponse.data.NAVOUTHEADER.results[0].Workflowid,
-                            {
-                                onClose: function (oAction) {
-                                    window.location.reload();
-                                },
-                            }
-                        );
-
-                        this.getView().byId("btn_submit").setVisible(false);
-                        this.getView().byId("btn_cancel").setVisible(false);
-                        this.getView().byId("lbl_warning").setVisible(false);
-                    },
-                    error: function (oError) {
-                        this.closeBusyDialog();
-                        alert("Error Occurred while processing data load");
-                    },
-                });
+                return;
             }
+
+            this.workflowidentered = this.byId("inp_workflow").getValue();
+            this.getView().byId("btn_submit").setEnabled(false);
+            this.getView().byId("btn_cancel").setEnabled(false);
+
+            var oGBusyArray = this.openBusyDialog();
+
+            // Build validData array from finalData — each item must have a 'data' key
+            // matching the { data: String } shape expected by the REST endpoint.
+            var validData = (this.finalData || []).map(function (item) {
+                return { data: item.data || item.Data || "" };
+            });
+
+            // Use fetch() against the REST endpoint.
+            // Rationale: CAP OData V4 returns HTTP 204 (no body) for actions whose
+            // return type contains nested arrays of complex types. The REST endpoint
+            // at /mdrapi/bulk/rest/submitBulkData bypasses that limitation and returns
+            // proper JSON.
+            var that = this;
+            var sServiceUrl = this.getOwnerComponent().getModel().getServiceUrl();
+            var sBaseUrl = sServiceUrl.endsWith("/") ? sServiceUrl.slice(0, -1) : sServiceUrl;
+            var sSubmitUrl = sBaseUrl + "/rest/submitBulkData";
+
+            fetch(sServiceUrl, {
+                method: "GET",
+                headers: {
+                    "X-CSRF-Token": "Fetch",
+                    "Accept": "application/json"
+                }
+            }).then(function (oTokenResponse) {
+                var sCsrfToken = oTokenResponse.headers.get("X-CSRF-Token") || "";
+                
+                return fetch(sSubmitUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json",
+                        "X-CSRF-Token": sCsrfToken
+                    },
+                    body: JSON.stringify({
+                        tablename: that.tableName,
+                        requesterrole: that.rolename,
+                        validData: validData,
+                        overwriteWithNull: that.preserveNull || "N",
+                        futureVersion: that.futureAllowed || "N",
+                        workflowid: that.workflowidentered || "",
+                        remarks: that.sValue || ""
+                    })
+                });
+            }).then(function (oResponse) {
+                return oResponse.text().then(function (sText) {
+                    if (!oResponse.ok) {
+                        throw new Error("Server error " + oResponse.status + ": " + sText);
+                    }
+                    return JSON.parse(sText);
+                });
+            }).then(function (oResult) {
+                this.closeBusyDialog(oGBusyArray);
+                this.WorkflowId = oResult.workflowid;
+
+                // Automatically trigger the BPA workflow after a successful submit
+                this.onTriggerWF();
+
+                MessageBox.information(
+                    "Request submitted successfully with Workflow ID: " + oResult.workflowid,
+                    {
+                        onClose: function () {
+                            window.location.reload();
+                        }
+                    }
+                );
+
+                this.getView().byId("btn_submit").setVisible(false);
+                this.getView().byId("btn_cancel").setVisible(false);
+                this.getView().byId("lbl_warning").setVisible(false);
+            }.bind(this)).catch(function (oError) {
+                this.closeBusyDialog(oGBusyArray);
+                this.getView().byId("btn_submit").setEnabled(true);
+                this.getView().byId("btn_cancel").setEnabled(true);
+                MessageBox.error("Error occurred while submitting data. Please check server logs.");
+                console.error("[onSubmit] Error:", oError);
+            }.bind(this));
         },
 
         onCancel: function (oEvent) {
@@ -860,41 +961,71 @@ sap.ui.define([
         },
 
         onTriggerWF: function () {
-            var oDataModel = this.getOwnerComponent().getModel();
-
-            var oEntry = {};
-            oEntry.isFutureAllowed = this.futureVer;
-            oEntry.isVersioned = this.versioned;
-            oEntry.category = this.categoryName;
-            oEntry.tableName = this.tableName;
-            oEntry.workflowId = this.WorkflowId.toString();
-            oEntry.requesterId = this.oUserId;
-            oEntry.requesterEmailId = this.ReqEmailId;
-            oEntry.validRecordsCount = this.ValidRecordsCount;
-            oEntry.requesterRemarks = this.sValue;
-            oEntry.deleteFlag = "N";
-            oEntry.isOverwriteWithNull = this.Preservenull;
-            oEntry.operationType = "BULK UPDATE";
-            oEntry.requesterRole = this.rolename;
-            oEntry.updateZtabOnly = this.updateztabonly;
-
-            oEntry.approverstage = "APPROVER";
-            oEntry.systemname = "MDR";
-            oEntry.hierarchy = "ZMDR_ACCOUNT";
-            if (this.tableappr == "Y") {
-                this.Subclass = this.tableName;
-            } else {
-                this.Subclass = "ZMDR_ACCOUNTApprover";
+            // Resolve approver class from BulkHdrConfig — the backend reads
+            // ApprClass to determine which approver group handles this table.
+            var apprClass = "";
+            var tabConfig = (this.array || []).find(function (c) {
+                return c.TableName === this.tableName && c.RequesterRole === this.rolename;
+            }.bind(this));
+            if (tabConfig && tabConfig.ApprClass) {
+                apprClass = tabConfig.ApprClass;
             }
 
-            oDataModel.create("/TrigBulkUploadWFSet", oEntry, {
-                method: "POST",
-                success: function (oData, oResponse) {
-                    console.log("WF Triggered");
-                },
-                error: function (oError) {
-                    alert("Error occurred while triggering WF");
-                },
+            // Use fetch() against the REST endpoint (OData V4 compatible).
+            // This replaces the legacy V2 oDataModel.create("/TrigBulkUploadWFSet") call.
+            var that = this;
+            var sServiceUrl = this.getOwnerComponent().getModel().getServiceUrl();
+            var sBaseUrl = sServiceUrl.endsWith("/") ? sServiceUrl.slice(0, -1) : sServiceUrl;
+            var sTriggerUrl = sBaseUrl + "/rest/triggerBulkWorkflow";
+
+            fetch(sServiceUrl, {
+                method: "GET",
+                headers: {
+                    "X-CSRF-Token": "Fetch",
+                    "Accept": "application/json"
+                }
+            }).then(function (oTokenResponse) {
+                var sCsrfToken = oTokenResponse.headers.get("X-CSRF-Token") || "";
+                
+                return fetch(sTriggerUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json",
+                        "X-CSRF-Token": sCsrfToken
+                    },
+                    body: JSON.stringify({
+                        workflowid: that.WorkflowId || "",
+                        tablename: that.tableName,
+                        requestorid: that.oUserId || "",
+                        requestoremail: "abhinandan.d@abhiyantatech.com", // Hardcoded for testing
+                        operationtype: "BULK UPDATE",
+                        approverstage: "APPROVER",
+                        apprclass: apprClass,
+                        validrecordcount: that.validRecordCount || 0,
+                        requesterrole: that.rolename || "",
+                        approvers: [
+                            {
+                                "approverEmail": "abhinandan.d@abhiyantatech.com",
+                                "isCompleted": false,
+                                "stage": "APPROVER"
+                            }
+                        ]
+                    })
+                });
+            }).then(function (oResponse) {
+                return oResponse.text().then(function (sText) {
+                    if (!oResponse.ok) {
+                        throw new Error("WF trigger server error " + oResponse.status + ": " + sText);
+                    }
+                    return JSON.parse(sText);
+                });
+            }).then(function (oResult) {
+                console.log("[onTriggerWF] Workflow triggered. BPA Instance:", oResult.bpaInstanceId);
+            }).catch(function (oError) {
+                // Workflow trigger failure is non-blocking — data is already staged.
+                // Log the error but do not interrupt the user experience.
+                console.error("[onTriggerWF] Workflow trigger failed:", oError);
             });
         },
 
@@ -970,9 +1101,9 @@ sap.ui.define([
                                 .byId("submitDialogTextArea")
                                 .getValue();
                             this.sValue = sText;
-                            this.onSubmit();
                             oDialog.close();
-                        },
+                            this.onSubmit();
+                        }.bind(this),
                     }),
                     endButton: new Button({
                         text: "Cancel",

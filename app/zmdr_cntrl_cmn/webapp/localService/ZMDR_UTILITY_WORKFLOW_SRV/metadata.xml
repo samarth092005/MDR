@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="1.0" xmlns:edmx="http://schemas.microsoft.com/ado/2007/06/edmx" xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata" xmlns:sap="http://www.sap.com/Protocols/SAPData">
+    <edmx:DataServices m:DataServiceVersion="2.0">
+        <Schema Namespace="ZMDR_UTILITY_WORKFLOW_SRV" xml:lang="en" sap:schema-version="1" xmlns="http://schemas.microsoft.com/ado/2008/09/edm">
+            <EntityType Name="TriggerWorkflow" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="WorkflowId"/>
+                </Key>
+                <Property Name="WorkflowId" Type="Edm.String" Nullable="false" MaxLength="10" sap:unicode="false" sap:label="Workflow ID" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Tablename" Type="Edm.String" Nullable="false" MaxLength="16" sap:unicode="false" sap:label="Table Name" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="EntityId" Type="Edm.String" Nullable="false" MaxLength="100" sap:unicode="false" sap:label="Entity ID" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="EntityName" Type="Edm.String" Nullable="false" MaxLength="70" sap:unicode="false" sap:label="Entity Name" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="OperationType" Type="Edm.String" Nullable="false" MaxLength="10" sap:unicode="false" sap:label="Operation Type" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="UserRemarks" Type="Edm.String" Nullable="false" MaxLength="300" sap:unicode="false" sap:label="User Remarks" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="WorkflowIdentifier" Type="Edm.String" Nullable="false" MaxLength="30" sap:unicode="false" sap:label="Workflow Identifier" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+            </EntityType>
+            <EntityType Name="CompleteWorkitem" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="WorkitemId"/>
+                </Key>
+                <Property Name="WorkitemId" Type="Edm.String" Nullable="false" MaxLength="12" sap:unicode="false" sap:label="Workitem ID" sap:creatable="false" sap:updatable="false" sap:sortable="false"/>
+                <Property Name="Action" Type="Edm.String" Nullable="false" MaxLength="15" sap:unicode="false" sap:label="Action" sap:creatable="false" sap:updatable="false" sap:sortable="false"/>
+                <Property Name="ApproverComments" Type="Edm.String" MaxLength="300" sap:unicode="false" sap:label="Approver Comments" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Misc1" Type="Edm.String" MaxLength="30" sap:unicode="false" sap:label="Misc1" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Misc2" Type="Edm.String" MaxLength="30" sap:unicode="false" sap:label="Misc2" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Misc3" Type="Edm.String" MaxLength="30" sap:unicode="false" sap:label="Misc3" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Misc4" Type="Edm.String" MaxLength="30" sap:unicode="false" sap:label="Misc4" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Misc5" Type="Edm.String" MaxLength="250" sap:unicode="false" sap:label="Misc5" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+            </EntityType>
+            <EntityType Name="ReserveWorkitem" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="WorkitemId"/>
+                </Key>
+                <Property Name="WorkitemId" Type="Edm.String" Nullable="false" MaxLength="12" sap:unicode="false" sap:label="Workitem ID" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Action" Type="Edm.String" Nullable="false" MaxLength="20" sap:unicode="false" sap:label="Action" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+            </EntityType>
+            <EntityType Name="UserRemarks" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="WorkflowId"/>
+                    <PropertyRef Name="EntityId"/>
+                    <PropertyRef Name="EntityName"/>
+                    <PropertyRef Name="CurrentStage"/>
+                </Key>
+                <Property Name="WorkflowId" Type="Edm.String" Nullable="false" MaxLength="10" sap:unicode="false" sap:label="WorkflowId" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="EntityId" Type="Edm.String" Nullable="false" MaxLength="100" sap:unicode="false" sap:label="Entity ID" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="EntityName" Type="Edm.String" Nullable="false" MaxLength="70" sap:unicode="false" sap:label="Entity Name" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="CurrentStage" Type="Edm.String" Nullable="false" MaxLength="30" sap:unicode="false" sap:label="Current Stage" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="RequestorId" Type="Edm.String" MaxLength="20" sap:unicode="false" sap:label="Requestor ID" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="RequestorName" Type="Edm.String" MaxLength="80" sap:unicode="false" sap:label="Requestor Name" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="RequestorEmail" Type="Edm.String" MaxLength="241" sap:unicode="false" sap:label="Requestor Email" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="RequestorRemarks" Type="Edm.String" MaxLength="300" sap:unicode="false" sap:label="Requestor Remarks" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="ApproverId" Type="Edm.String" MaxLength="20" sap:unicode="false" sap:label="Approver ID" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="ApproverName" Type="Edm.String" MaxLength="80" sap:unicode="false" sap:label="Approver Name" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="ApproverEmail" Type="Edm.String" MaxLength="241" sap:unicode="false" sap:label="Approver Email" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="ApproverRemarks" Type="Edm.String" MaxLength="300" sap:unicode="false" sap:label="Approver Remarks" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+            </EntityType>
+            <EntityContainer Name="ZMDR_UTILITY_WORKFLOW_SRV_Entities" m:IsDefaultEntityContainer="true" sap:supported-formats="atom json xlsx">
+                <EntitySet Name="TriggerWorkflowSet" EntityType="ZMDR_UTILITY_WORKFLOW_SRV.TriggerWorkflow" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:pageable="false" sap:addressable="false" sap:content-version="1"/>
+                <EntitySet Name="CompleteWorkitemSet" EntityType="ZMDR_UTILITY_WORKFLOW_SRV.CompleteWorkitem" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:pageable="false" sap:addressable="false" sap:content-version="1"/>
+                <EntitySet Name="ReserveWorkitemSet" EntityType="ZMDR_UTILITY_WORKFLOW_SRV.ReserveWorkitem" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:pageable="false" sap:addressable="false" sap:content-version="1"/>
+                <EntitySet Name="UserRemarksSet" EntityType="ZMDR_UTILITY_WORKFLOW_SRV.UserRemarks" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:pageable="false" sap:addressable="false" sap:content-version="1"/>
+            </EntityContainer>
+            <Annotation Term="Core.SchemaVersion" String="1.0.0" xmlns="http://docs.oasis-open.org/odata/ns/edm"/>
+            <atom:link rel="self" href="http://cloud9.way2erp.us:8000/sap/opu/odata/sap/ZMDR_UTILITY_WORKFLOW_SRV/$metadata" xmlns:atom="http://www.w3.org/2005/Atom"/>
+            <atom:link rel="latest-version" href="http://cloud9.way2erp.us:8000/sap/opu/odata/sap/ZMDR_UTILITY_WORKFLOW_SRV/$metadata" xmlns:atom="http://www.w3.org/2005/Atom"/>
+        </Schema>
+    </edmx:DataServices>
+</edmx:Edmx>

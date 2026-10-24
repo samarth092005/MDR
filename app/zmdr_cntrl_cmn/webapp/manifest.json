@@ -1,0 +1,249 @@
+{
+  "_version": "1.53.0",
+  "sap.app": {
+    "id": "com.intapptics.zmdrcntrlcmn",
+    "type": "application",
+    "i18n": "i18n/i18n.properties",
+    "applicationVersion": {
+      "version": "0.0.1"
+    },
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "sourceTemplate": {
+      "id": "@sap/generator-fiori:basic",
+      "version": "1.16.5",
+      "toolsId": "98288bcf-81c3-4a40-b56c-7036be8d728a"
+    },
+    "crossNavigation": {
+      "inbounds": {
+        "zmdr_central_cmn-manage": {
+          "semanticObject": "zmdr_central_cmn",
+          "action": "manage",
+          "title": "Central Common",
+          "subTitle": "Common Application - Do not launch directly",
+          "signature": {
+            "parameters": {},
+            "additionalParameters": "allowed"
+          }
+        }
+      }
+    },
+    "dataSources": {
+      "mainService": {
+        "uri": "mdrapi/central/",
+        "type": "OData",
+        "settings": {
+          "annotations": [],
+          "localUri": "localService/mainService/metadata.xml",
+          "odataVersion": "4.0"
+        }
+      },
+      "workflowService": {
+        "uri": "mdrapi/workflow/",
+        "type": "OData",
+        "settings": {
+          "annotations": [],
+          "localUri": "localService/workflowService/metadata.xml",
+          "odataVersion": "4.0"
+        }
+      }
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "fullWidth": true,
+    "icons": {
+      "icon": "",
+      "favIcon": "",
+      "phone": "",
+      "phone@2": "",
+      "tablet": "",
+      "tablet@2": ""
+    },
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "flexEnabled": false,
+    "dependencies": {
+      "minUI5Version": "1.120.20",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {},
+        "sap.f": {},
+        "sap.ui.layout": {},
+        "sap.ui.unified": {}
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "com.intapptics.zmdrcntrlcmn.i18n.i18n",
+          "supportedLocales": [""],
+          "fallbackLocale": ""
+        }
+      },
+      "": {
+        "dataSource": "mainService",
+        "preload": true,
+        "type": "sap.ui.model.odata.v4.ODataModel",
+        "settings": {
+          "autoExpandSelect": true,
+          "operationMode": "Server",
+          "synchronizationMode": "None",
+          "groupId": "$direct"
+        }
+      },
+      "ZMDR_UTILITY_WORKFLOW_SRV": {
+        "dataSource": "workflowService",
+        "preload": true,
+        "type": "sap.ui.model.odata.v4.ODataModel",
+        "settings": {
+          "autoExpandSelect": true,
+          "operationMode": "Server",
+          "synchronizationMode": "None"
+        }
+      }
+    },
+    "resources": {
+      "css": [
+        {
+          "uri": "css/style.css"
+        }
+      ]
+    },
+    "routing": {
+      "config": {
+        "routerClass": "sap.m.routing.Router",
+        "viewType": "XML",
+        "async": true,
+        "viewPath": "com.intapptics.zmdrcntrlcmn.view",
+        "controlAggregation": "pages",
+        "controlId": "app",
+        "clearControlAggregation": false
+      },
+      "routes": [
+        {
+          "id": "mainscreen-default",
+          "pattern": "detail/{SAPOrigin}/{AppTaskId}/{query}",
+          "name": "approvaltask",
+          "target": [
+            "mainscreen"
+          ]
+        },
+        {
+          "id": "mainscreen",
+          "pattern": "/:?sap-iapp-state:",
+          "name": "mainscreen",
+          "target": [
+            "mainscreen"
+          ]
+        }
+      ],
+      "targets": {
+        "mainscreen": {
+          "viewLevel": 1,
+          "viewId": "mainScreen",
+          "viewName": "MainScreen"
+        },
+        "notFound": {
+          "viewLevel": 1,
+          "viewId": "notFound",
+          "viewName": "notFound"
+        }
+      }
+    },
+    "rootView": {
+      "viewName": "com.intapptics.zmdrcntrlcmn.view.App",
+      "type": "XML",
+      "async": true,
+      "id": "app"
+    }
+  },
+  "sap.cloud": {
+    "public": true,
+    "service": "mdr.cap.btp"
+  },
+  "sap.bpa.task": {
+    "_version": "1.0.0",
+    "outcomes": [
+      {
+        "id": "approve",
+        "label": "Approve"
+      },
+      {
+        "id": "reject",
+        "label": "Reject"
+      }
+    ],
+    "inputs": {
+      "$schema": "http://json-schema.org/draft-07/schema",
+      "title": "input",
+      "type": "object",
+      "required": [
+        "sActionType",
+        "sActionedBy",
+        "sPrvStage",
+        "sNextStage",
+        "sTablename",
+        "sWorkflowID"
+      ],
+      "properties": {
+        "sActionType": {
+          "type": "string",
+          "title": "Action Type",
+          "description": "Action Type like Create, Amend, Close or Reopen"
+        },
+        "sActionedBy": {
+          "type": "string",
+          "title": "Actioned By",
+          "description": "Actioned By Requestor or Approver"
+        },
+        "sPrvStage": {
+          "type": "string",
+          "title": "Previous Stage",
+          "description": "Previous Stage"
+        },
+        "sNextStage": {
+          "type": "string",
+          "title": "Next Stage",
+          "description": "Next Stage"
+        },
+        "sTablename": {
+          "type": "string",
+          "title": "Table Name",
+          "description": "Table Name"
+        },
+        "sWorkflowID": {
+          "type": "string",
+          "title": "Workflow Id",
+          "description": "Workflow Id"
+        }
+      }
+    },
+    "outputs": {
+      "$schema": "http://json-schema.org/draft-07/schema",
+      "title": "output",
+      "type": "object",
+      "required": [
+        "comment"
+      ],
+      "properties": {
+        "comment": {
+          "type": "string",
+          "title": "Comment",
+          "description": "Approver Comment"
+        }
+      }
+    },
+    "category": "approval"
+  }
+}

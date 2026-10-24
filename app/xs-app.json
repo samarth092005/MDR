@@ -1,17 +1,36 @@
 {
-    "welcomeFile": "/com.intapptics.zmdrbulkload/index.html",
+    "welcomeFile": "/index.html",
     "authenticationMethod": "route",
     "routes": [
         {
-            "source": "^/api/(.*)$",
+            "source": "^/odata/v2/(.*)$",
+            "target": "/odata/v2/$1",
             "destination": "srv-api",
             "authenticationType": "xsuaa"
         },
         {
-            "source": "^/com.intapptics.zmdrbulkload/(.*)$",
-            "target": "$1",
-            "localDir": "zmdr_bulkload/dist",
+            "source": "^/api/(.*)$",
+            "target": "/api/$1",
+            "destination": "srv-api",
             "authenticationType": "xsuaa"
+        },
+        {
+            "source": "^/mdrapi/(.*)$",
+            "target": "/mdrapi/$1",
+            "destination": "srv-api",
+            "authenticationType": "xsuaa"
+        },
+        {
+            "source": "^/?odata/(.*)$",
+            "target": "/odata/$1",
+            "destination": "srv-api",
+            "authenticationType": "xsuaa"
+        },
+        {
+            "source": "^(.*)$",
+            "service": "html5-apps-repo-rt",
+            "authenticationType": "xsuaa",
+            "target": "$1"
         }
     ]
 }

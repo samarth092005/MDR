@@ -47,27 +47,30 @@ sap.ui.define([
                 this.fn_getLogReference().info("Category List Controller: Local model 'categoryViewModel' is set to view");
 
                 // Get All Category and Table list
-                oCntrlUiConfigOdataModel.read("/UIConfigSet", {
-                    async: true,
-                    success: function (oData) {
-                        // Update the data to the model if it exists or set the model globally if does not exists
-                        if (!this.fn_getGlobalModel("oCntrlUiConfigLocalModel")) {
-                            oCntrlUiConfigDataModel.setData(oData.results);
-                            this.fn_setGlobalModel(oCntrlUiConfigDataModel, "oCntrlUiConfigDataModel");
-                        } else {
-                            this.fn_getGlobalModel("oCntrlUiConfigDataModel").setData(oData.results);
-                        }
+                // [V4 MIGRATION] Replaced V2 oModel.read() with native OData V4 bindList().requestContexts().
+                // /CntrlUIVis is a plain EntitySet (central-service.cds line 11). bindList() is correct.
+                // The V2-only `async: true` parameter is removed (implicit in V4).
+                // Success/error logic is preserved exactly — data is mapped to plain objects via getObject().
+                oCntrlUiConfigOdataModel.bindList("/CntrlUIVis").requestContexts(0, Infinity).then(function (aContexts) {
+                    var aData = aContexts.map(function (oContext) { return oContext.getObject(); });
 
-                        // Process data received from backend
-                        this._fn_cntrlUiVisModelLoaded(oCntrlUiConfigDataModel);
-                    }.bind(this),
-                    error: function (oError) {
-                        this.fn_showServiceError(oError);
+                    // Update the data to the model if it exists or set the model globally if does not exist
+                    if (!this.fn_getGlobalModel("oCntrlUiConfigLocalModel")) {
+                        oCntrlUiConfigDataModel.setData(aData);
+                        this.fn_setGlobalModel(oCntrlUiConfigDataModel, "oCntrlUiConfigDataModel");
+                    } else {
+                        this.fn_getGlobalModel("oCntrlUiConfigDataModel").setData(aData);
+                    }
 
-                        // Log Error
-                        this.fn_getLogReference().error("Odata Read Error", "Unable to read data Cntrl UI Visibility Service");
-                    }.bind(this)
-                });
+                    // Process data received from backend
+                    this._fn_cntrlUiVisModelLoaded(oCntrlUiConfigDataModel);
+                }.bind(this)).catch(function (oError) {
+                    this.fn_closeBusyDialog();
+                    this.fn_showServiceError(oError);
+
+                    // Log Error
+                    this.fn_getLogReference().error("Odata Read Error", "Unable to read data Cntrl UI Visibility Service");
+                }.bind(this));
 
                 // Attach routing pattern match function to be called
                 this.fn_getRouter().getRoute("category").attachPatternMatched(this._fn_onObjectMatched, this);
@@ -159,16 +162,18 @@ sap.ui.define([
                 sHash = sap.ui.core.routing.HashChanger.getInstance().getHash();
                 // If hash tag is empty then proceed as hash tag will only be empty when the app is 
                 // instantiated from tile and not from anywhere else
-                if (sHash !== "undefined" & sHash != "") {
+                if (sHash !== "undefined" && sHash != "") {
                     // Log information
                     this.fn_getLogReference().info("Category List Controller: Current hash tag is - " + sHash);
                 } else if (this.bFirstTime) {
                     // Set the flag to false
-                    this.bFirstFlag = false;
+                    this.bFirstTime = false;
 
                     // Select the first item and fire select change event
-                    oList.setSelectedItem(oList.getItems()[0]);
-                    oList.fireSelectionChange();
+                    if (oList.getItems().length > 0) {
+                        oList.setSelectedItem(oList.getItems()[0]);
+                        oList.fireSelectionChange();
+                    }
 
                     // Log information
                     this.fn_getLogReference().info("Category List Controller: First item is preselected and fired the select change event");
@@ -308,7 +313,7 @@ sap.ui.define([
                         }).length === 0) {
                             aUniqueRepositories.push({
                                 "repositoryName": oCntrlConfigData.Repository,
-                                "repositoryLabel": oCntrlConfigData.Repositorylabel
+                                "repositoryLabel": oCntrlConfigData.RepositoryLabel // Fallback to repository id since label is not present in new model
                             });
                         }
                     });

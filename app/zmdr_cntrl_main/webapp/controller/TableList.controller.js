@@ -205,7 +205,7 @@ sap.ui.define([
 
                 // If value entered in the search field add that into the filter
                 if (sValue && sValue.length > 0) {
-                    aFilter.push(new Filter("tableName", FilterOperator.Contains, sValue));
+                    aFilter.push(new Filter("TableName", FilterOperator.Contains, sValue));
                 }
 
                 // Bind the filter with the list
@@ -252,6 +252,8 @@ sap.ui.define([
 
                         // Log information
                         this.fn_getLogReference().info("Table List Controller: Middle column set to full screen along with buttons visibility");
+                        break;
+
                     case this.getView().createId("btnExitFullScreenTabList"):
                         // Log information
                         this.fn_getLogReference().info("Table List Controller: Exit Full Screen button pressed");
@@ -265,12 +267,15 @@ sap.ui.define([
 
                         // Log information
                         this.fn_getLogReference().info("Table List Controller: Middle column expanded along with buttons visibility");
+                        break;
+
                     case this.getView().createId("btnClosePageTabList"):
                         // Log information
                         this.fn_getLogReference().info("Table List Controller: Close Page button pressed");
                         
                         // Navigate to category list page
                         this.fn_getRouter().navTo("category");
+                        break;
                 }
 
                 // Log information
@@ -304,11 +309,11 @@ sap.ui.define([
 
                 /** Method Implementation */
                 // Check if any config data is present for the logged in user
-                if (aCntrlConfigData.length() !== 0) {
+                if (aCntrlConfigData.length !== 0) {
                     // Sort the array based on Table
                     aCntrlConfigData.sort(function (oVal1, oVal2) {
-                        sTemp1 = oVal1.Repository.toLowerCase();
-                        sTemp2 = oVal2.Repository.toLowerCase();
+                        sTemp1 = oVal1.repository.toLowerCase();
+                        sTemp2 = oVal2.repository.toLowerCase();
 
                         if (sTemp1 !== undefined && sTemp2 !== undefined) {
                             if (sTemp1 < sTemp2) {
@@ -327,11 +332,11 @@ sap.ui.define([
                     aCntrlConfigData.forEach(function (oCntrlConfigData) {
                         // Check if already added into the array
                         if (aUniqueRepositories.filter(function (oUniqueRepositories) {
-                            return oUniqueRepositories.repositoryName === oCntrlConfigData.Repository
+                            return oUniqueRepositories.repositoryName === oCntrlConfigData.repository
                         }).length === 0) {
                             aUniqueRepositories.push({
-                                "repositoryName": oCntrlConfigData.Repository,
-                                "repositoryLabel": oCntrlConfigData.Repositorylabel
+                                "repositoryName": oCntrlConfigData.repository,
+                                "repositoryLabel": oCntrlConfigData.repository // Fallback to repository id since label is not present in new model
                             });
                         }
                     });
@@ -370,6 +375,8 @@ sap.ui.define([
                 // Log information
                 this.fn_getLogReference().info("Table List Controller: Entering _fn_onObjectMatched method");
 
+                this.getView().getParent().getParent().setLayout("TwoColumnsMidExpanded");
+
                 /** Define Variables */
                 var oCntrlUiConfigData, // Stores all the Central UI configuration data applicable to the logged in user
                     aFilteredTables = [], // Array of all tables applicable to the selected repository
@@ -382,7 +389,7 @@ sap.ui.define([
                 this.sRepositoryId = oEvent.getParameter("arguments").sCategoryPath;
 
                 // Initiate busy indicator
-                this.fn_openBusyDialog();
+                // this.fn_openBusyDialog(); // Removed synchronous busy dialog call
 
                 // Check if model is present or not
                 if (this.fn_getGlobalModel("oUniqueRepositoriesModel") && this.fn_getGlobalModel("oCntrlUiConfigDataModel")) {
@@ -394,19 +401,24 @@ sap.ui.define([
 
                     // Log information
                     this.fn_getLogReference().info("Table List Controller: Selected repository - " + oSelectedRepository.repositoryName);
-
+                    
                     // Filter the config model based on the selected repository
+                    // Handle both lowercase (OData V4 / CAP default) and PascalCase (OData V2 proxy)
                     aFilteredTables = oCntrlUiConfigData.filter(function (data) {
-                        return data.Repository === oSelectedRepository.repositoryName;
+                        var sRepo = data.repository || data.Repository;
+                        return sRepo === oSelectedRepository.repositoryName;
                     });
 
                     // Get unique tables from the above filtered data
-                    aFilteredTables = aFilteredTables.forEach(function (oDupTable) {
+                    aFilteredTables.forEach(function (oDupTable) {
+                        var sTableLabel = oDupTable.TableLabel || oDupTable.Tablelabel;
+                        var sTableName = oDupTable.TableName || oDupTable.Tablename;
                         if (aUniqueTables.filter(function (oUniqueTable) {
-                            return oUniqueTable.tableName === oDupTable.Tablelabel;
+                            return oUniqueTable.tableName === sTableLabel;
                         }).length === 0) {
                             aUniqueTables.push({
-                                "tableName": oDupTable.Tablelabel
+                                "tableName": sTableLabel,
+                                "tableId": sTableName
                             });
                         }
                     }, this);
@@ -430,9 +442,6 @@ sap.ui.define([
 
                     // Clear any previous table selections
                     this.byId("tblTableList").removeSelections();
-
-                    // CLose the busy indicator
-                    this.fn_closeBusyDialog();
                 } else {
                     // Navigate to home page
                     this.fn_getRouter().navTo("category");

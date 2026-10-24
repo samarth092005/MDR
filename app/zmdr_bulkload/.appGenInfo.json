@@ -4,7 +4,7 @@
     "generatorPlatform": "Visual Studio Code",
     "serviceType": "Local CAP",
     "metadataFilename": "",
-    "serviceUrl": "http://localhost:4004/api/bulk/",
+    "serviceUrl": "http://localhost:4004/mdrapi/bulk/",
     "appName": "zmdr_bulkload",
     "appTitle": "A bulk upload application",
     "appDescription": "A bulk upload application",

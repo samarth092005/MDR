@@ -28,7 +28,7 @@ async function insertVersionedRow(params) {
     const active = await readRows(db, tablename, `${clause} AND "VERSION_ACTIVE" = ?`, [...values, 'Y']);
     if (active.length > 0) {
       for (const cfg of lineitemConfig) {
-        const key = cfg.columnname.toUpperCase();
+        const key = cfg.Columnname.toUpperCase();
         if (row[key] === null || row[key] === '') row[key] = active[0][key] ?? null;
       }
     }
@@ -36,16 +36,27 @@ async function insertVersionedRow(params) {
   await insertRow(db, tablename, row);
 }
 
+function getEntity(name) {
+  const zEntities = cds.entities ? cds.entities('zmdr') : null;
+  return (zEntities && zEntities[name]) || (cds.entities && cds.entities[name]) || (cds.entities && cds.entities[`zmdr.${name}`]);
+}
+
 // storeBulkTemp: for non-versioned tables, store row in BulkTemp holding area
 // Replaces ABAP INSERT INTO ZMDR_BULKTEMP in ZMDR_FM_PROCESS_BULK_DATA
 async function storeBulkTemp(params) {
   const { tablename, rowString, workflowid, actiontype } = params;
   const db = await cds.connect.to('db');
-  const { BulkTemp } = db.entities;  // config table — CAP ORM
-  await db.run(INSERT.into(BulkTemp).entries({
-    tablename, bulkdata: rowString, workflowid, actiontype,
-    initiationdate: new Date().toISOString(), requeststatus: 'INPROGRESS',
-  }));
+  const BulkTemp = getEntity('BulkTemp') || db.entities?.BulkTemp;
+  if (BulkTemp) {
+    await db.run(INSERT.into(BulkTemp).entries({
+      Tablename: tablename, tablename,
+      BulkData: rowString, bulkdata: rowString,
+      WorkflowId: workflowid, workflowid,
+      ActionType: actiontype, actiontype,
+      InitiationDate: new Date().toISOString(), initiationdate: new Date().toISOString(),
+      RequestStatus: 'INPROGRESS', requeststatus: 'INPROGRESS',
+    }));
+  }
 }
 
 // applyBulkTempApproved: on APPROVE of non-versioned table, apply BulkTemp to real table
@@ -53,14 +64,14 @@ async function storeBulkTemp(params) {
 async function applyBulkTempApproved(params) {
   const { tablename, workflowid, lineitemConfig, keyFields, isOverwriteNull, userId } = params;
   const db = await cds.connect.to('db');
-  const { BulkTemp } = db.entities;
+  const BulkTemp = getEntity('BulkTemp') || db.entities?.BulkTemp;
   const now = new Date().toISOString();
 
-  const tempRows = await db.run(  // CAP ORM — BulkTemp is config table
-    SELECT.from(BulkTemp).where({ workflowid, tablename, requeststatus: 'INPROGRESS' })
-  );
+  const tempRows = BulkTemp ? await db.run(  // CAP ORM — BulkTemp is config table
+    SELECT.from(BulkTemp).where(`(WorkflowId = '${workflowid}' or workflowid = '${workflowid}') and (Tablename = '${tablename}' or tablename = '${tablename}') and (RequestStatus = 'INPROGRESS' or requeststatus = 'INPROGRESS')`)
+  ) : [];
   for (const tr of tempRows) {
-    const splitData = tr.bulkdata.split('«');
+    const splitData = tr.BulkData.split('«');
     const { clause, values: kv } = buildKeyWhere(splitData, lineitemConfig, keyFields);
     const existing = await readRows(db, tablename, clause, kv);  // dynamic raw SQL
     const rowToWrite = buildRowFromSplit(splitData, lineitemConfig, { UPDATED_ON: now, UPDATED_BY: userId });
@@ -68,7 +79,7 @@ async function applyBulkTempApproved(params) {
     if (existing.length > 0) {
       if (isOverwriteNull === 'N') {
         for (const cfg of lineitemConfig) {
-          const k = cfg.columnname.toUpperCase();
+          const k = cfg.Columnname.toUpperCase();
           if (rowToWrite[k] === null || rowToWrite[k] === '') rowToWrite[k] = existing[0][k] ?? null;
         }
       }
@@ -81,7 +92,7 @@ async function applyBulkTempApproved(params) {
     }
   }
   // Mark APPROVED — CAP ORM
-  await db.run(UPDATE(BulkTemp).set({ requeststatus: 'APPROVED' }).where({ workflowid, tablename }));
+  await db.run(UPDATE(BulkTemp).set({ RequestStatus: 'APPROVED' }).where({ WorkflowId: workflowid, Tablename: tablename }));
 }
 
 // approveVersionedTable: on APPROVE of versioned table, promote G->Y and deactivate old Y

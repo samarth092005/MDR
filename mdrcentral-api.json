@@ -1,0 +1,4131 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Use the title annotation on your CDS service to provide a meaningful title.",
+    "description": "Use the Core.LongDescription or Core.Description annotation on your CDS service to provide a meaningful description.",
+    "version": ""
+  },
+  "x-sap-api-type": "ODATAV4",
+  "x-odata-version": "4.01",
+  "x-sap-shortText": "Use the Core.Description annotation on your CDS service to provide a meaningful short text.",
+  "servers": [
+    {
+      "url": "/mdrapi/central"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Cntrl UIConfig"
+    },
+    {
+      "name": "Cntrl UIUrl"
+    },
+    {
+      "name": "Cntrl UIVis"
+    },
+    {
+      "name": "UIConfig Set"
+    },
+    {
+      "name": "ZMDGCPCNTRLVAL01"
+    },
+    {
+      "name": "ZMDGCPCNTRLVAL01Set"
+    },
+    {
+      "name": "ZMDR BPMASTER"
+    },
+    {
+      "name": "ZMDR GLACCOUNT"
+    }
+  ],
+  "paths": {
+    "/$batch": {
+      "post": {
+        "summary": "Sends a group of requests",
+        "description": "Group multiple requests into a single request payload, see [Batch Requests](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_BatchRequests).\n\n*Please note that \"Try it out\" is not supported for this request.*",
+        "tags": [
+          "Batch Requests"
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Batch request",
+          "content": {
+            "multipart/mixed;boundary=request-separator": {
+              "schema": {
+                "type": "string"
+              },
+              "example": "--request-separator\nContent-Type: application/http\nContent-Transfer-Encoding: binary\n\nGET CntrlUIConfig HTTP/1.1\nAccept: application/json\n\n\n--request-separator--"
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Batch response",
+            "content": {
+              "multipart/mixed": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "--response-separator\nContent-Type: application/http\n\nHTTP/1.1 200 OK\nContent-Type: application/json\n\n{...}\n--response-separator--"
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/CntrlUIConfig": {
+      "get": {
+        "summary": "Retrieves a list of cntrl UI config.",
+        "tags": [
+          "Cntrl UIConfig"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "name": "$filter",
+            "description": "Filter items by property values, see [Filtering](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionfilter)",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "name": "$orderby",
+            "description": "Order items by property values, see [Sorting](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionorderby)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "CreatedOn",
+                  "CreatedOn desc",
+                  "CreatedBy",
+                  "CreatedBy desc",
+                  "UpdatedOn",
+                  "UpdatedOn desc",
+                  "UpdatedBy",
+                  "UpdatedBy desc",
+                  "TableName",
+                  "TableName desc",
+                  "ColumnName",
+                  "ColumnName desc",
+                  "ColumnSeqNo",
+                  "ColumnSeqNo desc",
+                  "ColumnDataType",
+                  "ColumnDataType desc",
+                  "ColumnLabel",
+                  "ColumnLabel desc",
+                  "FieldSize",
+                  "FieldSize desc",
+                  "SectionId",
+                  "SectionId desc",
+                  "SectionName",
+                  "SectionName desc",
+                  "SectionSequence",
+                  "SectionSequence desc",
+                  "DefaultValue",
+                  "DefaultValue desc",
+                  "LkpOdata",
+                  "LkpOdata desc",
+                  "LkpFieldsName",
+                  "LkpFieldsName desc",
+                  "LkpFieldsLabel",
+                  "LkpFieldsLabel desc",
+                  "LkpFieldsType",
+                  "LkpFieldsType desc",
+                  "LkpDataRestField",
+                  "LkpDataRestField desc",
+                  "LkpDataRestCond",
+                  "LkpDataRestCond desc",
+                  "LkpDataRestValue",
+                  "LkpDataRestValue desc",
+                  "MandatoryFlag",
+                  "MandatoryFlag desc",
+                  "VisibilityFlag",
+                  "VisibilityFlag desc",
+                  "EditableFlag",
+                  "EditableFlag desc",
+                  "SearchFieldFlag",
+                  "SearchFieldFlag desc",
+                  "ResultSetFieldFlag",
+                  "ResultSetFieldFlag desc",
+                  "ItemDetailsFlag",
+                  "ItemDetailsFlag desc",
+                  "PrimaryKeyFlag",
+                  "PrimaryKeyFlag desc",
+                  "ParentFieldFlag",
+                  "ParentFieldFlag desc",
+                  "ChildFieldFlag",
+                  "ChildFieldFlag desc",
+                  "LevelNumberFieldFlag",
+                  "LevelNumberFieldFlag desc",
+                  "ChildDescriptionFlag",
+                  "ChildDescriptionFlag desc",
+                  "LevelApplicabilityFlag",
+                  "LevelApplicabilityFlag desc",
+                  "LevelNumberValFld",
+                  "LevelNumberValFld desc",
+                  "DisplayFieldFlag",
+                  "DisplayFieldFlag desc",
+                  "DisplayFieldOf",
+                  "DisplayFieldOf desc"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "CreatedOn",
+                  "CreatedBy",
+                  "UpdatedOn",
+                  "UpdatedBy",
+                  "TableName",
+                  "ColumnName",
+                  "ColumnSeqNo",
+                  "ColumnDataType",
+                  "ColumnLabel",
+                  "FieldSize",
+                  "SectionId",
+                  "SectionName",
+                  "SectionSequence",
+                  "DefaultValue",
+                  "LkpOdata",
+                  "LkpFieldsName",
+                  "LkpFieldsLabel",
+                  "LkpFieldsType",
+                  "LkpDataRestField",
+                  "LkpDataRestCond",
+                  "LkpDataRestValue",
+                  "MandatoryFlag",
+                  "VisibilityFlag",
+                  "EditableFlag",
+                  "SearchFieldFlag",
+                  "ResultSetFieldFlag",
+                  "ItemDetailsFlag",
+                  "PrimaryKeyFlag",
+                  "ParentFieldFlag",
+                  "ChildFieldFlag",
+                  "LevelNumberFieldFlag",
+                  "ChildDescriptionFlag",
+                  "LevelApplicabilityFlag",
+                  "LevelNumberValFld",
+                  "DisplayFieldFlag",
+                  "DisplayFieldOf"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved cntrl UI config",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of CntrlUIConfig",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CentralService.CntrlUIConfig"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/CntrlUIConfig(TableName='{TableName}',ColumnName='{ColumnName}')": {
+      "parameters": [
+        {
+          "description": "key: TableName",
+          "in": "path",
+          "name": "TableName",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 30
+          }
+        },
+        {
+          "description": "key: ColumnName",
+          "in": "path",
+          "name": "ColumnName",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 30
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves a single cntrl UI config.",
+        "tags": [
+          "Cntrl UIConfig"
+        ],
+        "parameters": [
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "CreatedOn",
+                  "CreatedBy",
+                  "UpdatedOn",
+                  "UpdatedBy",
+                  "TableName",
+                  "ColumnName",
+                  "ColumnSeqNo",
+                  "ColumnDataType",
+                  "ColumnLabel",
+                  "FieldSize",
+                  "SectionId",
+                  "SectionName",
+                  "SectionSequence",
+                  "DefaultValue",
+                  "LkpOdata",
+                  "LkpFieldsName",
+                  "LkpFieldsLabel",
+                  "LkpFieldsType",
+                  "LkpDataRestField",
+                  "LkpDataRestCond",
+                  "LkpDataRestValue",
+                  "MandatoryFlag",
+                  "VisibilityFlag",
+                  "EditableFlag",
+                  "SearchFieldFlag",
+                  "ResultSetFieldFlag",
+                  "ItemDetailsFlag",
+                  "PrimaryKeyFlag",
+                  "ParentFieldFlag",
+                  "ChildFieldFlag",
+                  "LevelNumberFieldFlag",
+                  "ChildDescriptionFlag",
+                  "LevelApplicabilityFlag",
+                  "LevelNumberValFld",
+                  "DisplayFieldFlag",
+                  "DisplayFieldOf"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved cntrl UI config",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CentralService.CntrlUIConfig"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/CntrlUIUrl": {
+      "get": {
+        "summary": "Retrieves a list of cntrl UI url.",
+        "tags": [
+          "Cntrl UIUrl"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "name": "$filter",
+            "description": "Filter items by property values, see [Filtering](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionfilter)",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "name": "$orderby",
+            "description": "Order items by property values, see [Sorting](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionorderby)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "CreatedOn",
+                  "CreatedOn desc",
+                  "CreatedBy",
+                  "CreatedBy desc",
+                  "UpdatedOn",
+                  "UpdatedOn desc",
+                  "UpdatedBy",
+                  "UpdatedBy desc",
+                  "TableName",
+                  "TableName desc",
+                  "OdataUrl",
+                  "OdataUrl desc",
+                  "ColumnCount",
+                  "ColumnCount desc"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "CreatedOn",
+                  "CreatedBy",
+                  "UpdatedOn",
+                  "UpdatedBy",
+                  "TableName",
+                  "OdataUrl",
+                  "ColumnCount"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved cntrl UI url",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of CntrlUIUrl",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CentralService.CntrlUIUrl"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      },
+      "post": {
+        "summary": "Creates a single cntrl UI url.",
+        "tags": [
+          "Cntrl UIUrl"
+        ],
+        "requestBody": {
+          "description": "New cntrl UI url",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CentralService.CntrlUIUrl-create"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created cntrl UI url",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CentralService.CntrlUIUrl"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/CntrlUIUrl('{TableName}')": {
+      "parameters": [
+        {
+          "description": "key: TableName",
+          "in": "path",
+          "name": "TableName",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 30
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves a single cntrl UI url.",
+        "tags": [
+          "Cntrl UIUrl"
+        ],
+        "parameters": [
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "CreatedOn",
+                  "CreatedBy",
+                  "UpdatedOn",
+                  "UpdatedBy",
+                  "TableName",
+                  "OdataUrl",
+                  "ColumnCount"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved cntrl UI url",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CentralService.CntrlUIUrl"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Changes a single cntrl UI url.",
+        "tags": [
+          "Cntrl UIUrl"
+        ],
+        "requestBody": {
+          "description": "New property values",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CentralService.CntrlUIUrl-update"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Success"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Deletes a single cntrl UI url.",
+        "tags": [
+          "Cntrl UIUrl"
+        ],
+        "responses": {
+          "204": {
+            "description": "Success"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/CntrlUIVis": {
+      "get": {
+        "summary": "Retrieves a list of cntrl UI vis.",
+        "tags": [
+          "Cntrl UIVis"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "name": "$filter",
+            "description": "Filter items by property values, see [Filtering](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionfilter)",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "name": "$orderby",
+            "description": "Order items by property values, see [Sorting](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionorderby)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "CreatedOn",
+                  "CreatedOn desc",
+                  "CreatedBy",
+                  "CreatedBy desc",
+                  "UpdatedOn",
+                  "UpdatedOn desc",
+                  "UpdatedBy",
+                  "UpdatedBy desc",
+                  "Role",
+                  "Role desc",
+                  "TableName",
+                  "TableName desc",
+                  "Repository",
+                  "Repository desc",
+                  "RepositoryLabel",
+                  "RepositoryLabel desc",
+                  "TableLabel",
+                  "TableLabel desc",
+                  "ApprovalType",
+                  "ApprovalType desc",
+                  "ApprovalLevel",
+                  "ApprovalLevel desc",
+                  "IsHierarchy",
+                  "IsHierarchy desc",
+                  "IsCreateEnabled",
+                  "IsCreateEnabled desc",
+                  "IsAmendEnabled",
+                  "IsAmendEnabled desc",
+                  "IsCloseEnabled",
+                  "IsCloseEnabled desc",
+                  "IsReopenEnabled",
+                  "IsReopenEnabled desc"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "CreatedOn",
+                  "CreatedBy",
+                  "UpdatedOn",
+                  "UpdatedBy",
+                  "Role",
+                  "TableName",
+                  "Repository",
+                  "RepositoryLabel",
+                  "TableLabel",
+                  "ApprovalType",
+                  "ApprovalLevel",
+                  "IsHierarchy",
+                  "IsCreateEnabled",
+                  "IsAmendEnabled",
+                  "IsCloseEnabled",
+                  "IsReopenEnabled"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved cntrl UI vis",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of CntrlUIVis",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CentralService.CntrlUIVis"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/CntrlUIVis(Role='{Role}',TableName='{TableName}')": {
+      "parameters": [
+        {
+          "description": "key: Role",
+          "in": "path",
+          "name": "Role",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 30
+          }
+        },
+        {
+          "description": "key: TableName",
+          "in": "path",
+          "name": "TableName",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 30
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves a single cntrl UI vi.",
+        "tags": [
+          "Cntrl UIVis"
+        ],
+        "parameters": [
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "CreatedOn",
+                  "CreatedBy",
+                  "UpdatedOn",
+                  "UpdatedBy",
+                  "Role",
+                  "TableName",
+                  "Repository",
+                  "RepositoryLabel",
+                  "TableLabel",
+                  "ApprovalType",
+                  "ApprovalLevel",
+                  "IsHierarchy",
+                  "IsCreateEnabled",
+                  "IsAmendEnabled",
+                  "IsCloseEnabled",
+                  "IsReopenEnabled"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved cntrl UI vi",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CentralService.CntrlUIVis"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/UIConfigSet": {
+      "get": {
+        "summary": "Retrieves a list of UI config set.",
+        "tags": [
+          "UIConfig Set"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "name": "$filter",
+            "description": "Filter items by property values, see [Filtering](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionfilter)",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "name": "$orderby",
+            "description": "Order items by property values, see [Sorting](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionorderby)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "CreatedOn",
+                  "CreatedOn desc",
+                  "CreatedBy",
+                  "CreatedBy desc",
+                  "UpdatedOn",
+                  "UpdatedOn desc",
+                  "UpdatedBy",
+                  "UpdatedBy desc",
+                  "TableName",
+                  "TableName desc",
+                  "ColumnName",
+                  "ColumnName desc",
+                  "ColumnSeqNo",
+                  "ColumnSeqNo desc",
+                  "ColumnDataType",
+                  "ColumnDataType desc",
+                  "ColumnLabel",
+                  "ColumnLabel desc",
+                  "FieldSize",
+                  "FieldSize desc",
+                  "SectionId",
+                  "SectionId desc",
+                  "SectionName",
+                  "SectionName desc",
+                  "SectionSequence",
+                  "SectionSequence desc",
+                  "DefaultValue",
+                  "DefaultValue desc",
+                  "LkpOdata",
+                  "LkpOdata desc",
+                  "LkpFieldsName",
+                  "LkpFieldsName desc",
+                  "LkpFieldsLabel",
+                  "LkpFieldsLabel desc",
+                  "LkpFieldsType",
+                  "LkpFieldsType desc",
+                  "LkpDataRestField",
+                  "LkpDataRestField desc",
+                  "LkpDataRestCond",
+                  "LkpDataRestCond desc",
+                  "LkpDataRestValue",
+                  "LkpDataRestValue desc",
+                  "MandatoryFlag",
+                  "MandatoryFlag desc",
+                  "VisibilityFlag",
+                  "VisibilityFlag desc",
+                  "EditableFlag",
+                  "EditableFlag desc",
+                  "SearchFieldFlag",
+                  "SearchFieldFlag desc",
+                  "ResultSetFieldFlag",
+                  "ResultSetFieldFlag desc",
+                  "ItemDetailsFlag",
+                  "ItemDetailsFlag desc",
+                  "PrimaryKeyFlag",
+                  "PrimaryKeyFlag desc",
+                  "ParentFieldFlag",
+                  "ParentFieldFlag desc",
+                  "ChildFieldFlag",
+                  "ChildFieldFlag desc",
+                  "LevelNumberFieldFlag",
+                  "LevelNumberFieldFlag desc",
+                  "ChildDescriptionFlag",
+                  "ChildDescriptionFlag desc",
+                  "LevelApplicabilityFlag",
+                  "LevelApplicabilityFlag desc",
+                  "LevelNumberValFld",
+                  "LevelNumberValFld desc",
+                  "DisplayFieldFlag",
+                  "DisplayFieldFlag desc",
+                  "DisplayFieldOf",
+                  "DisplayFieldOf desc"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "CreatedOn",
+                  "CreatedBy",
+                  "UpdatedOn",
+                  "UpdatedBy",
+                  "TableName",
+                  "ColumnName",
+                  "ColumnSeqNo",
+                  "ColumnDataType",
+                  "ColumnLabel",
+                  "FieldSize",
+                  "SectionId",
+                  "SectionName",
+                  "SectionSequence",
+                  "DefaultValue",
+                  "LkpOdata",
+                  "LkpFieldsName",
+                  "LkpFieldsLabel",
+                  "LkpFieldsType",
+                  "LkpDataRestField",
+                  "LkpDataRestCond",
+                  "LkpDataRestValue",
+                  "MandatoryFlag",
+                  "VisibilityFlag",
+                  "EditableFlag",
+                  "SearchFieldFlag",
+                  "ResultSetFieldFlag",
+                  "ItemDetailsFlag",
+                  "PrimaryKeyFlag",
+                  "ParentFieldFlag",
+                  "ChildFieldFlag",
+                  "LevelNumberFieldFlag",
+                  "ChildDescriptionFlag",
+                  "LevelApplicabilityFlag",
+                  "LevelNumberValFld",
+                  "DisplayFieldFlag",
+                  "DisplayFieldOf"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved UI config set",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of UIConfigSet",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CentralService.UIConfigSet"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/UIConfigSet(TableName='{TableName}',ColumnName='{ColumnName}')": {
+      "parameters": [
+        {
+          "description": "key: TableName",
+          "in": "path",
+          "name": "TableName",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 30
+          }
+        },
+        {
+          "description": "key: ColumnName",
+          "in": "path",
+          "name": "ColumnName",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 30
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves a single UI config set.",
+        "tags": [
+          "UIConfig Set"
+        ],
+        "parameters": [
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "CreatedOn",
+                  "CreatedBy",
+                  "UpdatedOn",
+                  "UpdatedBy",
+                  "TableName",
+                  "ColumnName",
+                  "ColumnSeqNo",
+                  "ColumnDataType",
+                  "ColumnLabel",
+                  "FieldSize",
+                  "SectionId",
+                  "SectionName",
+                  "SectionSequence",
+                  "DefaultValue",
+                  "LkpOdata",
+                  "LkpFieldsName",
+                  "LkpFieldsLabel",
+                  "LkpFieldsType",
+                  "LkpDataRestField",
+                  "LkpDataRestCond",
+                  "LkpDataRestValue",
+                  "MandatoryFlag",
+                  "VisibilityFlag",
+                  "EditableFlag",
+                  "SearchFieldFlag",
+                  "ResultSetFieldFlag",
+                  "ItemDetailsFlag",
+                  "PrimaryKeyFlag",
+                  "ParentFieldFlag",
+                  "ChildFieldFlag",
+                  "LevelNumberFieldFlag",
+                  "ChildDescriptionFlag",
+                  "LevelApplicabilityFlag",
+                  "LevelNumberValFld",
+                  "DisplayFieldFlag",
+                  "DisplayFieldOf"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved UI config set",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CentralService.UIConfigSet"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/ZMDGCPCNTRLVAL01": {
+      "get": {
+        "summary": "Retrieves a list of ZMDGCPCNTRLVAL01.",
+        "tags": [
+          "ZMDGCPCNTRLVAL01"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "name": "$filter",
+            "description": "Filter items by property values, see [Filtering](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionfilter)",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "name": "$orderby",
+            "description": "Order items by property values, see [Sorting](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionorderby)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "p_tabname",
+                  "p_tabname desc"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "p_tabname"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$expand",
+            "description": "The value of $expand query option is a comma-separated list of navigation property names, stream property names, or $value indicating the stream content of a media-entity. The corresponding related entities and stream values will be represented inline, see [Expand](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionexpand)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "*",
+                  "Set"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved ZMDGCPCNTRLVAL01",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of ZMDGCPCNTRLVAL01",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CentralService.ZMDGCPCNTRLVAL01"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/ZMDGCPCNTRLVAL01('{p_tabname}')": {
+      "parameters": [
+        {
+          "description": "key: p_tabname",
+          "in": "path",
+          "name": "p_tabname",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 30
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves a single ZMDGCPCNTRLVAL01.",
+        "tags": [
+          "ZMDGCPCNTRLVAL01"
+        ],
+        "parameters": [
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "p_tabname"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$expand",
+            "description": "The value of $expand query option is a comma-separated list of navigation property names, stream property names, or $value indicating the stream content of a media-entity. The corresponding related entities and stream values will be represented inline, see [Expand](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionexpand)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "*",
+                  "Set"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved ZMDGCPCNTRLVAL01",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CentralService.ZMDGCPCNTRLVAL01"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/ZMDGCPCNTRLVAL01('{p_tabname}')/Set": {
+      "parameters": [
+        {
+          "description": "key: p_tabname",
+          "in": "path",
+          "name": "p_tabname",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 30
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves a list of set of a ZMDGCPCNTRLVAL01.",
+        "tags": [
+          "ZMDGCPCNTRLVAL01",
+          "ZMDGCPCNTRLVAL01Set"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "name": "$filter",
+            "description": "Filter items by property values, see [Filtering](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionfilter)",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "name": "$orderby",
+            "description": "Order items by property values, see [Sorting](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionorderby)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "p_tabname",
+                  "p_tabname desc"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "p_tabname"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved set",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of ZMDGCPCNTRLVAL01Set",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CentralService.ZMDGCPCNTRLVAL01Set"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/ZMDGCPCNTRLVAL01Set": {
+      "get": {
+        "summary": "Retrieves a list of ZMDGCPCNTRLVAL01 set.",
+        "tags": [
+          "ZMDGCPCNTRLVAL01Set"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "name": "$filter",
+            "description": "Filter items by property values, see [Filtering](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionfilter)",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "name": "$orderby",
+            "description": "Order items by property values, see [Sorting](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionorderby)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "p_tabname",
+                  "p_tabname desc"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "p_tabname"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved ZMDGCPCNTRLVAL01 set",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of ZMDGCPCNTRLVAL01Set",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CentralService.ZMDGCPCNTRLVAL01Set"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/ZMDGCPCNTRLVAL01Set('{p_tabname}')": {
+      "parameters": [
+        {
+          "description": "key: p_tabname",
+          "in": "path",
+          "name": "p_tabname",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 30
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves a single ZMDGCPCNTRLVAL01 set.",
+        "tags": [
+          "ZMDGCPCNTRLVAL01Set"
+        ],
+        "parameters": [
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "p_tabname"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved ZMDGCPCNTRLVAL01 set",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CentralService.ZMDGCPCNTRLVAL01Set"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/ZMDR_BPMASTER": {
+      "get": {
+        "summary": "Retrieves a list of ZMDR BPMASTER.",
+        "tags": [
+          "ZMDR BPMASTER"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "name": "$filter",
+            "description": "Filter items by property values, see [Filtering](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionfilter)",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "name": "$orderby",
+            "description": "Order items by property values, see [Sorting](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionorderby)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "CreatedOn",
+                  "CreatedOn desc",
+                  "CreatedBy",
+                  "CreatedBy desc",
+                  "UpdatedOn",
+                  "UpdatedOn desc",
+                  "UpdatedBy",
+                  "UpdatedBy desc",
+                  "VersionEndDate",
+                  "VersionEndDate desc",
+                  "VersionActive",
+                  "VersionActive desc",
+                  "BpId",
+                  "BpId desc",
+                  "VersionStartDate",
+                  "VersionStartDate desc",
+                  "BpType",
+                  "BpType desc",
+                  "BpRole",
+                  "BpRole desc",
+                  "CustomerNo",
+                  "CustomerNo desc",
+                  "LegalName",
+                  "LegalName desc",
+                  "TradeName",
+                  "TradeName desc",
+                  "Industry",
+                  "Industry desc",
+                  "BpCategory",
+                  "BpCategory desc",
+                  "Country",
+                  "Country desc",
+                  "Region",
+                  "Region desc",
+                  "City",
+                  "City desc",
+                  "PostalCode",
+                  "PostalCode desc",
+                  "Street",
+                  "Street desc",
+                  "PoBox",
+                  "PoBox desc",
+                  "Language",
+                  "Language desc",
+                  "TelNo",
+                  "TelNo desc",
+                  "FaxNo",
+                  "FaxNo desc",
+                  "Email",
+                  "Email desc",
+                  "Website",
+                  "Website desc",
+                  "Currency",
+                  "Currency desc",
+                  "CreditLimit",
+                  "CreditLimit desc",
+                  "CreditCtrlArea",
+                  "CreditCtrlArea desc",
+                  "PaymentTerms",
+                  "PaymentTerms desc",
+                  "Incoterms",
+                  "Incoterms desc",
+                  "Incoterms2",
+                  "Incoterms2 desc",
+                  "TaxId",
+                  "TaxId desc",
+                  "TaxCategory",
+                  "TaxCategory desc",
+                  "SalesOrg",
+                  "SalesOrg desc",
+                  "DistChannel",
+                  "DistChannel desc",
+                  "Division",
+                  "Division desc",
+                  "CustGrp",
+                  "CustGrp desc",
+                  "PriceList",
+                  "PriceList desc",
+                  "BpStatus",
+                  "BpStatus desc",
+                  "BlockReason",
+                  "BlockReason desc",
+                  "ValidFrom",
+                  "ValidFrom desc",
+                  "ValidTo",
+                  "ValidTo desc",
+                  "Notes",
+                  "Notes desc",
+                  "Status",
+                  "Status desc",
+                  "WorkflowId",
+                  "WorkflowId desc"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "CreatedOn",
+                  "CreatedBy",
+                  "UpdatedOn",
+                  "UpdatedBy",
+                  "VersionEndDate",
+                  "VersionActive",
+                  "BpId",
+                  "VersionStartDate",
+                  "BpType",
+                  "BpRole",
+                  "CustomerNo",
+                  "LegalName",
+                  "TradeName",
+                  "Industry",
+                  "BpCategory",
+                  "Country",
+                  "Region",
+                  "City",
+                  "PostalCode",
+                  "Street",
+                  "PoBox",
+                  "Language",
+                  "TelNo",
+                  "FaxNo",
+                  "Email",
+                  "Website",
+                  "Currency",
+                  "CreditLimit",
+                  "CreditCtrlArea",
+                  "PaymentTerms",
+                  "Incoterms",
+                  "Incoterms2",
+                  "TaxId",
+                  "TaxCategory",
+                  "SalesOrg",
+                  "DistChannel",
+                  "Division",
+                  "CustGrp",
+                  "PriceList",
+                  "BpStatus",
+                  "BlockReason",
+                  "ValidFrom",
+                  "ValidTo",
+                  "Notes",
+                  "Status",
+                  "WorkflowId"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved ZMDR BPMASTER",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of ZMDR_BPMASTER",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CentralService.ZMDR_BPMASTER"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      },
+      "post": {
+        "summary": "Creates a single ZMDR BPMASTER.",
+        "tags": [
+          "ZMDR BPMASTER"
+        ],
+        "requestBody": {
+          "description": "New ZMDR BPMASTER",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CentralService.ZMDR_BPMASTER-create"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created ZMDR BPMASTER",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CentralService.ZMDR_BPMASTER"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/ZMDR_BPMASTER(BpId='{BpId}',VersionStartDate={VersionStartDate})": {
+      "parameters": [
+        {
+          "description": "key: BpId",
+          "in": "path",
+          "name": "BpId",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 20
+          }
+        },
+        {
+          "description": "key: VersionStartDate",
+          "in": "path",
+          "name": "VersionStartDate",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves a single ZMDR BPMASTER.",
+        "tags": [
+          "ZMDR BPMASTER"
+        ],
+        "parameters": [
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "CreatedOn",
+                  "CreatedBy",
+                  "UpdatedOn",
+                  "UpdatedBy",
+                  "VersionEndDate",
+                  "VersionActive",
+                  "BpId",
+                  "VersionStartDate",
+                  "BpType",
+                  "BpRole",
+                  "CustomerNo",
+                  "LegalName",
+                  "TradeName",
+                  "Industry",
+                  "BpCategory",
+                  "Country",
+                  "Region",
+                  "City",
+                  "PostalCode",
+                  "Street",
+                  "PoBox",
+                  "Language",
+                  "TelNo",
+                  "FaxNo",
+                  "Email",
+                  "Website",
+                  "Currency",
+                  "CreditLimit",
+                  "CreditCtrlArea",
+                  "PaymentTerms",
+                  "Incoterms",
+                  "Incoterms2",
+                  "TaxId",
+                  "TaxCategory",
+                  "SalesOrg",
+                  "DistChannel",
+                  "Division",
+                  "CustGrp",
+                  "PriceList",
+                  "BpStatus",
+                  "BlockReason",
+                  "ValidFrom",
+                  "ValidTo",
+                  "Notes",
+                  "Status",
+                  "WorkflowId"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved ZMDR BPMASTER",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CentralService.ZMDR_BPMASTER"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Changes a single ZMDR BPMASTER.",
+        "tags": [
+          "ZMDR BPMASTER"
+        ],
+        "requestBody": {
+          "description": "New property values",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CentralService.ZMDR_BPMASTER-update"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Success"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Deletes a single ZMDR BPMASTER.",
+        "tags": [
+          "ZMDR BPMASTER"
+        ],
+        "responses": {
+          "204": {
+            "description": "Success"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/ZMDR_GLACCOUNT": {
+      "get": {
+        "summary": "Retrieves a list of ZMDR GLACCOUNT.",
+        "tags": [
+          "ZMDR GLACCOUNT"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/top"
+          },
+          {
+            "$ref": "#/components/parameters/skip"
+          },
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "name": "$filter",
+            "description": "Filter items by property values, see [Filtering](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionfilter)",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "name": "$orderby",
+            "description": "Order items by property values, see [Sorting](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionorderby)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "VersionEndDate",
+                  "VersionEndDate desc",
+                  "VersionActive",
+                  "VersionActive desc",
+                  "CreatedOn",
+                  "CreatedOn desc",
+                  "CreatedBy",
+                  "CreatedBy desc",
+                  "UpdatedOn",
+                  "UpdatedOn desc",
+                  "UpdatedBy",
+                  "UpdatedBy desc",
+                  "GlAccountNum",
+                  "GlAccountNum desc",
+                  "VersionStartDate",
+                  "VersionStartDate desc",
+                  "CompanyCode",
+                  "CompanyCode desc",
+                  "AccountDesc",
+                  "AccountDesc desc",
+                  "AccountType",
+                  "AccountType desc",
+                  "Currency",
+                  "Currency desc",
+                  "Status",
+                  "Status desc",
+                  "WorkflowId",
+                  "WorkflowId desc"
+                ]
+              }
+            }
+          },
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "VersionEndDate",
+                  "VersionActive",
+                  "CreatedOn",
+                  "CreatedBy",
+                  "UpdatedOn",
+                  "UpdatedBy",
+                  "GlAccountNum",
+                  "VersionStartDate",
+                  "CompanyCode",
+                  "AccountDesc",
+                  "AccountType",
+                  "Currency",
+                  "Status",
+                  "WorkflowId"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved ZMDR GLACCOUNT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Collection of ZMDR_GLACCOUNT",
+                  "properties": {
+                    "@count": {
+                      "$ref": "#/components/schemas/count"
+                    },
+                    "value": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CentralService.ZMDR_GLACCOUNT"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      },
+      "post": {
+        "summary": "Creates a single ZMDR GLACCOUNT.",
+        "tags": [
+          "ZMDR GLACCOUNT"
+        ],
+        "requestBody": {
+          "description": "New ZMDR GLACCOUNT",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CentralService.ZMDR_GLACCOUNT-create"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created ZMDR GLACCOUNT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CentralService.ZMDR_GLACCOUNT"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/ZMDR_GLACCOUNT(GlAccountNum='{GlAccountNum}',VersionStartDate={VersionStartDate})": {
+      "parameters": [
+        {
+          "description": "key: GlAccountNum",
+          "in": "path",
+          "name": "GlAccountNum",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 10
+          }
+        },
+        {
+          "description": "key: VersionStartDate",
+          "in": "path",
+          "name": "VersionStartDate",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Retrieves a single ZMDR GLACCOUNT.",
+        "tags": [
+          "ZMDR GLACCOUNT"
+        ],
+        "parameters": [
+          {
+            "name": "$select",
+            "description": "Select properties to be returned, see [Select](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionselect)",
+            "in": "query",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "VersionEndDate",
+                  "VersionActive",
+                  "CreatedOn",
+                  "CreatedBy",
+                  "UpdatedOn",
+                  "UpdatedBy",
+                  "GlAccountNum",
+                  "VersionStartDate",
+                  "CompanyCode",
+                  "AccountDesc",
+                  "AccountType",
+                  "Currency",
+                  "Status",
+                  "WorkflowId"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieved ZMDR GLACCOUNT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CentralService.ZMDR_GLACCOUNT"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Changes a single ZMDR GLACCOUNT.",
+        "tags": [
+          "ZMDR GLACCOUNT"
+        ],
+        "requestBody": {
+          "description": "New property values",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CentralService.ZMDR_GLACCOUNT-update"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Success"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Deletes a single ZMDR GLACCOUNT.",
+        "tags": [
+          "ZMDR GLACCOUNT"
+        ],
+        "responses": {
+          "204": {
+            "description": "Success"
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
+    "/getCentralRequestData": {
+      "post": {
+        "summary": "Invokes action getCentralRequestData",
+        "tags": [
+          "Service Operations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/CentralService.return_CentralService_getCentralRequestData"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "requestBody": {
+          "description": "Action parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tablename": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "workflowid": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/submitCentralData": {
+      "post": {
+        "summary": "Invokes action submitCentralData",
+        "tags": [
+          "Service Operations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/CentralService.return_CentralService_submitCentralData"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "requestBody": {
+          "description": "Action parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tablename": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "rowData": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "operation": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/takeActionCentral": {
+      "post": {
+        "summary": "Invokes action takeActionCentral",
+        "tags": [
+          "Service Operations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/CentralService.return_CentralService_takeActionCentral"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "requestBody": {
+          "description": "Action parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "workflowid": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "action": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "remarks": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "bpaInstanceId": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/triggerCentralWorkflow": {
+      "post": {
+        "summary": "Invokes action triggerCentralWorkflow",
+        "tags": [
+          "Service Operations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/CentralService.return_CentralService_triggerCentralWorkflow"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "requestBody": {
+          "description": "Action parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "workflowid": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "tablename": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/validateCentralData": {
+      "post": {
+        "summary": "Invokes action validateCentralData",
+        "tags": [
+          "Service Operations"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/CentralService.return_CentralService_validateCentralData"
+                    }
+                  ],
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "4XX": {
+            "$ref": "#/components/responses/error"
+          }
+        },
+        "requestBody": {
+          "description": "Action parameters",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tablename": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "rowData": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CentralService.CntrlUIConfig": {
+        "title": "CntrlUIConfig",
+        "type": "object",
+        "properties": {
+          "CreatedOn": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "CreatedBy": {
+            "type": "string",
+            "maxLength": 50,
+            "nullable": true
+          },
+          "UpdatedOn": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "UpdatedBy": {
+            "type": "string",
+            "maxLength": 50,
+            "nullable": true
+          },
+          "TableName": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "ColumnName": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "ColumnSeqNo": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "ColumnDataType": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "ColumnLabel": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "FieldSize": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "SectionId": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "SectionName": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "SectionSequence": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "DefaultValue": {
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "LkpOdata": {
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "LkpFieldsName": {
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "LkpFieldsLabel": {
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "LkpFieldsType": {
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "LkpDataRestField": {
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "LkpDataRestCond": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "LkpDataRestValue": {
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "MandatoryFlag": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "VisibilityFlag": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "EditableFlag": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "SearchFieldFlag": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "ResultSetFieldFlag": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "ItemDetailsFlag": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "PrimaryKeyFlag": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "ParentFieldFlag": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "ChildFieldFlag": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "LevelNumberFieldFlag": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "ChildDescriptionFlag": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "LevelApplicabilityFlag": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "LevelNumberValFld": {
+            "type": "string",
+            "maxLength": 30,
+            "nullable": true
+          },
+          "DisplayFieldFlag": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "DisplayFieldOf": {
+            "type": "string",
+            "maxLength": 30,
+            "nullable": true
+          }
+        }
+      },
+      "CentralService.CntrlUIUrl": {
+        "title": "CntrlUIUrl",
+        "type": "object",
+        "properties": {
+          "CreatedOn": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "CreatedBy": {
+            "type": "string",
+            "maxLength": 50,
+            "nullable": true
+          },
+          "UpdatedOn": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "UpdatedBy": {
+            "type": "string",
+            "maxLength": 50,
+            "nullable": true
+          },
+          "TableName": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "OdataUrl": {
+            "type": "string",
+            "maxLength": 200,
+            "nullable": true
+          },
+          "ColumnCount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        }
+      },
+      "CentralService.CntrlUIUrl-create": {
+        "title": "CntrlUIUrl (for create)",
+        "type": "object",
+        "properties": {
+          "TableName": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "OdataUrl": {
+            "type": "string",
+            "maxLength": 200,
+            "nullable": true
+          },
+          "ColumnCount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "required": [
+          "TableName"
+        ]
+      },
+      "CentralService.CntrlUIUrl-update": {
+        "title": "CntrlUIUrl (for update)",
+        "type": "object",
+        "properties": {
+          "OdataUrl": {
+            "type": "string",
+            "maxLength": 200,
+            "nullable": true
+          },
+          "ColumnCount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        }
+      },
+      "CentralService.CntrlUIVis": {
+        "title": "CntrlUIVis",
+        "type": "object",
+        "properties": {
+          "CreatedOn": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "CreatedBy": {
+            "type": "string",
+            "maxLength": 50,
+            "nullable": true
+          },
+          "UpdatedOn": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "UpdatedBy": {
+            "type": "string",
+            "maxLength": 50,
+            "nullable": true
+          },
+          "Role": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "TableName": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "Repository": {
+            "type": "string",
+            "maxLength": 50,
+            "nullable": true
+          },
+          "RepositoryLabel": {
+            "type": "string",
+            "maxLength": 50,
+            "nullable": true
+          },
+          "TableLabel": {
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "ApprovalType": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          },
+          "ApprovalLevel": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "IsHierarchy": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "IsCreateEnabled": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "IsAmendEnabled": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "IsCloseEnabled": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "IsReopenEnabled": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          }
+        }
+      },
+      "CentralService.UIConfigSet": {
+        "title": "UIConfigSet",
+        "type": "object",
+        "properties": {
+          "CreatedOn": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "CreatedBy": {
+            "type": "string",
+            "maxLength": 50,
+            "nullable": true
+          },
+          "UpdatedOn": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "UpdatedBy": {
+            "type": "string",
+            "maxLength": 50,
+            "nullable": true
+          },
+          "TableName": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "ColumnName": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "ColumnSeqNo": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "ColumnDataType": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "ColumnLabel": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "FieldSize": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "SectionId": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "SectionName": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "SectionSequence": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "DefaultValue": {
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "LkpOdata": {
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "LkpFieldsName": {
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "LkpFieldsLabel": {
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "LkpFieldsType": {
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "LkpDataRestField": {
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "LkpDataRestCond": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "LkpDataRestValue": {
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "MandatoryFlag": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "VisibilityFlag": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "EditableFlag": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "SearchFieldFlag": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "ResultSetFieldFlag": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "ItemDetailsFlag": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "PrimaryKeyFlag": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "ParentFieldFlag": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "ChildFieldFlag": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "LevelNumberFieldFlag": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "ChildDescriptionFlag": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "LevelApplicabilityFlag": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "LevelNumberValFld": {
+            "type": "string",
+            "maxLength": 30,
+            "nullable": true
+          },
+          "DisplayFieldFlag": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "DisplayFieldOf": {
+            "type": "string",
+            "maxLength": 30,
+            "nullable": true
+          }
+        }
+      },
+      "CentralService.ZMDGCPCNTRLVAL01": {
+        "title": "ZMDGCPCNTRLVAL01",
+        "type": "object",
+        "properties": {
+          "p_tabname": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "Set": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CentralService.ZMDGCPCNTRLVAL01Set"
+            }
+          },
+          "Set@count": {
+            "$ref": "#/components/schemas/count"
+          }
+        }
+      },
+      "CentralService.ZMDGCPCNTRLVAL01Set": {
+        "title": "ZMDGCPCNTRLVAL01Set",
+        "type": "object",
+        "properties": {
+          "p_tabname": {
+            "type": "string",
+            "maxLength": 30
+          }
+        }
+      },
+      "CentralService.ZMDR_BPMASTER": {
+        "title": "ZMDR_BPMASTER",
+        "type": "object",
+        "properties": {
+          "CreatedOn": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "CreatedBy": {
+            "type": "string",
+            "maxLength": 50,
+            "nullable": true
+          },
+          "UpdatedOn": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "UpdatedBy": {
+            "type": "string",
+            "maxLength": 50,
+            "nullable": true
+          },
+          "VersionEndDate": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "VersionActive": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "BpId": {
+            "type": "string",
+            "maxLength": 20
+          },
+          "VersionStartDate": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z"
+          },
+          "BpType": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "BpRole": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "CustomerNo": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          },
+          "LegalName": {
+            "type": "string",
+            "maxLength": 80,
+            "nullable": true
+          },
+          "TradeName": {
+            "type": "string",
+            "maxLength": 80,
+            "nullable": true
+          },
+          "Industry": {
+            "type": "string",
+            "maxLength": 50,
+            "nullable": true
+          },
+          "BpCategory": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "Country": {
+            "type": "string",
+            "maxLength": 2,
+            "nullable": true
+          },
+          "Region": {
+            "type": "string",
+            "maxLength": 3,
+            "nullable": true
+          },
+          "City": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "PostalCode": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "Street": {
+            "type": "string",
+            "maxLength": 60,
+            "nullable": true
+          },
+          "PoBox": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "Language": {
+            "type": "string",
+            "maxLength": 2,
+            "nullable": true
+          },
+          "TelNo": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          },
+          "FaxNo": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          },
+          "Email": {
+            "type": "string",
+            "maxLength": 80,
+            "nullable": true
+          },
+          "Website": {
+            "type": "string",
+            "maxLength": 80,
+            "nullable": true
+          },
+          "Currency": {
+            "type": "string",
+            "maxLength": 5,
+            "nullable": true
+          },
+          "CreditLimit": {
+            "anyOf": [
+              {
+                "type": "number",
+                "format": "decimal",
+                "multipleOf": 0.01,
+                "maximum": 9999999999999.99,
+                "minimum": -9999999999999.99
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "example": 0,
+            "x-sap-precision": 15,
+            "x-sap-scale": 2,
+            "nullable": true
+          },
+          "CreditCtrlArea": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "PaymentTerms": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "Incoterms": {
+            "type": "string",
+            "maxLength": 3,
+            "nullable": true
+          },
+          "Incoterms2": {
+            "type": "string",
+            "maxLength": 28,
+            "nullable": true
+          },
+          "TaxId": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "TaxCategory": {
+            "type": "string",
+            "maxLength": 4,
+            "nullable": true
+          },
+          "SalesOrg": {
+            "type": "string",
+            "maxLength": 4,
+            "nullable": true
+          },
+          "DistChannel": {
+            "type": "string",
+            "maxLength": 2,
+            "nullable": true
+          },
+          "Division": {
+            "type": "string",
+            "maxLength": 2,
+            "nullable": true
+          },
+          "CustGrp": {
+            "type": "string",
+            "maxLength": 2,
+            "nullable": true
+          },
+          "PriceList": {
+            "type": "string",
+            "maxLength": 2,
+            "nullable": true
+          },
+          "BpStatus": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "BlockReason": {
+            "type": "string",
+            "maxLength": 2,
+            "nullable": true
+          },
+          "ValidFrom": {
+            "type": "string",
+            "format": "date",
+            "example": "2017-04-13",
+            "nullable": true
+          },
+          "ValidTo": {
+            "type": "string",
+            "format": "date",
+            "example": "2017-04-13",
+            "nullable": true
+          },
+          "Notes": {
+            "type": "string",
+            "maxLength": 255,
+            "nullable": true
+          },
+          "Status": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "WorkflowId": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          }
+        }
+      },
+      "CentralService.ZMDR_BPMASTER-create": {
+        "title": "ZMDR_BPMASTER (for create)",
+        "type": "object",
+        "properties": {
+          "VersionEndDate": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "VersionActive": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "BpId": {
+            "type": "string",
+            "maxLength": 20
+          },
+          "VersionStartDate": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z"
+          },
+          "BpType": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "BpRole": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "CustomerNo": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          },
+          "LegalName": {
+            "type": "string",
+            "maxLength": 80,
+            "nullable": true
+          },
+          "TradeName": {
+            "type": "string",
+            "maxLength": 80,
+            "nullable": true
+          },
+          "Industry": {
+            "type": "string",
+            "maxLength": 50,
+            "nullable": true
+          },
+          "BpCategory": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "Country": {
+            "type": "string",
+            "maxLength": 2,
+            "nullable": true
+          },
+          "Region": {
+            "type": "string",
+            "maxLength": 3,
+            "nullable": true
+          },
+          "City": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "PostalCode": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "Street": {
+            "type": "string",
+            "maxLength": 60,
+            "nullable": true
+          },
+          "PoBox": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "Language": {
+            "type": "string",
+            "maxLength": 2,
+            "nullable": true
+          },
+          "TelNo": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          },
+          "FaxNo": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          },
+          "Email": {
+            "type": "string",
+            "maxLength": 80,
+            "nullable": true
+          },
+          "Website": {
+            "type": "string",
+            "maxLength": 80,
+            "nullable": true
+          },
+          "Currency": {
+            "type": "string",
+            "maxLength": 5,
+            "nullable": true
+          },
+          "CreditLimit": {
+            "anyOf": [
+              {
+                "type": "number",
+                "format": "decimal",
+                "multipleOf": 0.01,
+                "maximum": 9999999999999.99,
+                "minimum": -9999999999999.99
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "example": 0,
+            "x-sap-precision": 15,
+            "x-sap-scale": 2,
+            "nullable": true
+          },
+          "CreditCtrlArea": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "PaymentTerms": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "Incoterms": {
+            "type": "string",
+            "maxLength": 3,
+            "nullable": true
+          },
+          "Incoterms2": {
+            "type": "string",
+            "maxLength": 28,
+            "nullable": true
+          },
+          "TaxId": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "TaxCategory": {
+            "type": "string",
+            "maxLength": 4,
+            "nullable": true
+          },
+          "SalesOrg": {
+            "type": "string",
+            "maxLength": 4,
+            "nullable": true
+          },
+          "DistChannel": {
+            "type": "string",
+            "maxLength": 2,
+            "nullable": true
+          },
+          "Division": {
+            "type": "string",
+            "maxLength": 2,
+            "nullable": true
+          },
+          "CustGrp": {
+            "type": "string",
+            "maxLength": 2,
+            "nullable": true
+          },
+          "PriceList": {
+            "type": "string",
+            "maxLength": 2,
+            "nullable": true
+          },
+          "BpStatus": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "BlockReason": {
+            "type": "string",
+            "maxLength": 2,
+            "nullable": true
+          },
+          "ValidFrom": {
+            "type": "string",
+            "format": "date",
+            "example": "2017-04-13",
+            "nullable": true
+          },
+          "ValidTo": {
+            "type": "string",
+            "format": "date",
+            "example": "2017-04-13",
+            "nullable": true
+          },
+          "Notes": {
+            "type": "string",
+            "maxLength": 255,
+            "nullable": true
+          },
+          "Status": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "WorkflowId": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          }
+        },
+        "required": [
+          "BpId",
+          "VersionStartDate"
+        ]
+      },
+      "CentralService.ZMDR_BPMASTER-update": {
+        "title": "ZMDR_BPMASTER (for update)",
+        "type": "object",
+        "properties": {
+          "VersionEndDate": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "VersionActive": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "BpType": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "BpRole": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "CustomerNo": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          },
+          "LegalName": {
+            "type": "string",
+            "maxLength": 80,
+            "nullable": true
+          },
+          "TradeName": {
+            "type": "string",
+            "maxLength": 80,
+            "nullable": true
+          },
+          "Industry": {
+            "type": "string",
+            "maxLength": 50,
+            "nullable": true
+          },
+          "BpCategory": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "Country": {
+            "type": "string",
+            "maxLength": 2,
+            "nullable": true
+          },
+          "Region": {
+            "type": "string",
+            "maxLength": 3,
+            "nullable": true
+          },
+          "City": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "PostalCode": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "Street": {
+            "type": "string",
+            "maxLength": 60,
+            "nullable": true
+          },
+          "PoBox": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "Language": {
+            "type": "string",
+            "maxLength": 2,
+            "nullable": true
+          },
+          "TelNo": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          },
+          "FaxNo": {
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          },
+          "Email": {
+            "type": "string",
+            "maxLength": 80,
+            "nullable": true
+          },
+          "Website": {
+            "type": "string",
+            "maxLength": 80,
+            "nullable": true
+          },
+          "Currency": {
+            "type": "string",
+            "maxLength": 5,
+            "nullable": true
+          },
+          "CreditLimit": {
+            "anyOf": [
+              {
+                "type": "number",
+                "format": "decimal",
+                "multipleOf": 0.01,
+                "maximum": 9999999999999.99,
+                "minimum": -9999999999999.99
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "example": 0,
+            "x-sap-precision": 15,
+            "x-sap-scale": 2,
+            "nullable": true
+          },
+          "CreditCtrlArea": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "PaymentTerms": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "Incoterms": {
+            "type": "string",
+            "maxLength": 3,
+            "nullable": true
+          },
+          "Incoterms2": {
+            "type": "string",
+            "maxLength": 28,
+            "nullable": true
+          },
+          "TaxId": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "TaxCategory": {
+            "type": "string",
+            "maxLength": 4,
+            "nullable": true
+          },
+          "SalesOrg": {
+            "type": "string",
+            "maxLength": 4,
+            "nullable": true
+          },
+          "DistChannel": {
+            "type": "string",
+            "maxLength": 2,
+            "nullable": true
+          },
+          "Division": {
+            "type": "string",
+            "maxLength": 2,
+            "nullable": true
+          },
+          "CustGrp": {
+            "type": "string",
+            "maxLength": 2,
+            "nullable": true
+          },
+          "PriceList": {
+            "type": "string",
+            "maxLength": 2,
+            "nullable": true
+          },
+          "BpStatus": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "BlockReason": {
+            "type": "string",
+            "maxLength": 2,
+            "nullable": true
+          },
+          "ValidFrom": {
+            "type": "string",
+            "format": "date",
+            "example": "2017-04-13",
+            "nullable": true
+          },
+          "ValidTo": {
+            "type": "string",
+            "format": "date",
+            "example": "2017-04-13",
+            "nullable": true
+          },
+          "Notes": {
+            "type": "string",
+            "maxLength": 255,
+            "nullable": true
+          },
+          "Status": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "WorkflowId": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          }
+        }
+      },
+      "CentralService.ZMDR_GLACCOUNT": {
+        "title": "ZMDR_GLACCOUNT",
+        "type": "object",
+        "properties": {
+          "VersionEndDate": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "VersionActive": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "CreatedOn": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "CreatedBy": {
+            "type": "string",
+            "maxLength": 50,
+            "nullable": true
+          },
+          "UpdatedOn": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "UpdatedBy": {
+            "type": "string",
+            "maxLength": 50,
+            "nullable": true
+          },
+          "GlAccountNum": {
+            "type": "string",
+            "maxLength": 10
+          },
+          "VersionStartDate": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z"
+          },
+          "CompanyCode": {
+            "type": "string",
+            "maxLength": 4,
+            "nullable": true
+          },
+          "AccountDesc": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "AccountType": {
+            "type": "string",
+            "maxLength": 2,
+            "nullable": true
+          },
+          "Currency": {
+            "type": "string",
+            "maxLength": 5,
+            "nullable": true
+          },
+          "Status": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "WorkflowId": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          }
+        }
+      },
+      "CentralService.ZMDR_GLACCOUNT-create": {
+        "title": "ZMDR_GLACCOUNT (for create)",
+        "type": "object",
+        "properties": {
+          "VersionEndDate": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "VersionActive": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "GlAccountNum": {
+            "type": "string",
+            "maxLength": 10
+          },
+          "VersionStartDate": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z"
+          },
+          "CompanyCode": {
+            "type": "string",
+            "maxLength": 4,
+            "nullable": true
+          },
+          "AccountDesc": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "AccountType": {
+            "type": "string",
+            "maxLength": 2,
+            "nullable": true
+          },
+          "Currency": {
+            "type": "string",
+            "maxLength": 5,
+            "nullable": true
+          },
+          "Status": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "WorkflowId": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          }
+        },
+        "required": [
+          "GlAccountNum",
+          "VersionStartDate"
+        ]
+      },
+      "CentralService.ZMDR_GLACCOUNT-update": {
+        "title": "ZMDR_GLACCOUNT (for update)",
+        "type": "object",
+        "properties": {
+          "VersionEndDate": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "VersionActive": {
+            "type": "string",
+            "maxLength": 1,
+            "nullable": true
+          },
+          "CompanyCode": {
+            "type": "string",
+            "maxLength": 4,
+            "nullable": true
+          },
+          "AccountDesc": {
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          },
+          "AccountType": {
+            "type": "string",
+            "maxLength": 2,
+            "nullable": true
+          },
+          "Currency": {
+            "type": "string",
+            "maxLength": 5,
+            "nullable": true
+          },
+          "Status": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          },
+          "WorkflowId": {
+            "type": "string",
+            "maxLength": 10,
+            "nullable": true
+          }
+        }
+      },
+      "CentralService.return_CentralService_getCentralRequestData": {
+        "title": "return_CentralService_getCentralRequestData",
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "CentralService.return_CentralService_submitCentralData": {
+        "title": "return_CentralService_submitCentralData",
+        "type": "object",
+        "properties": {
+          "workflowid": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "CentralService.return_CentralService_takeActionCentral": {
+        "title": "return_CentralService_takeActionCentral",
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "CentralService.return_CentralService_triggerCentralWorkflow": {
+        "title": "return_CentralService_triggerCentralWorkflow",
+        "type": "object",
+        "properties": {
+          "bpaInstanceId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "CentralService.return_CentralService_validateCentralData": {
+        "title": "return_CentralService_validateCentralData",
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "count": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string"
+          }
+        ],
+        "description": "The number of entities in the collection. Available when using the [$count](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptioncount) query option."
+      },
+      "error": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": [
+              "code",
+              "message"
+            ],
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "target": {
+                "type": "string"
+              },
+              "details": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "target": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "innererror": {
+                "type": "object",
+                "description": "The structure of this object is service-specific"
+              }
+            }
+          }
+        }
+      }
+    },
+    "parameters": {
+      "top": {
+        "name": "$top",
+        "in": "query",
+        "description": "Show only the first n items, see [Paging - Top](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptiontop)",
+        "schema": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "example": 50
+      },
+      "skip": {
+        "name": "$skip",
+        "in": "query",
+        "description": "Skip the first n items, see [Paging - Skip](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionskip)",
+        "schema": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "count": {
+        "name": "$count",
+        "in": "query",
+        "description": "Include count of items, see [Count](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptioncount)",
+        "schema": {
+          "type": "boolean"
+        }
+      },
+      "search": {
+        "name": "$search",
+        "in": "query",
+        "description": "Search items by search phrases, see [Searching](http://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part1-protocol.html#sec_SystemQueryOptionsearch)",
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "error": {
+        "description": "Error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/error"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -3,64 +3,137 @@
 const cds = require('@sap/cds');
 const { validateKeyExists, validateRow } = require('./validate');
 const { insertVersionedRow, storeBulkTemp } = require('./insert');
-const { buildKeyWhere, checkExists } = require('./db-dynamic');
+const { buildKeyWhere, checkExists, getEntityDef } = require('./db-dynamic');
 const { generateWorkflowId } = require('./wf-id');
 
+// NOTE on field-name casing:
+// SQLite column names follow the CDS element names exactly (PascalCase).
+// db.run() returns rows with keys matching the DB column names, so we must
+// use the exact casing defined in mdr-config.cds throughout this file.
+//
+//  zmdr_BulkHdrConfig : TableName, RequesterRole, Versioned
+//  zmdr_BulkItmConfig : Tablename, Columnname, RequesterRole, Colseqno,
+//                       IsMatching, IsLookup, LookupTablename, LookupField,
+//                       IsDateField, ValidationIndex
+//  zmdr_BulkTemp      : Tablename, BulkData, WorkflowId, ActionType,
+//                       InitiationDate, RequestStatus
+
+function getEntity(name) {
+    const zEntities = cds.entities ? cds.entities('zmdr') : null;
+    return (zEntities && zEntities[name]) || (cds.entities && cds.entities[name]) || (cds.entities && cds.entities[`zmdr.${name}`]);
+}
+
 async function processBulkData(params) {
-    const { tableName, requesterRole, dataload, overwriteWithNull,
-        futureVersion, workflowId: inputWfId, rowData, userId } = params;
+    const { tablename, requesterrole, dataload, overwriteWithNull,
+        futureVersion, workflowid: inputWfId, rowData, userId } = params;
     const db = await cds.connect.to('db');
-    const { BulkHdrConfig, BulkItmConfig } = db.entities;
+    const BulkHdrConfig = getEntity('BulkHdrConfig') || db.entities?.BulkHdrConfig;
+    const BulkItmConfig = getEntity('BulkItmConfig') || db.entities?.BulkItmConfig;
 
-    // Config reads — CAP ORM (config tables)
-    const hdrConfig = await db.run(SELECT.one.from(BulkHdrConfig).where({ tableName, requesterRole }));
-    if (!hdrConfig) throw new Error(`No config for ${tableName}/${requesterRole}`);
+    // Config reads — use PascalCase element names that match the DB columns
+    const hdrConfig = BulkHdrConfig ? await db.run(
+        SELECT.one.from(BulkHdrConfig).where({ TableName: tablename, RequesterRole: requesterrole })
+    ) : null;
+    if (!hdrConfig) throw new Error(`No config for ${tablename}/${requesterrole}`);
 
-    const lineItemConfig = await db.run(
-        SELECT.from(BulkItmConfig).where({ tableName, requesterRole }).orderBy('colSeqNo')
-    );
-    if (!lineItemConfig.length) throw new Error('No column config found');
+    let lineitemConfig = [];
+    if (BulkItmConfig) {
+        try {
+            lineitemConfig = await db.run(
+                SELECT.from(BulkItmConfig)
+                      .where({ TableName: tablename, RequesterRole: requesterrole })
+                      .orderBy('ColumnSeqNo')
+            );
+        } catch (e) {
+            lineitemConfig = await db.run(
+                SELECT.from(BulkItmConfig)
+                      .where({ Tablename: tablename, RequesterRole: requesterrole })
+                      .orderBy('Colseqno')
+            );
+        }
+    }
+    if (!lineitemConfig || !lineitemConfig.length) throw new Error('No column config found');
 
-    const isVersioned = hdrConfig.isVersioned === 'Y';
-    let keyFields = lineItemConfig.filter(c => c.isMatching === 'Y').map(c => c.columnName);
-    if (!keyFields.length) keyFields = [lineItemConfig[0].columnName];
+    // Normalize property names across both camelCase/PascalCase
+    lineitemConfig.forEach(c => {
+        c.ColumnName = c.ColumnName || c.Columnname || c.COLUMNNAME;
+        c.Columnname = c.ColumnName;
+        c.Colseqno = (c.ColumnSeqNo !== undefined && c.ColumnSeqNo !== null) ? c.ColumnSeqNo : (c.Colseqno || c.columnseqno || 0);
+        c.ColumnSeqNo = c.Colseqno;
+        c.LookupTableName = c.LookupTableName || c.LookupTablename || c.LOOKUPTABLENAME;
+        c.LookupTablename = c.LookupTableName;
+    });
+    lineitemConfig.sort((a, b) => a.Colseqno - b.Colseqno);
+
+    // hdrConfig.Versioned matches the DB column name
+    const isVersioned = hdrConfig.Versioned === 'Y';
+
+    // lineitemConfig rows: use PascalCase properties
+    let keyFields = lineitemConfig.filter(c => c.IsMatching === 'Y').map(c => c.Columnname);
+    if (!keyFields.length) keyFields = [lineitemConfig[0].Columnname];
 
     const validData = [], invalidData = [], createData = [], updateData = [];
 
     for (let i = 0; i < rowData.length; i++) {
-        const rowStr = rowData[i].Data;
+        const rowStr = rowData[i];
         const splitData = rowStr.split('«');
         const rowCode = splitData[0] || `Row${i + 1}`;
 
-        if (splitData.length !== lineItemConfig.length) {
+        if (splitData.length !== lineitemConfig.length) {
             invalidData.push({
-                code: rowCode,
-                message: `Column count ${splitData.length} does not match config ${lineItemConfig.length}`,
-                rownumber: i + 1
+                code: rowCode, Code: rowCode,
+                message: `Column count ${splitData.length} does not match config ${lineitemConfig.length}`,
+                Message: `Column count ${splitData.length} does not match config ${lineitemConfig.length}`,
+                rownumber: i + 1, Rownumber: i + 1
             });
             continue;
         }
 
         // Versioned: check no in-progress conflict
-        // if (isVersioned && futureVersion !== 'Y') {
-        //     const inProg = await validateKeyExists({
-        //         splitData, tableName, isLookup: 'N', versionInProgress: 'Y',
-        //         lineItemConfig, keyFields,
-        //     });
-        //     if (inProg) {
-        //         invalidData.push({ code: rowCode, message: 'In-progress records exist for this key', rownumber: i + 1 });
-        //         continue;
-        //     }
-        // }
+        if (isVersioned && futureVersion !== 'Y') {
+            const inProg = await validateKeyExists({
+                splitData, tablename, isLookup: 'N', versionInProgress: 'Y',
+                lineitemConfig, keyFields,
+            });
+            if (inProg) {
+                invalidData.push({
+                    code: rowCode, Code: rowCode,
+                    message: 'In-progress records exist for this key',
+                    Message: 'In-progress records exist for this key',
+                    rownumber: i + 1, Rownumber: i + 1
+                });
+                continue;
+            }
+        }
 
-        // const { valid, message } = await validateRow({ splitData, lineItemConfig, keyFields, tableName });
-        // if (!valid) { invalidData.push({ code: rowCode, message, rowNumber: i + 1 }); continue; }
+        const { valid, message } = await validateRow({ splitData, lineitemConfig, keyFields, tablename });
+        if (!valid) {
+            invalidData.push({
+                code: rowCode, Code: rowCode,
+                message, Message: message,
+                rownumber: i + 1, Rownumber: i + 1
+            });
+            continue;
+        }
 
-        // Determine create vs amend — dynamic raw SQL
-        const { clause, values: kv } = buildKeyWhere(splitData, lineItemConfig, keyFields);
-        let wh = clause, wv = [...kv];
-        if (!isVersioned) { wh += ' AND "VERSION_ACTIVE" = ?'; wv.push('Y'); }
-        const exists = await checkExists(db, tableName, wh, wv);
+        // Determine create vs amend — use CAP ORM to avoid raw SQL table name issues
+        const entity = getEntityDef(tablename);
+        let exists = false;
+        if (entity) {
+            const keyWhere = {};
+            for (const kf of keyFields) {
+                const cfg = lineitemConfig.find(c => c.Columnname === kf);
+                if (cfg) keyWhere[kf.toUpperCase()] = splitData[cfg.Colseqno - 1] ?? '';
+            }
+            if (!isVersioned) keyWhere['VERSION_ACTIVE'] = 'Y';
+            
+            // Map the uppercase keys to the exact entity property names
+            const { mapToEntityElements } = require('./db-dynamic');
+            const mappedWhere = mapToEntityElements(entity, keyWhere);
+            
+            const rows = await db.run(SELECT.from(entity).where(mappedWhere).limit(1));
+            exists = rows.length > 0;
+        }
         validData.push({ data: rowStr });
         if (exists) updateData.push({ data: rowStr });
         else createData.push({ data: rowStr });
@@ -70,15 +143,16 @@ async function processBulkData(params) {
         return {
             validCount: validData.length, invalidCount: invalidData.length,
             createCount: createData.length, updateCount: updateData.length,
-            workflowId: '', validData, invalidData
+            workflowid: '', validData, invalidData
         };
     }
 
     // Submit — generate WF ID and write
     const workflowid = inputWfId || await generateWorkflowId('BULK');
     if (isVersioned) {
-        if (await checkExists(db, tableName, '"WORKFLOW_ID" = ?', [workflowId]))
-            throw new Error(`Workflow ID ${workflowId} already in use`);
+        // Duplicate workflow ID check via checkExists (which safely falls back to raw SQL if ORM fails)
+        const dup = await checkExists(db, tablename, 'WORKFLOW_ID = ?', [workflowid]);
+        if (dup) throw new Error(`Workflow ID ${workflowid} already in use`);
     }
 
     const version = futureVersion === 'Y' ? 'F' : 'G';
@@ -86,20 +160,20 @@ async function processBulkData(params) {
         const sd = rowStr.split('«');
         if (isVersioned) {
             await insertVersionedRow({
-                splitData: sd, tableName, version, workflowId,
-                lineItemConfig, keyFields, isOverwriteNull: overwriteWithNull, userId
+                splitData: sd, tablename, version, workflowid,
+                lineitemConfig, keyFields, isOverwriteNull: overwriteWithNull, userId
             });
         } else {
-            const { clause, values: kv } = buildKeyWhere(sd, lineItemConfig, keyFields);
-            const ex = await checkExists(db, tableName, clause, kv);
-            await storeBulkTemp({ tableName, rowString: rowStr, workflowId, actionType: ex ? 'Amend' : 'Create' });
+            const { clause, values: kv } = buildKeyWhere(sd, lineitemConfig, keyFields);
+            const ex = await checkExists(db, tablename, clause, kv);
+            await storeBulkTemp({ tablename, rowString: rowStr, workflowid, actiontype: ex ? 'Amend' : 'Create' });
         }
     }
 
     return {
         validCount: validData.length, invalidCount: invalidData.length,
         createCount: createData.length, updateCount: updateData.length,
-        workflowId, validData, invalidData
+        workflowid, validData, invalidData
     };
 }
 

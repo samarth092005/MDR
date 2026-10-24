@@ -10,19 +10,5 @@ builder:
       - /test/**
       - /localService/**
   customTasks:
-    - name: deploy-to-abap
+    - name: webide-build
       afterTask: generateCachebusterInfo
-      configuration:
-        target:
-          url: http://aissapsrv.abhiyantatech.com:8000
-          client: '200'
-        credentials:
-          username: env:ABAP_USER
-          password: env:ABAP_PASSWORD
-        app:
-          name: ZMDR_CNTRL_MAIN
-          description: Main Central App
-          package: ZMDR_CENTRAL
-          transport: S21K900640
-        exclude:
-          - /test/

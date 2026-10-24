@@ -9,15 +9,29 @@
     },
     "title": "{{appTitle}}",
     "description": "{{appDescription}}",
-    "resources": "resources.json",
     "sourceTemplate": {
       "id": "@sap/generator-fiori:basic",
       "version": "1.25.0",
       "toolsId": "e3d307ca-e06c-482f-a656-2a2ee2946412"
     },
+    "crossNavigation": {
+      "inbounds": {
+        "zmdr_bulkupload-manage": {
+          "semanticObject": "zmdr_bulkupload",
+          "action": "manage",
+          "title": "Bulk Upload",
+          "subTitle": "Upload master data in a central location",
+          "shortTitle": "Common Application - Do not launch directly",
+          "signature": {
+            "parameters": {},
+            "additionalParameters": "allowed"
+          }
+        }
+      }
+    },    
     "dataSources": {
       "mainService": {
-        "uri": "/api/bulk/",
+        "uri": "mdrapi/bulk/",
         "type": "OData",
         "settings": {
           "annotations": [],
@@ -25,7 +39,7 @@
         }
       },
       "adminService": {
-        "uri": "/api/admin/",
+        "uri": "mdrapi/admin/",
         "type": "OData",
         "settings": {
           "annotations": [],
@@ -37,12 +51,12 @@
   "sap.ui": {
     "technology": "UI5",
     "icons": {
-      "icon": "",
-      "favIcon": "",
-      "phone": "",
-      "phone@2": "",
-      "tablet": "",
-      "tablet@2": ""
+      "icon": "sap-icon://upload",
+      "favIcon": "sap-icon://upload",
+      "phone": "sap-icon://upload",
+      "phone@2": "sap-icon://upload",
+      "tablet": "sap-icon://upload",
+      "tablet@2": "sap-icon://upload"
     },
     "deviceTypes": {
       "desktop": true,
@@ -53,7 +67,7 @@
   "sap.ui5": {
     "flexEnabled": true,
     "dependencies": {
-      "minUI5Version": "1.148.1",
+      "minUI5Version": "1.120.20",
       "libs": {
         "sap.m": {},
         "sap.ui.core": {}
@@ -71,6 +85,7 @@
         }
       },
       "": {
+        "type": "sap.ui.model.odata.v4.ODataModel",
         "dataSource": "mainService",
         "preload": true,
         "settings": {
@@ -80,6 +95,7 @@
         }
       },
       "adminModel": {
+        "type": "sap.ui.model.odata.v4.ODataModel",
         "dataSource": "adminService",
         "preload": true,
         "settings": {
@@ -93,6 +109,11 @@
       "css": [
         {
           "uri": "css/style.css"
+        }
+      ],
+      "js": [
+        {
+          "uri": "lib/xlsx.full.min.js"
         }
       ]
     },
@@ -138,5 +159,9 @@
       "id": "App",
       "async": true
     }
+  },
+  "sap.cloud": {
+    "public": true,
+    "service": "mdr.cap.btp"
   }
 }

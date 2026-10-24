@@ -11,10 +11,12 @@ const { readRows } = require('./lib/db-dynamic');
 module.exports = cds.service.impl(async function (srv) {
 
     srv.on('validateBulkData', async req => {
-        const { tableName, requesterRole, rowData, overwriteWithNull, futureVersion, workflowId } = req.data;
+        console.log("---- validateBulkData called ----");
+        console.log("Payload:", JSON.stringify(req.data, null, 2));
+        const { tablename, requesterrole, rowData, overwriteWithNull, futureVersion, workflowid } = req.data;
         return processBulkData({
-            tableName, requesterRole, dataload: 'N',
-            overwriteWithNull, futureVersion, workflowId, rowData, userId: req.user.id
+            tablename, requesterrole, dataload: 'N',
+            overwriteWithNull, futureVersion, workflowid, rowData: rowData || [], userId: req.user.id
         });
     });
 
@@ -27,11 +29,11 @@ module.exports = cds.service.impl(async function (srv) {
             rowData: validData.map(r => r.data), userId: req.user.id,
         });
         await insertWFAudit({  // CAP ORM — WFAudit is config
-            workflowid: result.workflowId, entityname: tablename, entityid: '',
+            workflowid: result.workflowid, entityname: tablename, entityid: '',
             operationtype: 'BULK UPDATE', wfstage: 'INITIATOR',
             action: 'INITIATED', userremarks: remarks, actioninguser: req.user.id,
         });
-        return { workflowid: result.workflowId, message: 'Submitted successfully', type: 'S' };
+        return { workflowid: result.workflowid, message: 'Submitted successfully', type: 'S' };
     });
 
     srv.on('triggerBulkWorkflow', async req => {
@@ -45,28 +47,36 @@ module.exports = cds.service.impl(async function (srv) {
         return { bpaInstanceId, message: 'Workflow triggered' };
     });
 
+function getEntity(name) {
+    const zEntities = cds.entities ? cds.entities('zmdr') : null;
+    return (zEntities && zEntities[name]) || (cds.entities && cds.entities[name]) || (cds.entities && cds.entities[`zmdr.${name}`]);
+}
+
     srv.on('getBulkRequestData', async req => {
         const { tablename, workflowid, versionactive, uniquewf, requesterrole } = req.data;
         const db = await cds.connect.to('db');
-        const { BulkHdrConfig, BulkTemp } = db.entities;
+        const BulkHdrConfig = getEntity('BulkHdrConfig') || db.entities?.BulkHdrConfig;
+        const BulkTemp = getEntity('BulkTemp') || db.entities?.BulkTemp;
 
-        if (uniquewf === 'Y') {
+        if (uniquewf === 'Y' && BulkTemp) {
             // BulkTemp = config table — CAP ORM
             const rows = await db.run(SELECT.from(BulkTemp).where({ tablename, requeststatus: 'INPROGRESS' }));
-            const wfids = [...new Set(rows.map(r => r.workflowid))].map(wf => ({ workflowid: wf, remarks: '' }));
+            const wfids = [...new Set(rows.map(r => r.workflowid || r.WorkflowId))].map(wf => ({ workflowid: wf, remarks: '' }));
             return { data: [], olddata: [], wfids, message: '', type: 'S' };
         }
 
-        const hdr = await db.run(SELECT.one.from(BulkHdrConfig).where({ tablename, requesterrole }));
-        if (hdr?.isversioned === 'Y') {
+        const hdr = BulkHdrConfig ? await db.run(SELECT.one.from(BulkHdrConfig).where({ TableName: tablename, RequesterRole: requesterrole })) : null;
+        if (hdr?.isversioned === 'Y' || hdr?.Versioned === 'Y') {
             // Versioned: dynamic table — raw SQL
             const va = versionactive || 'G';
             const rows = await readRows(db, tablename, '"WORKFLOW_ID" = ? AND "VERSION_ACTIVE" = ?', [workflowid, va]);
             return { data: rows.map(r => ({ data: Object.values(r).join('«') })), olddata: [], wfids: [], message: '', type: 'S' };
-        } else {
+        } else if (BulkTemp) {
             // Non-versioned: BulkTemp = config table — CAP ORM
             const rows = await db.run(SELECT.from(BulkTemp).where({ workflowid, tablename, requeststatus: 'INPROGRESS' }));
-            return { data: rows.map(r => ({ data: r.bulkdata })), olddata: [], wfids: [], message: '', type: 'S' };
+            return { data: rows.map(r => ({ data: r.bulkdata || r.BulkData })), olddata: [], wfids: [], message: '', type: 'S' };
+        } else {
+            return { data: [], olddata: [], wfids: [], message: '', type: 'S' };
         }
     });
 
@@ -74,27 +84,36 @@ module.exports = cds.service.impl(async function (srv) {
         const { tablename, workflowid, wfstage, action,
             requesterrole, bpaInstanceId, approverremarks, isOverwriteNull } = req.data;
         const db = await cds.connect.to('db');
-        const { BulkHdrConfig, BulkItmConfig, BulkTemp } = db.entities;
+        const BulkHdrConfig = getEntity('BulkHdrConfig') || db.entities?.BulkHdrConfig;
+        const BulkItmConfig = getEntity('BulkItmConfig') || db.entities?.BulkItmConfig;
+        const BulkTemp = getEntity('BulkTemp') || db.entities?.BulkTemp;
         const userId = req.user.id;
 
         // Config reads — CAP ORM
-        const hdr = await db.run(SELECT.one.from(BulkHdrConfig).where({ tablename, requesterrole }));
-        const lineitemConfig = await db.run(SELECT.from(BulkItmConfig).where({ tablename, requesterrole }).orderBy('colseqno'));
-        const keyFields = lineitemConfig.filter(c => c.ismatching === 'Y').map(c => c.columnname);
+        const hdr = BulkHdrConfig ? await db.run(SELECT.one.from(BulkHdrConfig).where({ TableName: tablename, RequesterRole: requesterrole })) : null;
+        let lineitemConfig = [];
+        if (BulkItmConfig) {
+            try {
+                lineitemConfig = await db.run(SELECT.from(BulkItmConfig).where({ TableName: tablename, RequesterRole: requesterrole }).orderBy('ColumnSeqNo'));
+            } catch (e) {
+                lineitemConfig = await db.run(SELECT.from(BulkItmConfig).where({ Tablename: tablename, RequesterRole: requesterrole }).orderBy('Colseqno'));
+            }
+        }
+        const keyFields = lineitemConfig.filter(c => c.IsMatching === 'Y').map(c => c.ColumnName || c.Columnname);
 
         if (action === 'APPROVED') {
-            if (hdr?.isversioned === 'Y')
+            if (hdr?.Versioned === 'Y')
                 await approveVersionedTable({ tablename, workflowid, keyFields, lineitemConfig, userId });  // raw SQL
             else
                 await applyBulkTempApproved({
                     tablename, workflowid, lineitemConfig, keyFields,
-                    isOverwriteNull: hdr?.isoverwritewithnull || isOverwriteNull, userId
+                    isOverwriteNull: hdr?.IsOverwrireWithNull || isOverwriteNull, userId
                 });  // mixed
         } else if (action === 'REJECTED') {
-            if (hdr?.isversioned === 'Y')
+            if (hdr?.Versioned === 'Y')
                 await rejectVersionedTable({ tablename, workflowid });  // raw SQL
             else
-                await db.run(UPDATE(BulkTemp).set({ requeststatus: 'REJECTED' }).where({ workflowid, tablename }));  // CAP ORM
+                await db.run(UPDATE(BulkTemp).set({ RequestStatus: 'REJECTED' }).where({ WorkflowId: workflowid, TableName: tablename }));  // CAP ORM
         }
 
         await insertWFAudit({

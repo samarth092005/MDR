@@ -1,0 +1,3 @@
+TableName,SourceColName,ValidationIndex,SourceColValue,DestColName,DestColValue,Operation,ErrorMessage,ReqInCentralFlag,ReqInBulkFlag
+ZMDR_SERVCATALOG,EFFECTIVE_DATE,1,,EXPIRY_DATE,,,,Y,Y
+ZMDR_SERVCATALOG,EXPIRY_DATE,1,,EFFECTIVE_DATE,,,,Y,Y

@@ -2,7 +2,7 @@ sap.ui.define([
     "com/intapptics/zmdrcntrlmain/controller/BaseController",
     "sap/ui/model/json/JSONModel",
     "sap/ui/core/Fragment",
-    "sap/ui/model/odata/v2/ODataModel",
+    "sap/ui/model/odata/v4/ODataModel",
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
     "sap/ui/comp/filterbar/FilterBar",
@@ -16,10 +16,14 @@ sap.ui.define([
     "sap/m/DatePicker",
     "sap/m/Input",
     "sap/m/ComboBox",
-    "sap/ui/core/ListItem"
+    "sap/ui/core/ListItem",
+    "sap/ushell/services/CrossApplicationNavigation",
+    "sap/ushell/services/appstate/AppState"
 ],
     function (BaseController, JSONModel, Fragment, ODataModel, Filter, FilterOperator, FilterBar, FilterGroupItem, ViewSettingsDialog, ViewSettingsItem, Spreadsheet, MessageToast, Dialog, Label, DatePicker, Input, ComboBox, ListItem) {
         "use strict";
+
+        var _oSelf;
 
         return BaseController.extend("com.intapptics.zmdrcntrlmain.controller.TableResult", {
             /**
@@ -38,6 +42,7 @@ sap.ui.define([
 
                 /** Define Variables */
                 var oTableResultViewModel; // Stores the view related settings in this model
+                _oSelf = this;
 
                 /** Method Implementation */
                 //Instantiate view model with few default model parameters
@@ -154,38 +159,43 @@ sap.ui.define([
                 /** Method Implementation */
                 // Check the button id and perform the action accordingly
                 switch (sBtnId) {
-                    case this.getView().createId("btnEnterFullScreenTabList"):
+                    case this.getView().createId("btnEnterFullScreenTabRslt"):
                         // Log information
                         this.fn_getLogReference().info("Table Result Controller: Enter Full Screen button pressed");
 
                         // Set the button visibility
-                        this.byId("btnEnterFullScreenTabList").setVisible(false);
-                        this.byId("btnExitFullScreenTabList").setVisible(true);
+                        this.byId("btnEnterFullScreenTabRslt").setVisible(false);
+                        this.byId("btnExitFullScreenTabRslt").setVisible(true);
 
-                        // Take reference of the Flexible Column Layout and set the middle column to full screen
-                        this.getView().getParent().getParent().setLayout("MidColumnFullScreen");
+                        // Take reference of the Flexible Column Layout and set the end column to full screen
+                        this.getView().getParent().getParent().setLayout("EndColumnFullScreen");
 
                         // Log information
-                        this.fn_getLogReference().info("Table Result Controller: Middle column set to full screen along with buttons visibility");
-                    case this.getView().createId("btnExitFullScreenTabList"):
+                        this.fn_getLogReference().info("Table Result Controller: End column set to full screen along with buttons visibility");
+                        break;
+
+                    case this.getView().createId("btnExitFullScreenTabRslt"):
                         // Log information
                         this.fn_getLogReference().info("Table Result Controller: Exit Full Screen button pressed");
 
                         // Set the button visibility
-                        this.byId("btnEnterFullScreenTabList").setVisible(true);
-                        this.byId("btnExitFullScreenTabList").setVisible(false);
+                        this.byId("btnEnterFullScreenTabRslt").setVisible(true);
+                        this.byId("btnExitFullScreenTabRslt").setVisible(false);
 
-                        // Take reference of the Flexible Column Layout and set the middle column to full screen
-                        this.getView().getParent().getParent().setLayout("TwoColumnsMidExpanded");
+                        // Take reference of the Flexible Column Layout and restore to three-column layout
+                        this.getView().getParent().getParent().setLayout("ThreeColumnsEndExpanded");
 
                         // Log information
-                        this.fn_getLogReference().info("Table Result Controller: Middle column expanded along with buttons visibility");
-                    case this.getView().createId("btnClosePageTabList"):
+                        this.fn_getLogReference().info("Table Result Controller: Three column layout restored along with buttons visibility");
+                        break;
+
+                    case this.getView().createId("btnClosePageTabRslt"):
                         // Log information
                         this.fn_getLogReference().info("Table Result Controller: Close Page button pressed");
 
                         // Navigate to category list page
                         this.fn_getRouter().navTo("category");
+                        break;
                 }
 
                 // Log information
@@ -361,27 +371,25 @@ sap.ui.define([
                 }
 
                 // Add version active filter
-                aFilters.push(new Filter("VERSION_ACTIVE", FilterOperator.EQ, "Y"));
+                aFilters.push(new Filter("VersionActive", FilterOperator.EQ, "Y"));
 
-                this.oTableModel.read(this.sEntitySet, {
-                    async: true,
-                    filters: aFilters,
-                    urlParameters: {
-                        "$top": iNum,
-                        "$skip": iSkip
-                    },
-                    success: function (oData) {
-                        // Set the data into the existing model
-                        this.fn_getGlobalModel("oCurrentTableBoundModel").setData(oData.results);
+                // [V4 MIGRATION] Replaced V2 oModel.read() with native OData V4 bindList().requestContexts().
+                // this.sEntitySet is a plain EntitySet path (e.g. "/ZMDR_GLACCOUNT").
+                // $skip and $top are passed as the skip/top arguments of requestContexts().
+                // The V2-only async:true is removed. Success/error preserved via .then()/.catch().
+                this.oTableModel.bindList(this.sEntitySet, null, null, aFilters).requestContexts(iSkip, iNum).then(function (aContexts) {
+                    // Map V4 contexts to plain JS objects for the JSONModel
+                    var aData = aContexts.map(function (oContext) { return oContext.getObject(); });
 
-                        // Close busy dialog
-                        this.fn_closeBusyDialog();
-                    }.bind(this),
-                    error: function (oError) {
-                        // Show error
-                        this.fn_showServiceError(oError);
-                    }.bind(this)
-                });
+                    // Set the data into the existing model
+                    this.fn_getGlobalModel("oCurrentTableBoundModel").setData(aData);
+
+                    // Close busy dialog
+                    this.fn_closeBusyDialog();
+                }.bind(this)).catch(function (oError) {
+                    // Show error
+                    this.fn_showServiceError(oError);
+                }.bind(this));
 
                 // Log information
                 this.fn_getLogReference().info("Table Result Controller: Exiting onPaginationAction method");
@@ -399,6 +407,11 @@ sap.ui.define([
             onSearch_fbFilters: function (oEvent) {
                 // Log information
                 this.fn_getLogReference().info("Table Result Controller: Entering onSearch_fbFilters method");
+
+                if (!this.oTableModel) {
+                    return;
+                }
+
 
                 /** Define Variables */
                 var oViewTableResultModel = this.fn_getLocalModel("tableResultViewModel"), // Stores the view model
@@ -437,7 +450,7 @@ sap.ui.define([
 
                 // Filter the searchfields from complete fields data
                 aSearchFields = aFields.filter(function (oField) {
-                    return oField.Issearchfield === "YES";
+                    return oField.SearchFieldFlag === "Y";
                 });
 
                 // Loop into search fields and prepare the filter
@@ -446,10 +459,10 @@ sap.ui.define([
                     sIdInpSrchFld = "inpSrchFld";
 
                     // Prepare the search field id using regex in camel case format
-                    sTemp = oSearchField.Columnname.replace(/./g, function (word, index) {
+                    sTemp = oSearchField.ColumnName.replace(/./g, function (word, index) {
                         if (index === 0) {
                             return word.toUpperCase();
-                        } else if (oSearchField.Columnname.slice(index - 1, index) === "_") {
+                        } else if (oSearchField.ColumnName.slice(index - 1, index) === "_") {
                             return word.toUpperCase();
                         } else {
                             return word.toLowerCase();
@@ -472,7 +485,7 @@ sap.ui.define([
                     });
 
                     // Set the filter operator
-                    if (oSearchField.Columndatatype.indexOf("CHAR") === -1) {
+                    if (oSearchField.ColumnDataType.indexOf("CHAR") === -1) {
                         sFilter = FilterOperator.Contains;
                     } else {
                         sFilter = FilterOperator.EQ;
@@ -480,12 +493,12 @@ sap.ui.define([
 
                     // Check if the value is not empty
                     if (sValue && sValue !== "") {
-                        if (sValue.indexOf("*") !== -1 && oSearchField.Columndatatype.indexOf("CHAR") === -1) {
+                        if (sValue.indexOf("*") !== -1 && oSearchField.ColumnDataType.indexOf("CHAR") === -1) {
                             MessageToast.show("Cannot do a fuzzy search for this field. Please enter a valid value for search");
                         } else {
                             oSearchParam = {
                                 sSrchFldId: sIdInpSrchFld,
-                                sPath: oSearchField.Columnname,
+                                sPath: oSearchField.ColumnName,
                                 sFilter: sFilter,
                                 sValue: sValue
                             };
@@ -500,7 +513,7 @@ sap.ui.define([
                 }, this);
 
                 // Change the no data text of the table in case there are no results post search
-                if (this.aSearchParameters.length !== 0) {
+                if (this.aSearchParameters && this.aSearchParameters.length !== 0) {
                     oViewTableResultModel.setProperty("/noDataText", this.fn_getResourceBundle().getText("tableResultNoDataTextAfterSearch"));
                 } else {
                     oViewTableResultModel.setProperty("/noDataText", this.fn_getResourceBundle().getText("tableResultNoDataText"));
@@ -557,7 +570,7 @@ sap.ui.define([
                         // Reset the tooltip info
                         if (oControl.getId().includes("inpSrchFldStatus")) {
                             aFields.forEach(function (oField) {
-                                if (oControl.getId().includes(oField.Columnname)) {
+                                if (oControl.getId().includes(oField.ColumnName)) {
                                     oControl.setTooltip("Select from dropdown");
                                 } else {
                                     oControl.setTooltip("Enter search text");
@@ -623,13 +636,18 @@ sap.ui.define([
                 this.fn_getLogReference().info("Table Result Controller: Entering onPress_btnSort method");
 
                 /** Define Variables */
-                var aFieldsData = this.fn_getGlobalModel("oFieldsDataModel").getData(), // Stores the fields data
+                var oFieldsModel = this.fn_getGlobalModel("oFieldsDataModel");
+                if (!oFieldsModel) {
+                    this.fn_getLogReference().error("Table Result Controller: Fields model is not available for sorting");
+                    return;
+                }
+                var aFieldsData = oFieldsModel.getData(), // Stores the fields data
                     aResultSetCols = []; // Stores the columns of the result set table
 
                 /** Method Implementation */
                 // Filter with result set fields
                 aResultSetCols = aFieldsData.filter(function (oField) {
-                    return oField.Isresultset === "YES";
+                    return oField.ResultSetFieldFlag === "Y";
                 });
 
                 // Prepare the view settings dialog
@@ -649,14 +667,14 @@ sap.ui.define([
                     aResultSetCols.forEach(function (oResultSetcol, index) {
                         if (index === 0) {
                             this.oVSDSort.addSortItem(new ViewSettingsItem({
-                                text: oResultSetcol.Columnlabel,
-                                key: oResultSetcol.Columnname,
+                                text: oResultSetcol.ColumnLabel,
+                                key: oResultSetcol.ColumnName,
                                 selected: true
                             }));
                         } else {
                             this.oVSDSort.addSortItem(new ViewSettingsItem({
-                                text: oResultSetcol.Columnlabel,
-                                key: oResultSetcol.Columnname
+                                text: oResultSetcol.ColumnLabel,
+                                key: oResultSetcol.ColumnName
                             }));
                         }
                     }, this);
@@ -716,7 +734,12 @@ sap.ui.define([
                 this.fn_getLogReference().info("Table Result Controller: Entering onConfirm_vsdSort method")
 
                 /** Define variables */
-                var aFieldData = this.fn_getGlobalModel("oFieldsModelData").getData(), // Stores fields information
+                var oFieldsModel = this.fn_getGlobalModel("oFieldsDataModel");
+                if (!oFieldsModel) {
+                    this.fn_getLogReference().error("Table Result Controller: Fields model is not available for export");
+                    return;
+                }
+                var aFieldData = oFieldsModel.getData(), // Stores fields information
                     aResultSetCols = [], // Stores result set table columns
                     aExportSheetCols = [], // Stores export sheet columns
                     oSettings, // JSON Object of export settings
@@ -734,31 +757,31 @@ sap.ui.define([
                     + (oDate.getDate() < 10 ? "0" + oDate.getDate() : oDate.getDate()).toString(); // dd
 
                 // Get current time in HHMMSS format
-                sTime = (oDate.getHours() < 10 ? "0" + ooDate.getHours() : oDate.getHours()).toString() // HH
-                    + (oDate.getMinutes() < 10 ? "0" + (oDate.getMinutes() + 1) : (oDate.getMinutes())).toString() // MM
+                sTime = (oDate.getHours() < 10 ? "0" + oDate.getHours() : oDate.getHours()).toString() // HH
+                    + (oDate.getMinutes() < 10 ? "0" + oDate.getMinutes() : oDate.getMinutes()).toString() // MM
                     + (oDate.getSeconds() < 10 ? "0" + oDate.getSeconds() : oDate.getSeconds()).toString(); // SS
 
                 // Log information
-                this, fn_getLogReference().info("Table Result Controller: Export Date - " + sDate + ", Export Time - " + sTime);
+                this.fn_getLogReference().info("Table Result Controller: Export Date - " + sDate + ", Export Time - " + sTime);
 
                 // Filter the total fields with only table result set fields
                 aResultSetCols = aFieldData.filter(function (oFieldData) {
-                    return oFieldData.Isresultset === "YES";
+                    return oFieldData.ResultSetFieldFlag === "Y";
                 });
 
                 // Prepare the export sheet columns
                 aResultSetCols.forEach(function (oResultSetCol) {
-                    if (oResultSetCol.Columndatatype.includes("INT")) {
+                    if ((oResultSetCol.ColumnDataType || "").toUpperCase().includes("INT")) {
                         sType = sap.ui.export.EdmType.Number;
-                    } else if (oResultSetCol.Columndatatype.includes("DATS")) {
+                    } else if ((oResultSetCol.ColumnDataType || "").toUpperCase().includes("DATS")) {
                         sType = sap.ui.export.EdmType.Date;
                     } else {
                         sType = sap.ui.export.EdmType.String;
                     }
 
                     aExportSheetCols.push({
-                        label: oResultSetCol.Columnlabel,
-                        property: oResultSetCol.Columnname,
+                        label: oResultSetCol.ColumnLabel,
+                        property: oResultSetCol.ColumnName,
                         type: sType,
                         wrap: true
                     });
@@ -832,117 +855,119 @@ sap.ui.define([
 
                     // Get the primary key details of the table
                     aPrimaryKeys = aFieldsData.filter(function (oField) {
-                        return oField.Primarykeyflag === "Y";
+                        return oField.PrimaryKeyFlag === "Y";
                     });
 
                     // Prepare the filter to check any in-progress record
                     aPrimaryKeys.forEach(function (oPrimaryKey) {
-                        aFilters.push(new Filter(oPrimaryKey.Columnname, FilterOperator.EQ, this.oSelectedTableData[oPrimaryKey.Columnname]));
+                        var sColName = oPrimaryKey.ColumnName;
+                        aFilters.push(new Filter(sColName, FilterOperator.EQ, this.oSelectedTableData[sColName]));
                     }, this);
 
                     aFilters.push(new Filter({
                         filters: [
-                            new Filter("VERSION_ACTIVE", FilterOperator.EQ, "I"),
-                            new Filter("VERSION_ACTIVE", FilterOperator.EQ, "G")
+                            new Filter("VersionActive", FilterOperator.EQ, "I"),
+                            new Filter("VersionActive", FilterOperator.EQ, "G")
                         ],
                         and: false
                     }));
 
-                    // Read the in-progress record data
-                    this.oTableModel.read(this.sEntitySet, {
-                        async: true,
-                        filters: aFilters,
-                        success: function (oData) {
-                            // Enable/Disable Amend/ReOpen/Close buttons based on the in-progress record
-                            if (oData.results.length === 0) {
-                                // Log information
-                                this.fn_getLogReference().info("Table Result Controller: No in-progress record exists for the selected entry");
+                    // [V4 MIGRATION] Replaced V2 oModel.read() with native OData V4 bindList().requestContexts().
+                    // this.sEntitySet is a plain EntitySet. Filters for VersionActive = I or G check in-progress records.
+                    // The V2-only async:true is removed. All success/error logic preserved via .then()/.catch().
+                    this.oTableModel.bindList(this.sEntitySet, null, null, aFilters).requestContexts(0, Infinity).then(function (aContexts) {
+                        // Map V4 contexts to plain JS objects for downstream logic
+                        var aData = aContexts.map(function (oContext) { return oContext.getObject(); });
 
-                                if (this.oSelectedTableData.STATUS === "Approved") {
-                                    // Enable Amend and close button
-                                    this.byId("btnAmend").setVisible(true);
-                                    this.byId("btnReopen").setVisible(false);
-                                    this.byId("btnClose").setVisible(true);
+                        // Enable/Disable Amend/ReOpen/Close buttons based on the in-progress record
+                        if (aData.length === 0) {
+                            // Log information
+                            this.fn_getLogReference().info("Table Result Controller: No in-progress record exists for the selected entry");
 
-                                    // Show below information in the message strip area
-                                    this.byId("msgStripTableResult").setText("<strong>Success:</strong><em> Record is valid for modification </em>");
-                                    this.byId("msgStripTableResult").setType("Success");
-                                } else if (this.oSelectedTableData.STATUS === "Closed") {
-                                    // Enable Reopen button
-                                    this.byId("btnAmend").setVisible(false);
-                                    this.byId("btnReopen").setVisible(true);
-                                    this.byId("btnClose").setVisible(false);
-
-                                    // Show below information in the message strip area
-                                    this.byId("msgStripTableResult").setText("<strong>Success:</strong><em> Record is valid for modification </em>");
-                                    this.byId("msgStripTableResult").setType("Success");
-                                } else {
-                                    // Show below information in the message strip area
-                                    this.byId("msgStripTableResult").setText("<strong>Error:</strong><em> Record status is invalid for modification </em>");
-                                    this.byId("msgStripTableResult").setType("Error");
-                                }
-
-                                // Disable the workflow link in message area
-                                this.byId("lnkWorkflowId").setVisible(false);
-                            } else {
-                                oInProgressData = oData.results[0];
-                                // Log information
-                                this.fn_getLogReference().info("Table Result Controller: In-progress record exists for the selected entry. Workflow id - " + oInProgressData.WORKFLOW_ID);
-
-                                // Disable the amend, re-open and close buttons
-                                this.byId("btnAmend").setVisible(false);
+                            // Check status — seed data uses "ACT" for active/approved and "CLO" for closed
+                            if (this.oSelectedTableData.Status === "510" || this.oSelectedTableData.Status === "Approved") {
+                                // Enable Amend and close button
+                                this.byId("btnAmend").setVisible(true);
                                 this.byId("btnReopen").setVisible(false);
+                                this.byId("btnClose").setVisible(true);
+
+                                // Show below information in the message strip area
+                                this.byId("msgStripTableResult").setText("<strong>Success:</strong><em> Record is valid for modification </em>");
+                                this.byId("msgStripTableResult").setType("Success");
+                            } else if (this.oSelectedTableData.Status === "590" || this.oSelectedTableData.Status === "Closed") {
+                                // Enable Reopen button
+                                this.byId("btnAmend").setVisible(false);
+                                this.byId("btnReopen").setVisible(true);
                                 this.byId("btnClose").setVisible(false);
 
                                 // Show below information in the message strip area
-                                this.byId("msgStripTableResult").setText("<strong>Warning: </strong><em> Workflow <strong>" + oInProgressData.WORKFLOW_ID +
-                                    "</strong> is in progress for the selected entry. For more information of the in progress workflow </em>");
-
-                                this.byId("msgStripTableResult").setType("Warning");
-
-                                // Enable the link
-                                this.byId("lnkWorkflowId").setVisible(true);
+                                this.byId("msgStripTableResult").setText("<strong>Success:</strong><em> Record is valid for modification </em>");
+                                this.byId("msgStripTableResult").setType("Success");
+                            } else {
+                                // Show below information in the message strip area
+                                this.byId("msgStripTableResult").setText("<strong>Error:</strong><em> Record status is invalid for modification </em>");
+                                this.byId("msgStripTableResult").setType("Error");
                             }
 
-                            // Close the busy dialog
-                            this.fn_closeBusyDialog();
-                        }.bind(this),
-                        error: function (oError) {
-                            // Show error
-                            this.fn_showServiceError(oError);
-                        }.bind(this)
-                    });
+                            // Disable the workflow link in message area
+                            this.byId("lnkWorkflowId").setVisible(false);
+                        } else {
+                            oInProgressData = aData[0];
+                            // Log information
+                            this.fn_getLogReference().info("Table Result Controller: In-progress record exists for the selected entry. Workflow id - " + oInProgressData.WORKFLOW_ID);
+
+                            // Disable the amend, re-open and close buttons
+                            this.byId("btnAmend").setVisible(false);
+                            this.byId("btnReopen").setVisible(false);
+                            this.byId("btnClose").setVisible(false);
+
+                            // Show below information in the message strip area
+                            this.byId("msgStripTableResult").setText("<strong>Warning: </strong><em> Workflow <strong>" + oInProgressData.WorkflowId +
+                                "</strong> is in progress for the selected entry. For more information of the in progress workflow </em>");
+
+                            this.byId("msgStripTableResult").setType("Warning");
+
+                            // Enable the link
+                            this.byId("lnkWorkflowId").setVisible(true);
+                        }
+
+                        // Close the busy dialog
+                        this.fn_closeBusyDialog();
+                    }.bind(this)).catch(function (oError) {
+                        // Show error
+                        this.fn_showServiceError(oError);
+                    }.bind(this));
 
                     // Drop all contents of the item details form
                     ofrmItemDetails.removeAllContent();
 
                     // Get the item details fields of the table
                     aItemDetails = aFieldsData.filter(function (oField) {
-                        return oField.Isitemdetails = "YES";
+                        return oField.ItemDetailsFlag === "Y";
                     });
 
                     // Add the selected row details into the form
                     aItemDetails.forEach(function (oItemDetail) {
                         // Add label
                         ofrmItemDetails.addContent(new Label({
-                            text: oItemDetail.Columnlabel,
-                            tooltip: oItemDetail.Columnlabel
+                            text: oItemDetail.ColumnLabel,
+                            tooltip: oItemDetail.ColumnLabel
                         }));
 
                         // Add field
-                        if (oItemDetail.Columndatatype.includes("DATS")) {
+                        if (oItemDetail.ColumnDataType.includes("DATS")) {
                             ofrmItemDetails.addContent(new DatePicker({
                                 displayFormat: "dd.MM.yyyy",
                                 valueFormat: "yyyy-MM-dd",
-                                value: this.oSelectedTableData[oItemDetail.Columnname].toJSON().slice(0, 10),
-                                tooltip: this.oSelectedTableData[oItemDetail.Columnname],
+                                value: this.oSelectedTableData[oItemDetail.ColumnName] ? this.oSelectedTableData[oItemDetail.ColumnName].toJSON().slice(0, 10) : this.oSelectedTableData[oItemDetail.ColumnName],
+                                tooltip: this.oSelectedTableData[oItemDetail.ColumnName] ? this.oSelectedTableData[oItemDetail.ColumnName].toJSON().slice(0, 10) : this.oSelectedTableData[oItemDetail.ColumnName],
                                 editable: false,
                                 width: "25rem"
                             }));
                         } else {
                             ofrmItemDetails.addContent(new Input({
-                                value: this.oSelectedTableData[oItemDetail.Columnname],
-                                tooltip: this.oSelectedTableData[oItemDetail.Columnname],
+                                value: this.oSelectedTableData[oItemDetail.ColumnName] + "",
+                                tooltip: this.oSelectedTableData[oItemDetail.ColumnName] + "",
                                 editable: false,
                                 width: "25rem"
                             }));
@@ -992,8 +1017,8 @@ sap.ui.define([
 
                 /** Method Implementation */
                 // Read the workflow id based on source
-                if (oEvent.getSource().getparent().getId().includes("msgStripTableResult")) {
-                    sWorkflowId = oEvent.getSource().getparent().getText().split("<strong>")[2].split("</strong>")[0];
+                if (oEvent.getSource().getParent().getId().includes("msgStripTableResult")) {
+                    sWorkflowId = oEvent.getSource().getParent().getText().split("<strong>")[2].split("</strong>")[0];
                 } else {
                     sWorkflowId = oEvent.getSource().getText();
                 }
@@ -1003,7 +1028,7 @@ sap.ui.define([
                     asearchParameters: this.aSearchParameters,
                     sPageNumber: this.byId("inpPageNum").getValue(),
                     sPageSizeKey: this.byId("cbxPageSize").getSelectedKey(),
-                    aCntrlUiConfigData: this.fn_getGlobalModel("oCntrlUiConfigDataModel").getData(),
+                    aCntrlUiConfigData: this.fn_getGlobalModel("oFieldsDataModel").getData(),
                     aUniqueRepositoriesData: this.fn_getGlobalModel("oUniqueRepositoriesModel").getData(),
                     aUniqueTablesData: this.fn_getGlobalModel("oUniqueTablesModel").getData()
                 };
@@ -1088,7 +1113,7 @@ sap.ui.define([
                     aSearchParameters: this.aSearchParameters,
                     sPageNumber: this.byId("inpPageNum").getValue(),
                     sPageSizeKey: this.byId("cbxPageSize").getSelectedKey(),
-                    aCntrlUiConfigData: this.fn_getGlobalModel("oCntrlUiConfigDataModel").getData(),
+                    aCntrlUiConfigData: this.fn_getGlobalModel("oFieldsDataModel").getData(),
                     aUniqueRepositoriesData: this.fn_getGlobalModel("oUniqueRepositoriesModel").getData(),
                     aUniqueTablesData: this.fn_getGlobalModel("oUniqueTablesModel").getData(),
                     sRepositoryId: this.sRepositoryId,
@@ -1100,51 +1125,106 @@ sap.ui.define([
                 };
 
                 // Get reference of the cross app navigation service
-                oNavServiceToCommonApp = sap.ushell.Container.getService("CrossApplicationNavigation");
+                if (sap.ushell && sap.ushell.Container) {
+                    // swapnil - commented below code for async call
+                    // oNavServiceToCommonApp = sap.ushell.Container.getService("CrossApplicationNavigation");
 
-                // Create an application state
-                oAppState = oNavServiceToCommonApp.createEmptyAppState(this.getOwnerComponent());
+                    // // Create an application state
+                    // oAppState = oNavServiceToCommonApp.createEmptyAppState(this.getOwnerComponent());
 
-                // Set the parameters into the app state
-                oAppState.setData(oStateToSave);
+                    // // Set the parameters into the app state
+                    // oAppState.setData(oStateToSave);
 
-                // Save the data
-                oAppState.save();
+                    // // Save the data
+                    // oAppState.save();
 
-                // Get reference of the hash changer service
-                oHashChanger = sap.ui.core.routing.HashChanger.getInstance();
+                    // // Get reference of the hash changer service
+                    // oHashChanger = sap.ui.core.routing.HashChanger.getInstance();
 
-                // Get the current hash
-                sCurrentHash = oHashChanger.getHash();
+                    // // Get the current hash
+                    // sCurrentHash = oHashChanger.getHash();
 
-                // Check if any app state is already present in the current hash using regex
-                aAppStateKeys = /(?:sap-iapp-state=)([^&=]+)/.exec(sCurrentHash);
+                    // // Check if any app state is already present in the current hash using regex
+                    // aAppStateKeys = /(?:sap-iapp-state=)([^&=]+)/.exec(sCurrentHash);
 
-                if (aAppStateKeys) {
-                    // Split the current hash and remove the current app state
-                    sCurrentHash = sCurrentHash.split("?")[0];
+                    // if (aAppStateKeys) {
+                    //     // Split the current hash and remove the current app state
+                    //     sCurrentHash = sCurrentHash.split("?")[0];
+                    // }
+
+                    // // Prepare the new hash by adding the new app state
+                    // sNewHash = sCurrentHash + "?sap-iapp-state=" + oAppState.getKey();
+
+                    // // Replace hash
+                    // oHashChanger.replaceHash(sNewHash);
+
+                    // /** eslint-disable sap-cross-application-navigation */
+                    // // Navigate to the child app
+                    // oNavServiceToCommonApp.toExternal({
+                    //     target: {
+                    //         semanticObject: "zmdr_central_cmn",
+                    //         action: "manage"
+                    //     },
+                    //     params: {
+                    //         sActionedBy: "Requestor",
+                    //         sActionType: sBtnText
+                    //     },
+                    //     appStateKey: oAppState.getKey()
+                    // });
+                    /** eslint-enable sap-cross-application-navigation */
+                    // swapnil - updated code for async call
+                    oNavServiceToCommonApp = sap.ushell.Container.getServiceAsync("CrossApplicationNavigation")
+                        .then(function (oService) {
+                            oNavServiceToCommonApp = oService;
+                            // Create an application state
+                            oAppState = oNavServiceToCommonApp.createEmptyAppStateAsync(_oSelf.getOwnerComponent())
+                                .then(function (oAppState) {
+                                    // Set the parameters into the app state
+                                    oAppState.setData(oStateToSave);
+
+                                    // Save the data and wait for completion before navigation
+                                    var pSave = oAppState.saveAsync ? oAppState.saveAsync() : Promise.resolve(oAppState.save());
+                                    return Promise.resolve(pSave).then(function () {
+                                        // Get reference of the hash changer service
+                                        oHashChanger = sap.ui.core.routing.HashChanger.getInstance();
+
+                                        // Get the current hash
+                                        sCurrentHash = oHashChanger.getHash();
+
+                                        // Check if any app state is already present in the current hash using regex
+                                        aAppStateKeys = /(?:sap-iapp-state=)([^&=]+)/.exec(sCurrentHash);
+
+                                        if (aAppStateKeys) {
+                                            // Split the current hash and remove the current app state
+                                            sCurrentHash = sCurrentHash.split("?")[0];
+                                        }
+
+                                        // Prepare the new hash by adding the new app state
+                                        sNewHash = sCurrentHash + "?sap-iapp-state=" + oAppState.getKey();
+
+                                        // Replace hash
+                                        oHashChanger.replaceHash(sNewHash);
+
+                                        // Navigate to the child app
+                                        oNavServiceToCommonApp.toExternal({
+                                            target: {
+                                                semanticObject: "zmdr_central_cmn",
+                                                action: "manage"
+                                            },
+                                            params: {
+                                                sActionedBy: "Requestor",
+                                                sActionType: sBtnText
+                                            },
+                                            appStateKey: oAppState.getKey()
+                                        });
+                                    });
+                                });
+                        });
+                } else {
+                    // Running in standalone mode without Fiori Launchpad
+                    this.fn_getLogReference().error("Cross application navigation is not supported in standalone mode");
+                    sap.m.MessageToast.show("Navigation to common app requires Fiori Launchpad");
                 }
-
-                // Prepare the new hash by adding the new app state
-                sNewHash = sCurrentHash + "?sap-iapp-state=" + oAppState.getKey();
-
-                // Replace hash
-                oHashChanger.replaceHash(sNewHash);
-
-                /** eslint-disable sap-cross-application-navigation */
-                // Navigate to the child app
-                oNavServiceToCommonApp.toExternal({
-                    target: {
-                        semanticObject: "zmdr_central_cmn",
-                        action: "manage"
-                    },
-                    params: {
-                        sActionedBy: "Requestor",
-                        sActionType: sBtnText
-                    },
-                    appStateKey: oAppState.getKey()
-                });
-                /** eslint-enable sap-cross-application-navigation */
 
                 // Log information
                 this.fn_getLogReference().info("Table Result Controller: Exiting onPress_actionButtons method");
@@ -1167,6 +1247,8 @@ sap.ui.define([
             _fn_onObjectMatched: function (oEvent) {
                 // Log information
                 this.fn_getLogReference().info("Table Result Controller: Entering _fn_onObjectMatched method");
+
+                this.getView().getParent().getParent().setLayout("EndColumnFullScreen");
 
                 /** Define Variables */
                 var oSelectedTableData, // Stores the selected table information
@@ -1249,50 +1331,58 @@ sap.ui.define([
                                 // Set the page number
                                 this.sPageNumber = oSavedAppState.getData().sPageNumber;
 
-                                // Set the page size
-                                this.byId("cbxPageSize").setSelectedKey(oSavedAppState.getData().sPageSizeKey);
+                                if (this.byId("cbxPageSize")) {
+                                    // Set the page size
+                                    this.byId("cbxPageSize").setSelectedKey(oSavedAppState.getData().sPageSizeKey);
+                                }
 
                                 // Get the configuration data
                                 aCntrlUiConfigData = oSavedAppState.getData().aCntrlUiConfigData;
 
                                 // Set the models
-                                this.fn_setGlobalModel(new JSONModel(oSavedAppState.getData().aUniqueRepositoriesData), "oUniqueRepositoriesModel");
-                                this.fn_setGlobalModel(new JSONModel(oSavedAppState.getData().aUniqueTablesData), "oUniqueTablesModel");
+                                if (this.getOwnerComponent()) {
+                                    this.fn_setGlobalModel(new JSONModel(oSavedAppState.getData().aUniqueRepositoriesData), "oUniqueRepositoriesModel");
+                                    this.fn_setGlobalModel(new JSONModel(oSavedAppState.getData().aUniqueTablesData), "oUniqueTablesModel");
+                                }
 
                                 // Get selected table label
                                 oSelectedTableData = oSavedAppState.getData().aUniqueTablesData[this.sTableId];
 
                                 if (oSelectedTableData) {
-                                    // Set the title of the page
-                                    oViewTableResultModel.setProperty("/pageTitle", this.fn_getResourceBundle().getText("tableResultPageTitle", [oSelectedTableData.tableName]));
-                                    oViewTableResultModel.setProperty("/tableTooltip", this.fn_getResourceBundle().getText("tableResultPageTitle", [oSelectedTableData.tableName]));
+                                    if (this.getOwnerComponent()) {
+                                        // Set the title of the page
+                                        oViewTableResultModel.setProperty("/pageTitle", this.fn_getResourceBundle().getText("tableResultPageTitle", [oSelectedTableData.tableName]));
+                                        oViewTableResultModel.setProperty("/tableTooltip", this.fn_getResourceBundle().getText("tableResultPageTitle", [oSelectedTableData.tableName]));
 
-                                    // Filter the configuration data based on the selected table
-                                    aFieldsData = aCntrlUiConfigData.filter(function (oCntrlConfigData) {
-                                        return oCntrlConfigData.TableLabel === oSelectedTableData.tableName;
-                                    });
-
-                                    // Null check
-                                    if (aFieldsData.length !== 0) {
-                                        // Set the model globally or update the data
-                                        if (!this.fn_getGlobalModel("oFieldsDataModel")) {
-                                            // Set the fields data model
-                                            oCompleteFieldsModel.setData(aFieldsData);
-                                            this.fn_setGlobalModel(oCompleteFieldsModel, "oFieldsDataModel");
-                                        } else {
-                                            // Update the data
-                                            this.fn_getGlobalModel("oFieldsDataModel").setData(aFieldsData);
-                                        }
-
-                                        // Prepare search form and read table odata service details
-                                        this._fn_populateSearchForm(aFieldsData);
-                                        this._fn_readTableUrl();
-                                    } else {
-                                        // Show error message in console
-                                        this.fn_getLogReference().error("Table Result Controller: Table configuration not maintained properly at the backend");
-
-                                        // Close the busy dialog
-                                        this.fn_closeBusyDialog();
+                                        // Fetch the field configuration data based on the selected table directly from backend
+                                        // [V4 MIGRATION] Replaced V2 oModel.read() with native OData V4 bindList().requestContexts().
+                                        // /CntrlUIConfig is a @readonly EntitySet (central-service.cds line 14). bindList() is correct.
+                                        // Filter on tablename is preserved. All downstream logic is unchanged.
+                                        var aConfigFilters = [new sap.ui.model.Filter("TableName", sap.ui.model.FilterOperator.EQ, oSelectedTableData.tableId)];
+                                        this.fn_getGlobalModel().bindList("/CntrlUIConfig", null, null, aConfigFilters).requestContexts(0, Infinity).then(function (aContexts) {
+                                            var aFieldsData = aContexts.map(function (oCtx) { return oCtx.getObject(); });
+                                            if (aFieldsData.length !== 0) {
+                                                aFieldsData.sort(function (a, b) {
+                                                    var aSeq = a.ColumnSeqNo !== undefined ? a.ColumnSeqNo : a.ColumnSeqNo;
+                                                    var bSeq = b.ColumnSeqNo !== undefined ? b.ColumnSeqNo : b.ColumnSeqNo;
+                                                    return aSeq - bSeq;
+                                                });
+                                                oCompleteFieldsModel.setData(aFieldsData);
+                                                if (!this.fn_getGlobalModel("oFieldsDataModel")) {
+                                                    this.fn_setGlobalModel(oCompleteFieldsModel, "oFieldsDataModel");
+                                                } else {
+                                                    this.fn_getGlobalModel("oFieldsDataModel").setData(aFieldsData);
+                                                }
+                                                this._fn_populateSearchForm(aFieldsData);
+                                                this._fn_readTableUrl();
+                                            } else {
+                                                this.fn_getLogReference().error("Table Result Controller: Table configuration not maintained properly at the backend");
+                                                this.fn_closeBusyDialog();
+                                            }
+                                        }.bind(this)).catch(function (err) {
+                                            this.fn_getLogReference().error("Table Result Controller: Backend error reading CntrlUIConfig");
+                                            this.fn_closeBusyDialog();
+                                        }.bind(this));
                                     }
                                 } else {
                                     // Show error message in console
@@ -1328,45 +1418,45 @@ sap.ui.define([
                             // Set the title of the page
                             oViewTableResultModel.setProperty("/pageTitle", this.fn_getResourceBundle().getText("tableResultPageTitle", [oSelectedTableData.tableName]));
                             oViewTableResultModel.setProperty("/tableTooltip", this.fn_getResourceBundle().getText("tableResultPageTitle", [oSelectedTableData.tableName]));
-
-                            // Filter the configuration data based on the selected table
-                            aFieldsData = aCntrlUiConfigData.filter(function (oCntrlConfigData) {
-                                return oCntrlConfigData.Tablelabel === oSelectedTableData.tableName;
-                            });
-                        }
-                        // Null check
-                        if (aFieldsData.length !== 0) {
-                            // Sort the data based on the field sequence
-                            aFieldsData.sort(function (a, b) {
-                                return a.Columnseqno - b.Columnseqno;
-                            });
-
-                            // Set the fields data model
-                            oCompleteFieldsModel.setData(aFieldsData);
-
-                            // Set the model globally or update the data
-                            if (!this.fn_getGlobalModel("oFieldsDataModel")) {
-                                this.fn_setGlobalModel(oCompleteFieldsModel, "oFieldsDataModel");
-                            } else {
-                                // Update the data
-                                this.fn_getGlobalModel("oFieldsDataModel").setData(aFieldsData);
-                            }
-
-                            // Prepare search form and read table odata service details
-                            this._fn_populateSearchForm(aFieldsData);
-                            this._fn_readTableUrl();
+                            // Fetch the configuration data based on the selected table directly from backend
+                            // [V4 MIGRATION] Replaced V2 oModel.read() with native OData V4 bindList().requestContexts().
+                            // /CntrlUIConfig is a @readonly EntitySet (central-service.cds line 14). bindList() is correct.
+                            // Filter on tablename is preserved. All downstream logic is unchanged
+                            var aConfigFilters = [new sap.ui.model.Filter("TableName", sap.ui.model.FilterOperator.EQ, oSelectedTableData.tableId)];
+                            this.fn_getGlobalModel().bindList("/CntrlUIConfig", null, null, aConfigFilters).requestContexts(0, Infinity).then(function (aContexts) {
+                                var aFieldsData = aContexts.map(function (oCtx) { return oCtx.getObject(); });
+                                if (aFieldsData.length !== 0) {
+                                    aFieldsData.sort(function (a, b) {
+                                        var aSeq = a.ColumnSeqNo !== undefined ? a.ColumnSeqNo : a.ColumnSeqNo;
+                                        var bSeq = b.ColumnSeqNo !== undefined ? b.ColumnSeqNo : b.ColumnSeqNo;
+                                        return aSeq - bSeq;
+                                    });
+                                    oCompleteFieldsModel.setData(aFieldsData);
+                                    if (!this.fn_getGlobalModel("oFieldsDataModel")) {
+                                        this.fn_setGlobalModel(oCompleteFieldsModel, "oFieldsDataModel");
+                                    } else {
+                                        this.fn_getGlobalModel("oFieldsDataModel").setData(aFieldsData);
+                                    }
+                                    this._fn_populateSearchForm(aFieldsData);
+                                    this._fn_readTableUrl();
+                                } else {
+                                    this.fn_getLogReference().error("Table Result Controller: Unable to read the field data of the selected table from the backend");
+                                    this.fn_closeBusyDialog();
+                                }
+                            }.bind(this)).catch(function (err) {
+                                this.fn_getLogReference().error("Table Result Controller: Backend error reading CntrlUIConfig");
+                                this.fn_closeBusyDialog();
+                            }.bind(this));
                         } else {
-                            // Show error message in console
-                            this.fn_getLogReference().error("Table Result Controller: Unable to read the field data of the selected table from the navigation");
+                            // oSelectedTableData is null — close busy dialog and go home
+                            this.fn_closeBusyDialog();
+                            this.sTableId = undefined;
+                            this.fn_getRouter().navTo("category");
                         }
                     } else {
-                        // Close the busy dialog
+                        // Neither external nav state nor global models — close and navigate home
                         this.fn_closeBusyDialog();
-
-                        // Clear the table selection
                         this.sTableId = undefined;
-
-                        // Navigate to the home page
                         this.fn_getRouter().navTo("category");
                     }
                 }
@@ -1411,7 +1501,7 @@ sap.ui.define([
 
                 // Get the search field details from the fields data
                 aSearchFields = aFieldsData.filter(function (oField) {
-                    return oField.Searchfieldflag === "Y";
+                    return oField.SearchFieldFlag === "Y";
                 });
 
                 // Loop into search fields and add the search fields in the filter bar
@@ -1420,10 +1510,10 @@ sap.ui.define([
                     sInpSrchFld = "inpSrchFld";
 
                     // Prepare the column name in camel casing format with the help of regex
-                    sTemp = oSearchField.Columnname.replace(/./g, function (word, index) {
+                    sTemp = oSearchField.ColumnName.replace(/./g, function (word, index) {
                         if (index === 0) {
                             return word.toUpperCase();
-                        } else if (oSearchField.Columnname.slice(index - 1, index) === "_") {
+                        } else if (oSearchField.ColumnName.slice(index - 1, index) === "_") {
                             return word.toUpperCase();
                         } else {
                             return word.toLowerCase();
@@ -1434,16 +1524,16 @@ sap.ui.define([
                     sInpSrchFld = sInpSrchFld.concat(sTemp);
 
                     // If the search parameters are present then set the values in the search fields
-                    if (this.aSearchParameters.length !== 0) {
+                    if (this.aSearchParameters && this.aSearchParameters.length !== 0) {
                         if (this.aSearchParameters.filter(function (oSearchParam) {
                             return oSearchParam.sSrchFldId === sInpSrchFld;
                         }).length !== 0) {
-                            if (oSearchField.Columnname.toLowerCase.includes("status")) {
+                            if (oSearchField.ColumnName.toLowerCase().includes("status")) {
                                 // Place the search field in the filter bar with dropdown option
                                 oDynamicPage.getHeader().getContent()[0].addFilterGroupItem(new FilterGroupItem({
                                     groupName: "filters",
-                                    name: oSearchField.Columnname,
-                                    label: oSearchField.Columnlabel,
+                                    name: oSearchField.ColumnName,
+                                    label: oSearchField.ColumnLabel,
                                     partOfCurrentVariant: true,
                                     visibleInFilterBar: true,
                                     control: new ComboBox({
@@ -1477,8 +1567,8 @@ sap.ui.define([
                                 // Place the search field in the filter bar with input field and value present
                                 oDynamicPage.getHeader().getContent()[0].addFilterGroupItem(new FilterGroupItem({
                                     groupName: "filters",
-                                    name: oSearchField.Columnname,
-                                    label: oSearchField.Columnlabel,
+                                    name: oSearchField.ColumnName,
+                                    label: oSearchField.ColumnLabel,
                                     partOfCurrentVariant: true,
                                     visibleInFilterBar: true,
                                     control: new Input({
@@ -1497,12 +1587,12 @@ sap.ui.define([
                                     })
                                 }));
                             }
-                        } else if (oSearchField.Columnname.toLowerCase().includes("status")) {
+                        } else if (oSearchField.ColumnName.toLowerCase().includes("status")) {
                             // Place the search field in the filter bar with dropdown option
                             oDynamicPage.getHeader().getContent()[0].addFilterGroupItem(new FilterGroupItem({
                                 groupName: "filters",
-                                name: oSearchField.Columnname,
-                                label: oSearchField.Columnlabel,
+                                name: oSearchField.ColumnName,
+                                label: oSearchField.ColumnLabel,
                                 partOfCurrentVariant: true,
                                 visibleInFilterBar: true,
                                 control: new ComboBox({
@@ -1531,8 +1621,8 @@ sap.ui.define([
                             // Place the search field in the filter bar with empty input field
                             oDynamicPage.getHeader().getContent()[0].addFilterGroupItem(new FilterGroupItem({
                                 groupName: "filters",
-                                name: oSearchField.Columnname,
-                                label: oSearchField.Columnlabel,
+                                name: oSearchField.ColumnName,
+                                label: oSearchField.ColumnLabel,
                                 partOfCurrentVariant: true,
                                 visibleInFilterBar: true,
                                 control: new Input({
@@ -1545,12 +1635,12 @@ sap.ui.define([
                                 })
                             }));
                         }
-                    } else if (oSearchField.Columnname.toLowerCase().includes("status")) {
+                    } else if (oSearchField.ColumnName.toLowerCase().includes("status")) {
                         // Place the search field in the filter bar with dropdown option
                         oDynamicPage.getHeader().getContent()[0].addFilterGroupItem(new FilterGroupItem({
                             groupName: "filters",
-                            name: oSearchField.Columnname,
-                            label: oSearchField.Columnlabel,
+                            name: oSearchField.ColumnName,
+                            label: oSearchField.ColumnLabel,
                             partOfCurrentVariant: true,
                             visibleInFilterBar: true,
                             control: new ComboBox({
@@ -1579,8 +1669,8 @@ sap.ui.define([
                         // Place the search field in the filter bar with empty input field
                         oDynamicPage.getHeader().getContent()[0].addFilterGroupItem(new FilterGroupItem({
                             groupName: "filters",
-                            name: oSearchField.Columnname,
-                            label: oSearchField.Columnlabel,
+                            name: oSearchField.ColumnName,
+                            label: oSearchField.ColumnLabel,
                             partOfCurrentVariant: true,
                             visibleInFilterBar: true,
                             control: new Input({
@@ -1611,44 +1701,68 @@ sap.ui.define([
                 this.fn_getLogReference().info("Table Result Controller: Entering _fn_readTableUrl method");
 
                 /** Define Variables */
-                var oUrlModel, // Stores the URL model
-                    oSelectedTablename = this.fn_getGlobalModel("oFieldsDataModel").getData()[0].Tablename, // Stores the selected table name
-                    iLastIndex; // Stores the last index of '/' in the service URL
+                var oFieldsData = this.fn_getGlobalModel("oFieldsDataModel").getData()[0];
+                // Handle both lowercase (OData V2 proxy returns lowercase from CAP CDS) and PascalCase (legacy)
+                var oSelectedTablename = oFieldsData.TableName;
+                var iLastIndex; // Stores the last index of '/' in the service URL
 
                 /** Method Implementation */
-                // Get reference of the URL model
-                oUrlModel = this.fn_getGlobalModel("ZMDGCPCNTRLURL01_CDS");
+                // Open busy dialog
+                this.fn_openBusyDialog();
 
-                // Get the service url of the selected table
-                oUrlModel.read("/ZMDGCPCNTRLURL01(p_tabname='" + oSelectedTablename + "')/Set", {
-                    method: "GET",
-                    async: false,
-                    success: function (oData) {
-                        // Open busy dialog
-                        this.fn_openBusyDialog();
+                // Set service URL and entity set
+                // The CentralService at /mdrapi/central is the correct CAP service for MDR Central data
+                var aFilters = [new sap.ui.model.Filter("TableName", sap.ui.model.FilterOperator.EQ, oSelectedTablename)];
+                this.fn_getGlobalModel().bindList("/CntrlUIUrl", null, null, aFilters).requestContexts(0, Infinity).then(function (aContexts) {
+                    var aUrlData = aContexts.map(function (oCtx) { return oCtx.getObject(); });
 
-                        // Get the last index of '/'
-                        iLastIndex = oData.results[0].Serviceurl.lastIndexOf("/");
+                    // Check if the service URL starts with a forward slash
+                    if (this.fn_getGlobalModel().getServiceUrl().startsWith("/")) {
+                        aUrlData[0].OdataUrl.split("/").forEach(function (sUrlPart, index) {
+                            if (index === aUrlData[0].OdataUrl.split("/").length - 1) {
+                                this.sEntitySet = "/" + sUrlPart;
+                            } else if (index === 0) {
+                                this.sServiceUrl = "/";
+                            } else {
+                                this.sServiceUrl = this.sServiceUrl + sUrlPart + "/";
+                            }
+                        }.bind(this));
+                    } else {
+                        aUrlData[0].OdataUrl.split("/").forEach(function (sUrlPart, index) {
+                            if (index === aUrlData[0].OdataUrl.split("/").length - 1) {
+                                this.sEntitySet = "/" + sUrlPart;
+                            } else if (index === 0) {
+                                this.sServiceUrl = "";
+                            } else {
+                                this.sServiceUrl = this.sServiceUrl + sUrlPart + "/";
+                            }
+                        }.bind(this));
+                    }
 
-                        // Prepare service url and entity set based on last index of '/'
-                        this.sServiceUrl = oData.results[0].Serviceurl.slice(0, iLastIndex);
-                        this.sEntitySet = oData.results[0].Serviceurl.slice(iLastIndex, oData.results[0].Serviceurl.length);
+                    // Log information
+                    this.fn_getLogReference().info("Table Result Controller: Service URL - " + this.sServiceUrl);
+                    this.fn_getLogReference().info("Table Result Controller: Entity Set - " + this.sEntitySet);
 
-                        // Log information
-                        this.fn_getLogReference().info("Table Result Controller: Service URL - " + this.sServiceUrl);
-                        this.fn_getLogReference().info("Table Result Controller: Entity Set - " + this.sEntitySet);
+                    // Resolve the service URL as per manifest
+                    var sResolvedServiceUri = this.getOwnerComponent().getManifestObject().resolveUri(this.sServiceUrl, "sap.app");
 
-                        // Odata model of the selected table
-                        this.oTableModel = new ODataModel(this.sServiceUrl);
+                    this.fn_getLogReference().info("Table Result Controller: Resolved Service URL - " + sResolvedServiceUri);
 
-                        // Read data of the selected table
-                        this._fn_readTableData();
-                    }.bind(this),
-                    error: function (oError) {
-                        // Show error message
-                        this.fn_showServiceError(oError);
-                    }.bind(this)
-                });
+                    // Odata model of the selected table - use the global model which has proper authentication context
+                    this.oTableModel = new ODataModel({
+                        serviceUrl: sResolvedServiceUri,
+                        synchronizationMode: "None",   // required for OData V4
+                        autoExpandSelect: true,
+                        operationMode: "Server",
+                        earlyRequests: true   // triggers early metadata + CSRF fetch
+                    });
+
+                    // Read data of the selected table
+                    this._fn_readTableData();
+                }.bind(this)).catch(function (err) {
+                    this.fn_getLogReference().error("Table Result Controller: Backend error reading CntrlUIUrl");
+                    this.fn_closeBusyDialog();
+                }.bind(this));
 
                 // Log information
                 this.fn_getLogReference().info("Table Result Controller: Exiting _fn_readTableUrl method");
@@ -1670,19 +1784,19 @@ sap.ui.define([
                     bFirstRead, // Stores the flag to check if the table data is read for the first time
                     iMaxPageNum, // Stores the maximum page number
                     oCurrentTableBoundModel = new JSONModel(), // Stores the current table bound model
-                    iNum = this.byId("cbxPageSize").getValue(), // Stores the number of records
+                    iNum = parseInt(this.byId("cbxPageSize").getValue(), 10) || 10, // Stores the number of records (as integer)
                     iSkip = 0; // Stores the number of records to be skipped
 
                 /** Method Implementation */
-                // Read the search parameters and assign into the table filters
-                if (this.aSearchParameters.length !== 0) {
+                // Read the search parameter array and add the filters in the array
+                if (this.aSearchParameters && this.aSearchParameters.length !== 0) {
                     this.aSearchParameters.forEach(function (oSearchParam) {
                         aFilters.push(new Filter(oSearchParam.sPath, oSearchParam.sFilter, oSearchParam.sValue));
                     });
                 }
 
                 // Add filter of version active
-                aFilters.push(new Filter("VERSION_ACTIVE", FilterOperator.EQ, "Y"));
+                aFilters.push(new Filter("VersionActive", FilterOperator.EQ, "Y"));
 
                 // Reset the pagination toolbar fields
                 this.byId("btnFirstPage").setEnabled(false);
@@ -1691,121 +1805,104 @@ sap.ui.define([
                 this.byId("btnNextPage").setEnabled(true);
                 this.byId("btnLastPage").setEnabled(true);
 
-                // Read the record count of the selected table
-                this.oTableModel.read(this.sEntitySet + "/$count", {
-                    async: true,
-                    filters: aFilters,
-                    success: function (oCount) {
-                        // Set the record count globally
-                        this.iRecordCount = parseInt(oCount, 10);
-
-                        // Set the first data read flag to true
-                        bFirstRead = true;
-
-                        // Check record count
-                        if (this.iRecordCount === 0) {
-                            // Set the current page to 0
-                            this.byId("inpPageNum").setValue(0);
-
-                            // Disable next and last page buttons
-                            this.byId("btnNextPage").setEnabled(false);
-                            this.byId("btnLastPage").setEnabled(false);
-                        }
-
-                        // Log information
-                        this.fn_getLogReference().info("Table Result Controller: Record Count - " + this.iRecordCount);
-                    }.bind(this),
-                    error: function (oError) {
-                        // Show error message
-                        this.fn_showServiceError(oError);
-                    }.bind(this)
-                });
-
                 // Set the page size value globally
                 this.iPageSize = iNum;
 
-                // Below code will only be called when oTableModel request is completed
-                this.oTableModel.attachRequestCompleted(function (oEvent) {
-                    // Check if the table data is read for the first time
-                    if (bFirstRead) {
-                        // Set the first read flag to false
-                        bFirstRead = false;
+                // If page number is set to more than 1 while navigationg to child app
+                if (this.sPageNumber > 1) {
+                    // Set the page number to the input field
+                    this.byId("inpPageNum").setValue(this.sPageNumber);
 
-                        // Set the record count to table header
+                    // Set pagination buttons enable 
+                    this.byId("btnFirstPage").setEnabled(true);
+                    this.byId("btnPrevPage").setEnabled(true);
+
+                    // Set the value of the num and skip based on page number
+                    iSkip = (this.sPageNumber - 1) * this.iPageSize;
+                }
+
+                // Log information
+                this.fn_getLogReference().info("Table Result Controller: Number of records to be read - " + iNum);
+                this.fn_getLogReference().info("Table Result Controller: Number of records to be skipped - " + iSkip);
+
+                var oListBinding;
+                try {
+                    // In OData V4, we use bindList with $count (not $$count)
+                    oListBinding = this.oTableModel.bindList(this.sEntitySet, null, null, aFilters, {
+                        $count: true
+                    });
+                } catch (e) {
+                    this.fn_getLogReference().error("Table Result Controller: Error in bindList - " + e.message);
+                    console.error("Error in bindList:", e);
+                    this.fn_closeBusyDialog();
+                    return;
+                }
+
+                try {
+                    oListBinding.requestContexts(iSkip, iNum).then(function (aContexts) {
+                        // Protect against component destruction
+                        if (!this.getOwnerComponent()) { return; }
+
+                        // Get the total count
+                        this.iRecordCount = oListBinding.getLength() || 0;
+
+                        // Set the record count globally
                         this.fn_getLocalModel("tableResultViewModel").setProperty("/tableHeaderText", this.fn_getResourceBundle().getText("tableHeaderTextWithCount", [this.iRecordCount]));
 
-                        // Calculate the maximum page number
-                        if (this.iRecordCount / this.iPageSize > Math.round(this.iRecordCount / this.iPageSize)) {
-                            iMaxPageNum = Math.round(this.iRecordCount / this.iPageSize) + 1;
+                        // Check record count
+                        if (this.iRecordCount === 0) {
+                            if (this.byId("inpPageNum")) this.byId("inpPageNum").setValue(0);
+                            if (this.byId("btnNextPage")) this.byId("btnNextPage").setEnabled(false);
+                            if (this.byId("btnLastPage")) this.byId("btnLastPage").setEnabled(false);
+                            iMaxPageNum = 1;
                         } else {
-                            iMaxPageNum = Math.round(this.iRecordCount / this.iPageSize);
+                            // Calculate the maximum page number
+                            iMaxPageNum = Math.ceil(this.iRecordCount / this.iPageSize);
+                            if (iMaxPageNum === 0) iMaxPageNum = 1;
+
+                            if (iMaxPageNum === 1) {
+                                this.byId("btnNextPage").setEnabled(false);
+                                this.byId("btnLastPage").setEnabled(false);
+                            }
                         }
 
                         // Assign max page size
                         this.byId("lblMaxPageNum").setText("/" + iMaxPageNum);
 
-                        // Set pagination buttons visibility based on max page num
-                        if (iMaxPageNum === 1) {
-                            this.byId("btnNextPage").setEnabled(false);
-                            this.byId("btnLastPage").setEnabled(false);
-                        }
-
-                        // If page number is set to more than 1 while navigationg to child app
-                        if (this.sPageNumber > 1) {
-                            // Set the page number to the input field
-                            this.byId("inpPageNum").setValue(this.sPageNumber);
-
-                            // Set pagination buttons enable 
-                            this.byId("btnFirstPage").setEnabled(true);
-                            this.byId("btnPrevPage").setEnabled(true);
-
-                            // Set the value of the num and skip based on page number
-                            iSkip = (this.sPageNumber - 1) * this.iPageSize;
-
-                            if (this.sPageNumber === iMaxPageNum) {
-                                iNum = this.iRecordCount - iSkip;
-                            } else {
-                                iNum = this.iPageSize;
-                            }
-                        }
-
-                        // Log information
-                        this.fn_getLogReference().info("Table Result Controller: Number of records to be read - " + iNum);
-                        this.fn_getLogReference().info("Table Result Controller: Number of records to be skipped - " + iSkip);
-
-                        // Read records of the selected table
-                        this.oTableModel.read(this.sEntitySet, {
-                            async: true,
-                            filters: aFilters,
-                            urlParameters: {
-                                $top: iNum,
-                                $skip: iSkip
-                            },
-                            success: function (oData) {
-                                oCurrentTableBoundModel.setData(oData.results);
-
-                                // Set the model globally or update the data
-                                if (!this.fn_getGlobalModel("oCurrentTableBoundModel")) {
-                                    this.fn_setGlobalModel(oCurrentTableBoundModel, "oCurrentTableBoundModel");
-                                } else {
-                                    this.fn_getGlobalModel("oCurrentTableBoundModel").setData(oData.results);
-
-                                    // Close busy dialog
-                                    this.fn_closeBusyDialog();
-                                }
-
-                                // Prepare the result set of the table
-                                this._fn_prepareResultSet();
-                            }.bind(this),
-                            error: function (oError) {
-                                this.fn_showServiceError(oError);
-                            }.bind(this)
+                        // Map V4 contexts back to plain JS objects for the JSONModel
+                        var aData = aContexts.map(function (oContext) {
+                            return oContext.getObject();
                         });
-                    } else {
-                        // Set the service url data globallu
-                        this.sDataUrl = this.sServiceUrl + "/" + oEvent.getParameter("url");
-                    }
-                }, this);
+
+                        oCurrentTableBoundModel.setData(aData);
+
+                        // Set the model globally or update the data
+                        if (!this.fn_getGlobalModel("oCurrentTableBoundModel")) {
+                            this.fn_setGlobalModel(oCurrentTableBoundModel, "oCurrentTableBoundModel");
+                        } else {
+                            this.fn_getGlobalModel("oCurrentTableBoundModel").setData(aData);
+                        }
+
+                        // Prepare the result set of the table
+                        this._fn_prepareResultSet();
+
+                        // Close busy dialog
+                        this.fn_closeBusyDialog();
+
+                    }.bind(this)).catch(function (oError) {
+                        // Protect against component destruction
+                        if (!this.getOwnerComponent()) { return; }
+
+                        // Show error message
+                        this.fn_showServiceError(oError);
+                        this.fn_closeBusyDialog();
+                    }.bind(this));
+
+                } catch (e) {
+                    this.fn_getLogReference().error("Table Result Controller: Error in requestContexts - " + e.message);
+                    console.error("Error in requestContexts:", e);
+                    this.fn_closeBusyDialog();
+                }
 
                 // Log information
                 this.fn_getLogReference().info("Table Result Controller: Exiting _fn_readTableData method");
@@ -1841,14 +1938,14 @@ sap.ui.define([
 
                 // Add columns and rows
                 aFieldsData.forEach(function (oField, index) {
-                    if (oField.Resultsetfieldflag === "Y") {
-                        if (oField.Primarykeyflag === "Y") {
+                    if (oField.ResultSetFieldFlag === "Y") {
+                        if (oField.PrimaryKeyFlag === "Y") {
                             oColumn = new sap.m.Column("col" + index, {
                                 hAlign: "Center",
                                 demandPopin: false,
                                 header: new sap.m.Label({
-                                    text: oField.Columnlabel,
-                                    tooltip: oField.Columnlabel,
+                                    text: oField.ColumnLabel,
+                                    tooltip: oField.ColumnLabel,
                                     wrapping: true
                                 })
                             });
@@ -1857,8 +1954,8 @@ sap.ui.define([
                                 hAlign: "Center",
                                 demandPopin: true,
                                 header: new sap.m.Label({
-                                    text: oField.Columnlabel,
-                                    tooltip: oField.Columnlabel,
+                                    text: oField.ColumnLabel,
+                                    tooltip: oField.ColumnLabel,
                                     wrapping: true
                                 })
                             });
@@ -1868,54 +1965,54 @@ sap.ui.define([
                         oTable.addColumn(oColumn);
 
                         // Bind path to the cells
-                        if (oField.Columndatatype === "DATS") {
+                        if (oField.ColumnDataType === "DATS") {
                             oCell = new sap.m.Text({
                                 text: {
-                                    path: "oCurrentTableBoundModel>" + oField.Columnname,
+                                    path: "oCurrentTableBoundModel>" + oField.ColumnName,
                                     type: new sap.ui.model.type.Date({
                                         pattern: "dd.MM.yyyy"
                                     })
                                 },
                                 tooltip: {
-                                    path: "oCurrentTableBoundModel>" + oField.Columnname,
+                                    path: "oCurrentTableBoundModel>" + oField.ColumnName,
                                     type: new sap.ui.model.type.Date({
                                         pattern: "dd.MM.yyyy"
                                     })
                                 }
                             });
-                        } else if (oField.Columndatatype === "INTEGER") {
+                        } else if (oField.ColumnDataType === "INTEGER") {
                             oCell = new sap.m.Text({
                                 text: {
-                                    path: "oCurrentTableBoundModel>" + oField.Columnname,
+                                    path: "oCurrentTableBoundModel>" + oField.ColumnName,
                                 },
                                 tooltip: {
-                                    path: "oCurrentTableBoundModel>" + oField.Columnname,
+                                    path: "oCurrentTableBoundModel>" + oField.ColumnName,
                                     formatter: function (sValue) {
                                         return sValue + "";
                                     }
                                 }
                             });
-                        } else if(oField.Columnname === "WORKFLOW_ID") {
+                        } else if (oField.ColumnName === "WORKFLOW_ID") {
                             oCell = new sap.m.Text({
                                 text: {
-                                    path: "oCurrentTableBoundModel>" + oField.Columnname,
+                                    path: "oCurrentTableBoundModel>" + oField.ColumnName,
                                 },
                                 tooltip: {
-                                    path: "oCurrentTableBoundModel>" + oField.Columnname,
+                                    path: "oCurrentTableBoundModel>" + oField.ColumnName,
                                 } //, 
                                 // press: this.onPress_lnkWorkflowId.bind(this)
                             });
                         } else {
                             oCell = new sap.m.Text({
                                 text: {
-                                    path: "oCurrentTableBoundModel>" + oField.Columnname,
+                                    path: "oCurrentTableBoundModel>" + oField.ColumnName,
                                 },
                                 tooltip: {
-                                    path: "oCurrentTableBoundModel>" + oField.Columnname,
+                                    path: "oCurrentTableBoundModel>" + oField.ColumnName,
                                 }
                             });
                         }
-                        
+
                         // Push the cell data in an array
                         aCells.push(oCell);
                     }
@@ -1925,10 +2022,11 @@ sap.ui.define([
                 oTable.bindAggregation("items", "oCurrentTableBoundModel>/", new sap.m.ColumnListItem("colListItem", {
                     cells: aCells
                 }));
-                
+
                 // Log information
                 this.fn_getLogReference().info("Table Result Controller: Exiting _fn_prepareResultSet method");
             }
         });
     }
 );
+

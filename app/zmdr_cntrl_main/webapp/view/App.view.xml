@@ -1,8 +1,6 @@
 <mvc:View controllerName="com.intapptics.zmdrcntrlmain.controller.App"
-    xmlns:mvc="sap.ui.core.mvc" displayBlock="true"
+    xmlns:mvc="sap.ui.core.mvc" displayBlock="true" height="100%"
     xmlns="sap.m"
     xmlns:f="sap.f">
-    <Shell id="shell" appWidthLimited="false">
-        <f:FlexibleColumnLayout id="fcl" backgroundDesign="Translucent"></f:FlexibleColumnLayout>
-    </Shell>
+    <f:FlexibleColumnLayout id="fcl" backgroundDesign="Translucent"></f:FlexibleColumnLayout>
 </mvc:View>
