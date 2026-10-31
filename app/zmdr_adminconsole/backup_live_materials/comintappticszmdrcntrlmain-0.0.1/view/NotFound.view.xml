@@ -1,0 +1,7 @@
+<mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" controllerName="com.intapptics.zmdrcntrlmain.controller.NotFound">
+    <MessagePage id="mpgNotFound" title="{i18n>notFoundPageTitle}" text="{i18n>notFoundText}" enableFormattedText="true" icon="sap-icon://document" description="">
+        <customDescription>
+            <Link id="lnkToCategory" text="{i18n>backToCategory}" press="onPress_lnkToCategory"></Link>
+        </customDescription>
+    </MessagePage>
+</mvc:View>

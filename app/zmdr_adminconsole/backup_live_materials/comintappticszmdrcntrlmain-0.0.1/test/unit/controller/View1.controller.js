@@ -1,0 +1,2 @@
+sap.ui.define(["comintapptics/zmdr_cntrl_main/controller/View1.controller"],function(t){"use strict";QUnit.module("View1 Controller");QUnit.test("I should test the View1 controller",function(n){var e=new t;e.onInit();n.ok(e)})});
+//# sourceMappingURL=View1.controller.js.map

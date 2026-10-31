@@ -30,7 +30,7 @@
     },
     "dataSources": {
       "mainService": {
-        "uri": "mdrapi/central/",
+        "uri": "/mdrapi/central/",
         "type": "OData",
         "settings": {
           "annotations": [],
@@ -39,7 +39,7 @@
         }
       },
       "workflowService": {
-        "uri": "mdrapi/workflow/",
+        "uri": "/mdrapi/workflow/",
         "type": "OData",
         "settings": {
           "annotations": [],
@@ -87,7 +87,9 @@
         "type": "sap.ui.model.resource.ResourceModel",
         "settings": {
           "bundleName": "com.intapptics.zmdrcntrlcmn.i18n.i18n",
-          "supportedLocales": [""],
+          "supportedLocales": [
+            ""
+          ],
           "fallbackLocale": ""
         }
       },
@@ -128,9 +130,21 @@
         "viewPath": "com.intapptics.zmdrcntrlcmn.view",
         "controlAggregation": "pages",
         "controlId": "app",
-        "clearControlAggregation": false
+        "clearControlAggregation": false,
+        "bypassed": {
+          "target": [
+            "mainscreen"
+          ]
+        }
       },
       "routes": [
+        {
+          "name": "default",
+          "pattern": "",
+          "target": [
+            "mainscreen"
+          ]
+        },
         {
           "id": "mainscreen-default",
           "pattern": "detail/{SAPOrigin}/{AppTaskId}/{query}",
@@ -143,6 +157,13 @@
           "id": "mainscreen",
           "pattern": "/:?sap-iapp-state:",
           "name": "mainscreen",
+          "target": [
+            "mainscreen"
+          ]
+        },
+        {
+          "name": "catchall",
+          "pattern": ":all*:",
           "target": [
             "mainscreen"
           ]

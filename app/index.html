@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SAP MDR - Enterprise Master Data Repository Cockpit</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=72:wght@300;400;500;700&display=swap">
+  <style>
+    :root {
+      --sap-blue: #0070f2;
+      --sap-dark-blue: #004085;
+      --sap-header-bg: #354a5f;
+      --sap-bg: #f5f7fa;
+      --sap-card-bg: #ffffff;
+      --sap-text: #1d2d3e;
+      --sap-subtext: #556b82;
+      --sap-border: #d9e1e8;
+      --sap-success: #107e3e;
+      --sap-warning: #e9730c;
+      --sap-error: #bb0000;
+      --sap-gold: #c39b00;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: "72", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--sap-bg); color: var(--sap-text); min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* Fiori Shell Bar */
+    header.fiori-shell {
+      background-color: var(--sap-header-bg);
+      color: #ffffff;
+      padding: 0.75rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .shell-brand { display: flex; align-items: center; gap: 1rem; }
+    .sap-logo {
+      background: linear-gradient(135deg, #0070f2, #002b66);
+      color: white;
+      font-weight: 700;
+      padding: 0.3rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      letter-spacing: 1px;
+    }
+    .shell-title h1 { font-size: 1.15rem; font-weight: 500; }
+    .shell-title p { font-size: 0.78rem; opacity: 0.85; }
+    .shell-user { display: flex; align-items: center; gap: 0.75rem; font-size: 0.85rem; }
+    .user-pill { background: rgba(255,255,255,0.15); padding: 0.35rem 0.8rem; border-radius: 20px; border: 1px solid rgba(255,255,255,0.25); }
+
+    /* Main Container */
+    main.container { max-width: 1400px; margin: 1.5rem auto; padding: 0 1.5rem; flex: 1; width: 100%; display: flex; flex-direction: column; gap: 1.5rem; }
+
+    /* Section Headers */
+    .section-title { font-size: 1.1rem; font-weight: 600; color: var(--sap-dark-blue); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+
+    /* Flow Runner Hero Card */
+    .hero-card {
+      background: var(--sap-card-bg);
+      border-radius: 8px;
+      border: 1px solid var(--sap-border);
+      padding: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .hero-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem; }
+    .hero-actions { display: flex; gap: 0.75rem; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.55rem 1.1rem;
+      border-radius: 4px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+    }
+    .btn-primary { background-color: var(--sap-blue); color: white; }
+    .btn-primary:hover { background-color: #0056b3; }
+    .btn-reject { background-color: #d32f2f; color: white; }
+    .btn-reject:hover { background-color: #9a0007; }
+    .btn-outline { background-color: transparent; border-color: var(--sap-border); color: var(--sap-text); }
+    .btn-outline:hover { background-color: #eef2f6; }
+
+    /* Interactive Flow Visualizer Canvas */
+    .flowchart-container {
+      background: #fdfdfd;
+      border: 1px dashed var(--sap-border);
+      border-radius: 6px;
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+      overflow-x: auto;
+    }
+    .flow-steps {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-width: 950px;
+      position: relative;
+    }
+    .flow-step-node {
+      background: #ffffff;
+      border: 2px solid var(--sap-border);
+      border-radius: 8px;
+      padding: 0.75rem;
+      width: 145px;
+      text-align: center;
+      position: relative;
+      transition: all 0.3s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    .flow-step-node .badge {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--sap-subtext);
+      letter-spacing: 0.5px;
+      margin-bottom: 0.25rem;
+    }
+    .flow-step-node .node-title {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--sap-text);
+      line-height: 1.2;
+    }
+    .flow-step-node .node-sub {
+      font-size: 0.7rem;
+      color: var(--sap-subtext);
+      margin-top: 0.25rem;
+    }
+    .flow-step-arrow {
+      color: #9ab0c5;
+      font-size: 1.25rem;
+      font-weight: bold;
+      user-select: none;
+    }
+
+    /* Node Status Active / Completed */
+    .flow-step-node.active {
+      border-color: var(--sap-blue);
+      background-color: #e8f3ff;
+      box-shadow: 0 0 12px rgba(0,112,242,0.35);
+      transform: scale(1.04);
+    }
+    .flow-step-node.completed {
+      border-color: var(--sap-success);
+      background-color: #eafaf1;
+    }
+    .flow-step-node.rejected {
+      border-color: var(--sap-error);
+      background-color: #fde8e8;
+    }
+
+    /* Live Output Terminal */
+    .terminal-box {
+      background: #1e293b;
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 1rem;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 0.82rem;
+      max-height: 250px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      line-height: 1.45;
+    }
+    .term-info { color: #38bdf8; }
+    .term-success { color: #4ade80; }
+    .term-warn { color: #facc15; }
+    .term-error { color: #f87171; }
+
+    /* Fiori Tile Grid */
+    .tiles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 1.25rem;
+    }
+    .fiori-tile {
+      background: var(--sap-card-bg);
+      border: 1px solid var(--sap-border);
+      border-radius: 8px;
+      padding: 1.25rem;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .fiori-tile:hover {
+      border-color: var(--sap-blue);
+      box-shadow: 0 4px 14px rgba(0, 112, 242, 0.12);
+      transform: translateY(-2px);
+    }
+    .tile-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 0.75rem; }
+    .tile-icon {
+      font-size: 1.6rem;
+      padding: 0.5rem;
+      border-radius: 8px;
+      background: #f0f4f9;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .tile-badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      background: #eef2f6;
+      color: var(--sap-subtext);
+    }
+    .tile-title { font-size: 1.05rem; font-weight: 600; color: var(--sap-dark-blue); margin-bottom: 0.35rem; }
+    .tile-desc { font-size: 0.8rem; color: var(--sap-subtext); line-height: 1.35; margin-bottom: 0.75rem; }
+    .tile-link { font-size: 0.82rem; font-weight: 600; color: var(--sap-blue); display: flex; align-items: center; gap: 0.3rem; }
+
+    /* Mock Data Preview Card */
+    .mock-data-card {
+      background: var(--sap-card-bg);
+      border: 1px solid var(--sap-border);
+      border-radius: 8px;
+      padding: 1.25rem;
+    }
+    .mock-data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      margin-top: 0.75rem;
+    }
+    .mock-data-table th, .mock-data-table td {
+      border: 1px solid var(--sap-border);
+      padding: 0.5rem 0.75rem;
+      text-align: left;
+    }
+    .mock-data-table th { background: #f0f4f9; font-weight: 600; color: var(--sap-dark-blue); }
+    .mock-data-table tr:hover { background: #fafbfc; }
+
+    footer {
+      text-align: center;
+      padding: 1.5rem;
+      font-size: 0.78rem;
+      color: var(--sap-subtext);
+      border-top: 1px solid var(--sap-border);
+      margin-top: 2rem;
+      background: #ffffff;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SAP Fiori Shell Header -->
+  <header class="fiori-shell">
+    <div class="shell-brand">
+      <div class="sap-logo">SAP</div>
+      <div class="shell-title">
+        <h1>Master Data Repository (MDR) — Enterprise Cockpit</h1>
+        <p>CAP on SAP BTP • Cloud Foundry • SAP Build Process Automation (BPA) • S/4HANA Core</p>
+      </div>
+    </div>
+    <div class="shell-user">
+      <span class="user-pill">🟢 Live Server (Port 4004)</span>
+      <span class="user-pill">User: abhinandan.d@abhiyantatech.com</span>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- 1. LIVE END-TO-END FLOW RUNNER & SIMULATOR -->
+    <section class="hero-card">
+      <div class="hero-card-header">
+        <div>
+          <h2 class="section-title">🔄 End-to-End Governance & Bulk Workflow Simulator</h2>
+          <p style="font-size:0.85rem; color: var(--sap-subtext);">
+            Executes the complete MDR lifecycle defined in the architecture flow: Screen Rules ➔ Bulk Staging (G) ➔ BPA Workflow ➔ Approver Decision ➔ Promotion (Y) / Rejection ➔ WFAudit Trail.
+          </p>
+        </div>
+        <div class="hero-actions">
+          <button class="btn btn-primary" id="btnRunApprove" onclick="executeEndToEndFlow('APPROVE')">
+            ▶ Run Simulation: Approve Path
+          </button>
+          <button class="btn btn-reject" id="btnRunReject" onclick="executeEndToEndFlow('REJECT')">
+            ⏹ Run Simulation: Reject Path
+          </button>
+          <button class="btn btn-outline" onclick="clearTerminal()">
+            Clear Logs
+          </button>
+        </div>
+      </div>
+
+      <!-- Flowchart Progress Visualization -->
+      <div class="flowchart-container">
+        <div class="flow-steps">
+          
+          <div class="flow-step-node" id="node-user">
+            <div class="badge">Actor</div>
+            <div class="node-title">Business User</div>
+            <div class="node-sub">Initiates master data request</div>
+          </div>
+
+          <div class="flow-step-arrow">➔</div>
+
+          <div class="flow-step-node" id="node-screen">
+            <div class="badge">Step 1</div>
+            <div class="node-title">zmdr_cntrl_main</div>
+            <div class="node-sub">Loads Screen Rules & Config</div>
+          </div>
+
+          <div class="flow-step-arrow">➔</div>
+
+          <div class="flow-step-node" id="node-bulkload">
+            <div class="badge">Step 2</div>
+            <div class="node-title">zmdr_bulkload</div>
+            <div class="node-sub">Uploads & Validates Rows</div>
+          </div>
+
+          <div class="flow-step-arrow">➔</div>
+
+          <div class="flow-step-node" id="node-staging">
+            <div class="badge">Step 3</div>
+            <div class="node-title">CAP Staging</div>
+            <div class="node-sub">Writes VERSION_ACTIVE='G'</div>
+          </div>
+
+          <div class="flow-step-arrow">➔</div>
+
+          <div class="flow-step-node" id="node-bpa">
+            <div class="badge">Step 4</div>
+            <div class="node-title">SAP BPA Engine</div>
+            <div class="node-sub">Workflow ID + Inbox Task</div>
+          </div>
+
+          <div class="flow-step-arrow">➔</div>
+
+          <div class="flow-step-node" id="node-approver">
+            <div class="badge">Step 5</div>
+            <div class="node-title">zmdr_bulkappr</div>
+            <div class="node-sub">Approver Decision</div>
+          </div>
+
+          <div class="flow-step-arrow">➔</div>
+
+          <div class="flow-step-node" id="node-live">
+            <div class="badge">Step 6</div>
+            <div class="node-title">Golden Record</div>
+            <div class="node-sub" id="lbl-step-6">Live HANA Promotion ('Y')</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Terminal Output -->
+      <div class="terminal-box" id="termOutput">
+[MDR System Ready] Choose a simulation scenario above to execute the live end-to-end flow with realistic mock data against the running CAP backend.
+      </div>
+    </section>
+
+    <!-- 2. FIORI LAUNCHPAD APPLICATION TILES (IMAGE 2 UI LAYER) -->
+    <section>
+      <h2 class="section-title">📱 SAP Fiori Launchpad Applications</h2>
+      <div class="tiles-grid">
+
+        <!-- MDR Central -->
+        <a href="/com.intapptics.zmdrcntrlmain/index.html" class="fiori-tile" target="_blank">
+          <div>
+            <div class="tile-top">
+              <div class="tile-icon">🏢</div>
+              <span class="tile-badge">MDR: Central</span>
+            </div>
+            <div class="tile-title">Central Master Data</div>
+            <div class="tile-desc">Load screen rules first, browse master data categories (Finance, Customers, Materials, Services), search & create entities.</div>
+          </div>
+          <div class="tile-link">Open Application ➔</div>
+        </a>
+
+        <!-- Bulk Load -->
+        <a href="/com.intapptics.zmdrbulkload/index.html" class="fiori-tile" target="_blank">
+          <div>
+            <div class="tile-top">
+              <div class="tile-icon">📤</div>
+              <span class="tile-badge">MDR: Bulk Update</span>
+            </div>
+            <div class="tile-title">Bulk Load & Validate</div>
+            <div class="tile-desc">Upload Excel files, perform rule validation via CAP bulk-handler, submit staged rows (Version 'G') and initiate BPA workflows.</div>
+          </div>
+          <div class="tile-link">Open Application ➔</div>
+        </a>
+
+        <!-- Bulk Approver -->
+        <a href="/com.intapptics.zmdrbulkapprover/index.html" class="fiori-tile" target="_blank">
+          <div>
+            <div class="tile-top">
+              <div class="tile-icon">✅</div>
+              <span class="tile-badge">MDR: Approver Inbox</span>
+            </div>
+            <div class="tile-title">Bulk Approver Inbox</div>
+            <div class="tile-desc">Approver review cockpit. Review pending staged records, compare field changes, and decide (Approve -> Live Table, or Reject).</div>
+          </div>
+          <div class="tile-link">Open Application ➔</div>
+        </a>
+
+        <!-- Workflow Audit Report -->
+        <a href="/com.intapptics.zmdrwfauditrep/index.html" class="fiori-tile" target="_blank">
+          <div>
+            <div class="tile-top">
+              <div class="tile-icon">📜</div>
+              <span class="tile-badge">MDR: Workflow Reports</span>
+            </div>
+            <div class="tile-title">Workflow Audit Report</div>
+            <div class="tile-desc">End-to-end timeline tracking INITIATED, APPROVED, and REJECTED events with timestamps, approver remarks, and BPA instance IDs.</div>
+          </div>
+          <div class="tile-link">Open Application ➔</div>
+        </a>
+
+        <!-- Entity Account Report -->
+        <a href="/com.intapptics.zmdraccountreport/index.html" class="fiori-tile" target="_blank">
+          <div>
+            <div class="tile-top">
+              <div class="tile-icon">📈</div>
+              <span class="tile-badge">MDR: Generic Reports</span>
+            </div>
+            <div class="tile-title">G/L Account Analytical Report</div>
+            <div class="tile-desc">Live Golden Records viewer strictly filtering active records (VersionActive='Y', Status='ACT') with search, filter, and Excel export.</div>
+          </div>
+          <div class="tile-link">Open Application ➔</div>
+        </a>
+
+        <!-- Admin Console -->
+        <a href="/com.intapptics.zmdradminconsole/index.html" class="fiori-tile" target="_blank">
+          <div>
+            <div class="tile-top">
+              <div class="tile-icon">⚙️</div>
+              <span class="tile-badge">MDR: Admin</span>
+            </div>
+            <div class="tile-title">MDR Administration Console</div>
+            <div class="tile-desc">Maintain entity UI visibility (CntrlUIVis), validation rules (CntrlUIVal), approval stages, approver classes, and table metadata.</div>
+          </div>
+          <div class="tile-link">Open Application ➔</div>
+        </a>
+
+      </div>
+    </section>
+
+    <!-- 3. REALISTIC MOCK DATA GENERATOR & TEMPLATES -->
+    <section class="mock-data-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+        <div>
+          <h2 class="section-title">📋 Realistic Master Data Samples & Bulk Upload Templates</h2>
+          <p style="font-size:0.85rem; color: var(--sap-subtext);">
+            Use these verified, realistic data sets directly in <code>zmdr_bulkload</code> or test through the simulator.
+          </p>
+        </div>
+        <div>
+          <button class="btn btn-outline" onclick="copyMockDataToClipboard()">📋 Copy GL Account Mock Row</button>
+        </div>
+      </div>
+
+      <table class="mock-data-table">
+        <thead>
+          <tr>
+            <th>GlAccountNum (Key)</th>
+            <th>CompanyCode</th>
+            <th>AccountDesc</th>
+            <th>AccountType</th>
+            <th>Currency</th>
+            <th>Status</th>
+            <th>Expected Verification</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>GL8010</strong></td>
+            <td>1000</td>
+            <td>Corporate Operating Treasury Account</td>
+            <td>BA (Bank)</td>
+            <td>EUR</td>
+            <td><span style="color:var(--sap-success);font-weight:600;">ACT</span></td>
+            <td>Promotes to Golden Record on Approval</td>
+          </tr>
+          <tr>
+            <td><strong>GL8020</strong></td>
+            <td>1000</td>
+            <td>Accounts Receivable Trade Domestic</td>
+            <td>RA (Receivable)</td>
+            <td>INR</td>
+            <td><span style="color:var(--sap-success);font-weight:600;">ACT</span></td>
+            <td>Validates matching chart of accounts</td>
+          </tr>
+          <tr>
+            <td><strong>GL8099</strong></td>
+            <td>1000</td>
+            <td>Temporary Unapproved Account</td>
+            <td>BA (Bank)</td>
+            <td>USD</td>
+            <td><span style="color:var(--sap-error);font-weight:600;">REJ</span></td>
+            <td>Demonstrates Rejection branch</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+  </main>
+
+  <footer>
+    SAP Master Data Repository (MDR) — Enterprise Architecture & Integration Cockpit • Built on SAP CAP BTP Node.js
+  </footer>
+
+  <script>
+    function logTerm(msg, type = 'info') {
+      const term = document.getElementById('termOutput');
+      const time = new Date().toLocaleTimeString();
+      let colorClass = 'term-info';
+      if (type === 'success') colorClass = 'term-success';
+      if (type === 'warn') colorClass = 'term-warn';
+      if (type === 'error') colorClass = 'term-error';
+      term.innerHTML += `\n<span class="${colorClass}">[${time}] ${msg}</span>`;
+      term.scrollTop = term.scrollHeight;
+    }
+
+    function clearTerminal() {
+      document.getElementById('termOutput').innerHTML = '[MDR Terminal Cleared] Ready for simulation.';
+      resetNodes();
+    }
+
+    function resetNodes() {
+      document.querySelectorAll('.flow-step-node').forEach(node => {
+        node.className = 'flow-step-node';
+      });
+      document.getElementById('lbl-step-6').textContent = "Live HANA Promotion ('Y')";
+    }
+
+    function setNodeState(nodeId, state) {
+      const node = document.getElementById(nodeId);
+      if (!node) return;
+      node.classList.remove('active', 'completed', 'rejected');
+      node.classList.add(state);
+    }
+
+    async function executeEndToEndFlow(scenario) {
+      const btnApprove = document.getElementById('btnRunApprove');
+      const btnReject = document.getElementById('btnRunReject');
+      btnApprove.disabled = true;
+      btnReject.disabled = true;
+
+      resetNodes();
+      clearTerminal();
+
+      try {
+        logTerm(`===================================================================`);
+        logTerm(`STARTING MDR END-TO-END FLOW: SCENARIO [${scenario}]`);
+        logTerm(`===================================================================`);
+
+        // Node User
+        setNodeState('node-user', 'active');
+        await new Promise(r => setTimeout(r, 400));
+        setNodeState('node-user', 'completed');
+
+        // Step 1: Screen rules
+        setNodeState('node-screen', 'active');
+        logTerm(`Step 1: zmdr_cntrl_main: Requesting screen rules from /mdrapi/central/CntrlUIVis...`);
+        const visRes = await fetch('/mdrapi/central/CntrlUIVis');
+        const visData = await visRes.json();
+        const visCount = visData.value ? visData.value.length : 0;
+        logTerm(`Step 1 Success: Loaded ${visCount} screen rules from Central Metadata DB`, 'success');
+        setNodeState('node-screen', 'completed');
+        await new Promise(r => setTimeout(r, 600));
+
+        // Step 2: Validate
+        setNodeState('node-bulkload', 'active');
+        const sampleAcc = scenario === 'APPROVE' ? `GL${Math.floor(1000 + Math.random()*8999)}` : `GL_REJ_${Math.floor(100 + Math.random()*899)}`;
+        const sampleDesc = scenario === 'APPROVE' ? 'Automated Corporate Operating Account' : 'Proposed GL Without Valid Center';
+        const rowData = [sampleAcc, '1000', sampleDesc, 'BA', 'INR', 'ACT'].join('«');
+
+        logTerm(`Step 2: zmdr_bulkload: Validating payload: [${sampleAcc}] "${sampleDesc}"...`);
+        const valRes = await fetch('/mdrapi/bulk/rest/validateBulkData', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tablename: 'ZMDR_GLACCOUNT',
+            requesterrole: 'ZMDR_C_FIORI_ALL',
+            rowData: [rowData],
+            overwriteWithNull: 'N',
+            futureVersion: 'N'
+          })
+        });
+        const valResult = await valRes.json();
+        logTerm(`Step 2 Success: Valid records: ${valResult.validCount}, Invalid: ${valResult.invalidCount}`, 'success');
+        setNodeState('node-bulkload', 'completed');
+        await new Promise(r => setTimeout(r, 600));
+
+        // Step 3: Staging
+        setNodeState('node-staging', 'active');
+        logTerm(`Step 3: CAP Backend (bulk-handler.js): Writing rows to staging area with VERSION_ACTIVE='G'...`);
+        const subRes = await fetch('/mdrapi/bulk/rest/submitBulkData', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tablename: 'ZMDR_GLACCOUNT',
+            requesterrole: 'ZMDR_C_FIORI_ALL',
+            validData: valResult.validData,
+            overwriteWithNull: 'N',
+            futureVersion: 'N',
+            workflowid: '',
+            remarks: `Automated Simulation Run for ${sampleAcc}`
+          })
+        });
+        const subResult = await subRes.json();
+        const workflowId = subResult.workflowid;
+        logTerm(`Step 3 Success: Staged successfully! Workflow ID Generated: [${workflowId}]`, 'success');
+        setNodeState('node-staging', 'completed');
+        await new Promise(r => setTimeout(r, 600));
+
+        // Step 4: BPA Trigger
+        setNodeState('node-bpa', 'active');
+        logTerm(`Step 4: Triggering SAP Build Process Automation (BPA) workflow engine...`);
+        const trigRes = await fetch('/mdrapi/bulk/rest/triggerBulkWorkflow', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            workflowid: workflowId,
+            tablename: 'ZMDR_GLACCOUNT',
+            requestorid: 'samarth.business@corp.internal',
+            requestoremail: 'samarth.business@corp.internal',
+            operationtype: 'BULK UPDATE',
+            approverstage: 'LEVEL_1',
+            apprclass: 'GL_APPROVER',
+            validrecordcount: 1,
+            requesterrole: 'ZMDR_C_FIORI_ALL'
+          })
+        });
+        const trigResult = await trigRes.json();
+        logTerm(`Step 4 Success: SAP BPA Task created! BPA Instance ID: [${trigResult.bpaInstanceId}]`, 'success');
+        logTerm(`MDRWorkflowLink persisted: MDR Workflow [${workflowId}] linked to BPA Task`, 'info');
+        setNodeState('node-bpa', 'completed');
+        await new Promise(r => setTimeout(r, 600));
+
+        // Step 5: Approver Review
+        setNodeState('node-approver', 'active');
+        logTerm(`Step 5: zmdr_bulkappr: Approver reviews pending request [${workflowId}] in approver inbox...`);
+        const getStagedRes = await fetch('/mdrapi/bulk/rest/getBulkRequestData', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tablename: 'ZMDR_GLACCOUNT',
+            workflowid: workflowId,
+            versionactive: 'G',
+            uniquewf: 'N',
+            requesterrole: 'ZMDR_C_FIORI_ALL'
+          })
+        });
+        const getStagedData = await getStagedRes.json();
+        logTerm(`Approver retrieved ${getStagedData.data.length} staged record(s). Ready for decision: ${scenario}`, 'info');
+
+        // Step 6: Approver Decision
+        if (scenario === 'APPROVE') {
+          logTerm(`Step 6: Approver takes decision -> APPROVED`);
+          const actRes = await fetch('/mdrapi/bulk/rest/takeActionBulk', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              tablename: 'ZMDR_GLACCOUNT',
+              workflowid: workflowId,
+              wfstage: 'LEVEL_1',
+              action: 'APPROVED',
+              requesterrole: 'ZMDR_C_FIORI_ALL',
+              bpaInstanceId: trigResult.bpaInstanceId,
+              approverremarks: 'Approved by Financial Controller',
+              isOverwriteNull: 'N'
+            })
+          });
+          const actResult = await actRes.json();
+          logTerm(`Step 6 Result: ${actResult.message}`, 'success');
+          setNodeState('node-approver', 'completed');
+
+          setNodeState('node-live', 'active');
+          document.getElementById('lbl-step-6').textContent = "Promoted to Live ('Y')";
+          
+          // Verify Golden Record
+          const goldenRes = await fetch(`/mdrapi/maindata/GLAccount?$filter=GlAccountNum eq '${sampleAcc}'`);
+          const goldenData = await goldenRes.json();
+          if (goldenData.value && goldenData.value.length) {
+            logTerm(`✔ GOLDEN RECORD VERIFIED IN MAIN DATA TABLE: [${sampleAcc}] VersionActive='Y', Status='ACT'`, 'success');
+            setNodeState('node-live', 'completed');
+          }
+        } else {
+          logTerm(`Step 6: Approver takes decision -> REJECTED`, 'warn');
+          const actRes = await fetch('/mdrapi/bulk/rest/takeActionBulk', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              tablename: 'ZMDR_GLACCOUNT',
+              workflowid: workflowId,
+              wfstage: 'LEVEL_1',
+              action: 'REJECTED',
+              requesterrole: 'ZMDR_C_FIORI_ALL',
+              bpaInstanceId: trigResult.bpaInstanceId,
+              approverremarks: 'Rejected by Financial Controller: Invalid Account Class',
+              isOverwriteNull: 'N'
+            })
+          });
+          const actResult = await actRes.json();
+          logTerm(`Step 6 Result: ${actResult.message}`, 'warn');
+          setNodeState('node-approver', 'rejected');
+
+          setNodeState('node-live', 'rejected');
+          document.getElementById('lbl-step-6').textContent = "Rejected / Marked";
+          logTerm(`✔ Clean Rejection Verified: Record [${sampleAcc}] was NOT promoted to live table.`, 'success');
+        }
+
+        // Audit Trail verification
+        const auditRes = await fetch(`/mdrapi/workflow/WFAudit?$filter=WorkflowId eq '${workflowId}'`);
+        const auditData = await auditRes.json();
+        logTerm(`\n[WFAudit Timeline for ${workflowId}]:`, 'info');
+        if (auditData.value) {
+          auditData.value.forEach(a => {
+            logTerm(` • [${a.ActionTime.slice(11,19)}] ${a.WfStage} -> ${a.Action} | Remarks: "${a.UserRemarks}"`, 'info');
+          });
+        }
+
+        logTerm(`\n🎉 FLOW EXECUTION COMPLETE FOR SCENARIO [${scenario}]`, 'success');
+
+      } catch (err) {
+        logTerm(`Error executing simulation: ${err.message}`, 'error');
+      } finally {
+        btnApprove.disabled = false;
+        btnReject.disabled = false;
+      }
+    }
+
+    function copyMockDataToClipboard() {
+      const row = 'GL8010«1000«Corporate Operating Treasury Account«BA«EUR«ACT';
+      navigator.clipboard.writeText(row).then(() => {
+        alert('Copied realistic mock row to clipboard!\\n\\n' + row + '\\n\\nYou can paste this into zmdr_bulkload.');
+      });
+    }
+  </script>
+</body>
+</html>

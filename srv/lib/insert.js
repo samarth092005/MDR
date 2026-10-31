@@ -95,6 +95,24 @@ async function applyBulkTempApproved(params) {
   await db.run(UPDATE(BulkTemp).set({ RequestStatus: 'APPROVED' }).where({ WorkflowId: workflowid, Tablename: tablename }));
 }
 
+function getRowValueCaseInsensitive(row, fieldName) {
+  if (!row || typeof row !== 'object') return undefined;
+  if (Object.prototype.hasOwnProperty.call(row, fieldName)) {
+    return row[fieldName];
+  }
+  const upper = String(fieldName).toUpperCase();
+  if (Object.prototype.hasOwnProperty.call(row, upper)) {
+    return row[upper];
+  }
+  const clean = upper.replace(/_/g, '');
+  for (const key of Object.keys(row)) {
+    if (key.toUpperCase() === upper || key.replace(/_/g, '').toUpperCase() === clean) {
+      return row[key];
+    }
+  }
+  return undefined;
+}
+
 // approveVersionedTable: on APPROVE of versioned table, promote G->Y and deactivate old Y
 // Replaces ZCL_MDR_BULK_PROCESS.TAKE_ACTION_REQUEST for versioned APPROVED
 async function approveVersionedTable(params) {
@@ -105,14 +123,17 @@ async function approveVersionedTable(params) {
   const gRows = await readRows(db, tablename, '"WORKFLOW_ID" = ? AND "VERSION_ACTIVE" = ?', [workflowid, 'G']);
   for (const gRow of gRows) {
     const kp = [], kv = [];
-    keyFields.forEach(kf => { kp.push(`"${kf.toUpperCase()}" = ?`); kv.push(gRow[kf.toUpperCase()]); });
+    keyFields.forEach(kf => {
+      kp.push(`"${kf.toUpperCase()}" = ?`);
+      kv.push(getRowValueCaseInsensitive(gRow, kf));
+    });
     const keyWhere = kp.join(' AND ');
     // Step 1: deactivate existing Y record
     const yWhere = `${keyWhere} AND "VERSION_ACTIVE" = ?`;
     if (await checkExists(db, tablename, yWhere, [...kv, 'Y']))
       await updateRow(db, tablename, { VERSION_ACTIVE: 'N', VERSION_END_DATE: now, UPDATED_ON: now, UPDATED_BY: userId }, yWhere, [...kv, 'Y']);
     // Step 2: promote G to Y
-    await updateRow(db, tablename, { VERSION_ACTIVE: 'Y', UPDATED_ON: now, UPDATED_BY: userId },
+    await updateRow(db, tablename, { VERSION_ACTIVE: 'Y', STATUS: 'ACT', UPDATED_ON: now, UPDATED_BY: userId },
       `${keyWhere} AND "VERSION_ACTIVE" = ? AND "WORKFLOW_ID" = ?`, [...kv, 'G', workflowid]);
   }
 }

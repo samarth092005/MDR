@@ -1,0 +1,11 @@
+{
+  "name": "zmdr_account_report",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build": "ui5 build --config=ui5.yaml --clean-dest --dest dist"
+  },
+  "devDependencies": {
+    "@ui5/cli": "^4.0.33"
+  }
+}

@@ -21,6 +21,22 @@ service WorkflowService @(
     WorkflowIdentifier : String(20);
   }
 
+  @cds.persistence.skip
+  entity UserRemarksSet {
+    key EntityId         : String(100);
+    key EntityName       : String(40);
+    key CurrentStage     : String(20);
+    key WorkflowId       : String(10);
+        RequestorId      : String(50);
+        RequestorName    : String(100);
+        RequestorEmail   : String(100);
+        RequestorRemarks : String(500);
+        ApproverId       : String(50);
+        ApproverName     : String(100);
+        ApproverEmail    : String(100);
+        ApproverRemarks  : String(500);
+  }
+
   action cancelWorkflow(bpaInstanceId: String)                      returns {
     message : String
   };
@@ -59,17 +75,17 @@ service WorkflowService @(
   action saveBPALinkage(mdrWorkflowId: String, bpaInstanceId: String,
          tablename: String) returns { success: Boolean };
 
-       action resolveApprovers(tablename: String,
-                               currentStage: String,
-                               processId: String,
-                               requesterRole: String,
-                               requestorId: String,
-                               apprClass: String)
-       returns array of {
-              approverEmail : String;
-              approverId    : String;
-              nextStage     : String;
-       };
+  action resolveApprovers(tablename: String,
+                          currentStage: String,
+                          processId: String,
+                          requesterRole: String,
+                          requestorId: String,
+                          apprClass: String)
+  returns array of {
+         approverEmail : String;
+         approverId    : String;
+         nextStage     : String;
+  };
 
   action pushInprogressAudit(workflowId: String, currentStage: String,
          approverId: String, tablename: String) returns { success: Boolean };
@@ -90,4 +106,19 @@ service WorkflowService @(
 
   action syncToS4HANA(workflowId: String, tablename: String,
          entityId: String, operationType: String) returns { success: Boolean };
+
+  // ── CAP → BPA Trigger Actions ─────────────────────────────────────────
+  action triggerCentralWorkflow(workflowId: String, tablename: String,
+         entityId: String, entityName: String, operationType: String,
+         processId: String, requestorId: String, requestorEmail: String,
+         requesterRole: String, userRemarks: String,
+         initialStage: String, totalSteps: Integer)
+         returns { bpaInstanceId: String };
+
+  action triggerBulkWorkflow(workflowId: String, tablename: String,
+         entityName: String, operationType: String, requesterRole: String,
+         requestorId: String, requestorEmail: String, apprClass: String,
+         apprCategory: String, bulkNumber: String,
+         isTableLevelAppr: String, recordCount: Integer)
+         returns { bpaInstanceId: String };
 }

@@ -1,31 +1,33 @@
-<mvc:View controllerName="com.intapptics.zmdrcntrlcmn.controller.MainScreen" xmlns:f="sap.f" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:form="sap.ui.layout.form" xmlns:core="sap.ui.core" xmlns:uxap="sap.uxap">
-    <f:DynamicPage id="dpMainScreen" showFooter="true" fitContent="true" toggleHeaderOnTitleClick="false">
+<mvc:View controllerName="com.intapptics.zmdrcntrlcmn.controller.MainScreen" xmlns:f="sap.f" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:form="sap.ui.layout.form" xmlns:core="sap.ui.core" xmlns:uxap="sap.uxap" displayBlock="true" height="100%">
+    <f:DynamicPage id="dpMainScreen" showFooter="true" fitContent="true" headerExpanded="true">
         <!-- Dynamic Page Title -->
         <f:title>
             <f:DynamicPageTitle id="dptMainScreen">
                 <f:heading>
                     <Title id="ttlMainScreen" text="{mainScreenViewModel>/pageTitle}" tooltip="{mainScreenViewModel>/pageTitle}"></Title>
-                    <!-- <Title id="ttlMainScreen" text="{mainScreenViewModel>/pageTitle}" tooltip="{mainScreenViewModel>/pageTitle}"></Title> -->
                 </f:heading>
+                <f:expandedContent>
+                    <HBox>
+                        <ObjectAttribute id="obatHdr1" title="{i18n>hdrObjAtrTitle1}" class="sapUiSmallMarginEnd" visible="false"></ObjectAttribute>
+                        <ObjectAttribute id="obatHdr2" title="{i18n>hdrObjAtrTitle2}" visible="false"></ObjectAttribute>
+                    </HBox>
+                </f:expandedContent>
+                <f:snappedContent>
+                    <HBox>
+                        <ObjectAttribute id="obatHdr1Snapped" title="{i18n>hdrObjAtrTitle1}" class="sapUiSmallMarginEnd" visible="false"></ObjectAttribute>
+                        <ObjectAttribute id="obatHdr2Snapped" title="{i18n>hdrObjAtrTitle2}" visible="false"></ObjectAttribute>
+                    </HBox>
+                </f:snappedContent>
                 <f:navigationActions>
+                    <OverflowToolbarButton id="btnNavBack" type="Transparent" icon="sap-icon://nav-back" press="onPress_btnNavBack" tooltip="Back to Table" visible="true"></OverflowToolbarButton>
                     <OverflowToolbarButton id="btnRelease" type="Emphasized" icon="sap-icon://cause" press="onPress_btnRelease" tooltip="{i18n>btnRelease}" visible="true"></OverflowToolbarButton>
                 </f:navigationActions>
             </f:DynamicPageTitle>
         </f:title>
 
-        <!-- Dynamic Page Header -->
-        <f:header>
-            <f:DynamicPageHeader id="dphMainScreen" pinnable="false">
-                <f:content>
-                    <ObjectAttribute id="obatHdr1" title="{i18n>hdrObjAtrTitle1}" visible="false"></ObjectAttribute>
-                    <ObjectAttribute id="obatHdr2" title="{i18n>hdrObjAtrTitle2}" visible="false"></ObjectAttribute>
-                </f:content>
-            </f:DynamicPageHeader>
-        </f:header>
-
         <!-- Dynamic Page Content -->
         <f:content>
-            <FlexBox id="flxbxMainScreen" direction="Column" alignContent="Stretch" alignItems="Stretch" justifyContent="Start">
+            <VBox id="flxbxMainScreen" width="100%">
                 <items>
                     <MessageStrip id="msgStripMainScreen" visible="false" showIcon="true" showCloseButton="true" class="sapUiSmallMarginTop" enableFormattedText="true">
                         <link>
@@ -95,7 +97,7 @@
                         </form:formContainers>
                     </form:Form>
                 </items>
-            </FlexBox>
+            </VBox>
         </f:content>
 
         <!-- Dynamic Page Footer -->
@@ -104,6 +106,7 @@
                 <Button id="btnMsgPopOver" text="{=${messageModel>/}.length}" tooltip="{i18n>btnMsgPopOver}" visible="{=${messageModel>/}.length>0}" type="Emphasized" icon="sap-icon://alert" press="onPress_btnMsgPopOver"></Button>
                 <Button id="btnSeeChanges" text="{i18n>btnSeeChanges}" tooltip="{i18n>btnSeeChanges}" visible="false" type="Emphasized" icon="sap-icon://show-edit" press="onPress_btnSeeChanges"></Button>
                 <ToolbarSpacer id="tlbspc"></ToolbarSpacer>
+                <Button id="btnBackToTable" text="Back to Table" tooltip="Back to Table" visible="false" type="Default" icon="sap-icon://nav-back" press="onPress_btnNavBack"></Button>
                 <Button id="btnSubmit" text="{i18n>btnSubmit}" tooltip="{i18n>btnSubmit}" visible="false" type="Emphasized" icon="sap-icon://validate" press="onPress_btnSubmit"></Button>
                 <Button id="btnCreate" text="{i18n>btnCreate}" tooltip="{i18n>btnCreate}" visible="false" type="Emphasized" icon="sap-icon://create" press="onPress_btnCreate"></Button>
                 <Button id="btnReject" text="{i18n>btnReject}" tooltip="{i18n>btnReject}" visible="false" type="Ghost" icon="sap-icon://decline" press="onPress_approverAction"></Button>

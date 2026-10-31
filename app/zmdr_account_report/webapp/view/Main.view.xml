@@ -1,0 +1,195 @@
+<mvc:View
+  controllerName="com.intapptics.zmdraccountreport.controller.Main"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:f="sap.f"
+  xmlns:fb="sap.ui.comp.filterbar"
+  xmlns:core="sap.ui.core"
+  displayBlock="true"
+  height="100%">
+  <f:DynamicPage id="dynamicPage" headerExpanded="true" preserveHeaderStateOnScroll="true" fitContent="true" class="sapUiSizeCompact">
+    <!-- Dynamic Page Title -->
+    <f:title>
+      <f:DynamicPageTitle>
+        <f:heading>
+          <Title text="{i18n>reportTitle}"/>
+        </f:heading>
+        <f:expandedContent>
+          <Label text="{i18n>reportSubtitle}"/>
+        </f:expandedContent>
+        <f:snappedContent>
+          <Label text="{i18n>reportSubtitle}"/>
+        </f:snappedContent>
+        <f:actions>
+          <Button
+            icon="sap-icon://refresh"
+            type="Transparent"
+            tooltip="{i18n>refreshTooltip}"
+            press=".onRefresh"/>
+        </f:actions>
+      </f:DynamicPageTitle>
+    </f:title>
+
+    <!-- Dynamic Page Header: FilterBar -->
+    <f:header>
+      <f:DynamicPageHeader pinnable="true">
+        <fb:FilterBar
+          id="filterBar"
+          search=".onSearch"
+          clear=".onClearFilters"
+          showClearOnFB="true"
+          showRestoreButton="false"
+          useToolbar="false">
+          <fb:filterGroupItems>
+            <fb:FilterGroupItem
+              name="ChartOfAccounts"
+              label="{i18n>filterChartOfAccounts}"
+              groupName="G1"
+              visibleInFilterBar="true">
+              <fb:control>
+                <Input
+                  id="filterChartOfAccounts"
+                  value="{viewModel>/filterChartOfAccounts}"
+                  placeholder="{i18n>filterChartOfAccountsPlaceholder}"
+                  showValueHelp="true"
+                  valueHelpRequest=".onValueHelpChartOfAccounts"
+                  submit=".onSearch"/>
+              </fb:control>
+            </fb:FilterGroupItem>
+            <fb:FilterGroupItem
+              name="AccountNumber"
+              label="{i18n>filterAccountNumber}"
+              groupName="G1"
+              visibleInFilterBar="true">
+              <fb:control>
+                <Input
+                  id="filterAccountNumber"
+                  value="{viewModel>/filterAccountNumber}"
+                  placeholder="{i18n>filterAccountNumberPlaceholder}"
+                  showValueHelp="true"
+                  valueHelpRequest=".onValueHelpAccountNumber"
+                  submit=".onSearch"/>
+              </fb:control>
+            </fb:FilterGroupItem>
+          </fb:filterGroupItems>
+        </fb:FilterBar>
+      </f:DynamicPageHeader>
+    </f:header>
+
+    <!-- Dynamic Page Content -->
+    <f:content>
+      <VBox class="sapUiSmallMargin">
+        <ScrollContainer width="100%" horizontal="true" vertical="false">
+          <Table
+            id="accountsTable"
+            class="entityAccountReportTable sapUiSizeCompact"
+            items="{path: '/GLAccount', parameters: {'$count': true, '$$operationMode': 'Server'}, sorter: {path: 'GlAccountNum', descending: false}}"
+            growing="true"
+            growingThreshold="25"
+            growingScrollToLoad="true"
+            sticky="ColumnHeaders,HeaderToolbar"
+            updateFinished=".onTableUpdateFinished"
+            busyIndicatorDelay="0"
+            noDataText="{i18n>noAccountsFound}"
+            fixedLayout="false">
+            <headerToolbar>
+              <OverflowToolbar>
+                <Title text="{viewModel>/tableTitle}" level="H2"/>
+                <ToolbarSpacer/>
+                <SearchField
+                  id="searchField"
+                  width="280px"
+                  placeholder="{i18n>searchPlaceholder}"
+                  value="{viewModel>/searchQuery}"
+                  liveChange=".onLiveSearch"
+                  search=".onSearch"/>
+                <OverflowToolbarButton
+                  icon="sap-icon://excel-attachment"
+                  tooltip="{i18n>exportTooltip}"
+                  press=".onExport"/>
+                <OverflowToolbarButton
+                  icon="sap-icon://action-settings"
+                  tooltip="{i18n>settingsTooltip}"
+                  press=".onOpenViewSettings"/>
+              </OverflowToolbar>
+            </headerToolbar>
+            <columns>
+              <!-- 1. Account Block: Y or N -->
+              <Column width="8rem" hAlign="Center">
+                <Text text="{i18n>colAccountBlock}"/>
+              </Column>
+              <!-- 2. Workflow ID -->
+              <Column width="9rem">
+                <Text text="{i18n>colWorkflowId}"/>
+              </Column>
+              <!-- 3. Account Number -->
+              <Column width="9rem">
+                <Text text="{i18n>colAccountNumber}"/>
+              </Column>
+              <!-- 9. Status Description: Approved -->
+              <Column width="9rem">
+                <Text text="{i18n>colStatusDescription}"/>
+              </Column>
+              <!-- 10. Version Active: Y or N -->
+              <Column width="8rem" hAlign="Center">
+                <Text text="{i18n>colVersionActive}"/>
+              </Column>
+              <!-- 11. Version Start Date -->
+              <Column width="12rem">
+                <Text text="{i18n>colVersionStartDate}"/>
+              </Column>
+              <!-- 12. Version End Date -->
+              <Column width="12rem">
+                <Text text="{i18n>colVersionEndDate}"/>
+              </Column>
+              <!-- 13. Created On -->
+              <Column width="12rem">
+                <Text text="{i18n>colCreatedOn}"/>
+              </Column>
+              <!-- 14. Created By -->
+              <Column width="9rem">
+                <Text text="{i18n>colCreatedBy}"/>
+              </Column>
+              <!-- 15. Updated On -->
+              <Column width="12rem">
+                <Text text="{i18n>colUpdatedOn}"/>
+              </Column>
+              <!-- 16. Updated By -->
+              <Column width="9rem">
+                <Text text="{i18n>colUpdatedBy}"/>
+              </Column>
+            </columns>
+            <items>
+              <ColumnListItem vAlign="Middle">
+                <cells>
+                  <!-- 1. Account Block Indicator: Y or N -->
+                  <Text text="{path: 'Status', formatter: '.formatAccountBlock'}"/>
+                  <!-- 2. Workflow ID -->
+                  <ObjectIdentifier title="{WorkflowId}"/>
+                  <!-- 3. Account Number -->
+                  <ObjectIdentifier title="{GlAccountNum}"/>
+                  <!-- 9. Status Description: Approved -->
+                  <Text text="{path: 'Status', formatter: '.formatStatusDesc'}"/>
+                  <!-- 10. Version Active: Y or N -->
+                  <Text text="{path: 'VersionActive', formatter: '.formatVersionActiveYN'}"/>
+                  <!-- 11. Version Start Date -->
+                  <Text text="{path: 'VersionStartDate', formatter: '.formatDateTime'}"/>
+                  <!-- 12. Version End Date -->
+                  <Text text="{path: 'VersionEndDate', formatter: '.formatDateTime'}"/>
+                  <!-- 13. Created On -->
+                  <Text text="{path: 'CreatedOn', formatter: '.formatDateTime'}"/>
+                  <!-- 14. Created By -->
+                  <Text text="{CreatedBy}"/>
+                  <!-- 15. Updated On -->
+                  <Text text="{path: 'UpdatedOn', formatter: '.formatDateTime'}"/>
+                  <!-- 16. Updated By -->
+                  <Text text="{UpdatedBy}"/>
+                </cells>
+              </ColumnListItem>
+            </items>
+          </Table>
+        </ScrollContainer>
+      </VBox>
+    </f:content>
+  </f:DynamicPage>
+</mvc:View>

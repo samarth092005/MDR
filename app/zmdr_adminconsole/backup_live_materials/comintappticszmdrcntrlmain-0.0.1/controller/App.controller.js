@@ -1,0 +1,2 @@
+sap.ui.define(["com/intapptics/zmdrcntrlmain/controller/BaseController"],function(n){"use strict";return n.extend("com.intapptics.zmdrcntrlmain.controller.App",{onInit:function(){}})});
+//# sourceMappingURL=App.controller.js.map

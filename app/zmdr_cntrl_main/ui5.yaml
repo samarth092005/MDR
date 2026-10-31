@@ -17,8 +17,7 @@ server:
           url: https://ui5.sap.com
         backend:
           - path: /sap
-            url: http://cloud9.way2erp.us:8000
-            client: '400'
+            url: http://localhost:4004
           - path: /api
             url: http://localhost:4004
           - path: /odata/v2

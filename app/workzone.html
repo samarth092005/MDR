@@ -1,0 +1,288 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAP Build Work Zone — Master Data Repository (MDR)</title>
+
+    <script type="text/javascript">
+        window["sap-ushell-config"] = {
+            defaultRenderer: "fiori2",
+            renderers: {
+                fiori2: {
+                    componentData: {
+                        config: {
+                            rootIntent: "Shell-home",
+                            search: "hidden",
+                            enableSearch: false,
+                            title: "SAP Build Work Zone"
+                        }
+                    }
+                }
+            },
+            services: {
+                NavTargetResolution: {
+                    config: {
+                        "enableClientSideTargetResolution": true
+                    }
+                },
+                ClientSideTargetResolution: {
+                    adapter: {
+                        config: {
+                            inbounds: {
+                                "zmdr_central_main-manage": {
+                                    semanticObject: "zmdr_central_main",
+                                    action: "manage",
+                                    title: "Central Master Data",
+                                    subTitle: "Category & Table Management",
+                                    icon: "sap-icon://database",
+                                    signature: { parameters: {}, additionalParameters: "allowed" },
+                                    resolutionResult: {
+                                        applicationType: "SAPUI5",
+                                        additionalInformation: "SAPUI5.Component=com.intapptics.zmdrcntrlmain",
+                                        url: "/com.intapptics.zmdrcntrlmain/webapp/"
+                                    }
+                                },
+                                "zmdr_cntrl_main-display": {
+                                    semanticObject: "zmdr_cntrl_main",
+                                    action: "display",
+                                    title: "Central Master Data",
+                                    subTitle: "Create & Maintain Master Data",
+                                    icon: "sap-icon://database",
+                                    signature: { parameters: {}, additionalParameters: "allowed" },
+                                    resolutionResult: {
+                                        applicationType: "SAPUI5",
+                                        additionalInformation: "SAPUI5.Component=com.intapptics.zmdrcntrlmain",
+                                        url: "/com.intapptics.zmdrcntrlmain/webapp/"
+                                    }
+                                },
+                                "zmdr_central_cmn-manage": {
+                                    semanticObject: "zmdr_central_cmn",
+                                    action: "manage",
+                                    title: "Central Common",
+                                    subTitle: "Common Entity Create Forms",
+                                    icon: "sap-icon://form",
+                                    signature: { parameters: {}, additionalParameters: "allowed" },
+                                    resolutionResult: {
+                                        applicationType: "SAPUI5",
+                                        additionalInformation: "SAPUI5.Component=com.intapptics.zmdrcntrlcmn",
+                                        url: "/com.intapptics.zmdrcntrlcmn/webapp/"
+                                    }
+                                },
+                                "zmdr_bulkupload-manage": {
+                                    semanticObject: "zmdr_bulkupload",
+                                    action: "manage",
+                                    title: "Bulk Upload & Validate",
+                                    subTitle: "Excel Upload, Staging & Submit",
+                                    icon: "sap-icon://upload",
+                                    signature: { parameters: {}, additionalParameters: "allowed" },
+                                    resolutionResult: {
+                                        applicationType: "SAPUI5",
+                                        additionalInformation: "SAPUI5.Component=com.intapptics.zmdrbulkload",
+                                        url: "/com.intapptics.zmdrbulkload/webapp/"
+                                    }
+                                },
+                                "bulkload-approve": {
+                                    semanticObject: "bulkload",
+                                    action: "approve",
+                                    title: "Bulk Approver Inbox",
+                                    subTitle: "Review & Decide Staged Requests",
+                                    icon: "sap-icon://approvals",
+                                    signature: { parameters: {}, additionalParameters: "allowed" },
+                                    resolutionResult: {
+                                        applicationType: "SAPUI5",
+                                        additionalInformation: "SAPUI5.Component=com.intapptics.zmdrbulkapprover",
+                                        url: "/com.intapptics.zmdrbulkapprover/webapp/"
+                                    }
+                                },
+                                "zmdr_wfauditrep-display": {
+                                    semanticObject: "zmdr_wfauditrep",
+                                    action: "display",
+                                    title: "Workflow Audit History",
+                                    subTitle: "Lifecycle Timeline & BPA Events",
+                                    icon: "sap-icon://history",
+                                    signature: { parameters: {}, additionalParameters: "allowed" },
+                                    resolutionResult: {
+                                        applicationType: "SAPUI5",
+                                        additionalInformation: "SAPUI5.Component=com.intapptics.zmdrwfauditrep",
+                                        url: "/com.intapptics.zmdrwfauditrep/webapp/"
+                                    }
+                                },
+                                "AccountReport-display": {
+                                    semanticObject: "AccountReport",
+                                    action: "display",
+                                    title: "G/L Account Master Report",
+                                    subTitle: "Golden Records Analytical View",
+                                    icon: "sap-icon://lead",
+                                    signature: { parameters: {}, additionalParameters: "allowed" },
+                                    resolutionResult: {
+                                        applicationType: "SAPUI5",
+                                        additionalInformation: "SAPUI5.Component=com.intapptics.zmdraccountreport",
+                                        url: "/com.intapptics.zmdraccountreport/webapp/"
+                                    }
+                                },
+                                "zmdradminconsole-display": {
+                                    semanticObject: "zmdradminconsole",
+                                    action: "display",
+                                    title: "MDR Admin Console",
+                                    subTitle: "Screen Rules, Visibility & Approvers",
+                                    icon: "sap-icon://action-settings",
+                                    signature: { parameters: {}, additionalParameters: "allowed" },
+                                    resolutionResult: {
+                                        applicationType: "SAPUI5",
+                                        additionalInformation: "SAPUI5.Component=com.intapptics.zmdradminconsole",
+                                        url: "/com.intapptics.zmdradminconsole/webapp/"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                LaunchPage: {
+                    adapter: {
+                        config: {
+                            groups: [
+                                {
+                                    id: "group_governance",
+                                    title: "MDR Central Governance",
+                                    isPreset: true,
+                                    isVisible: true,
+                                    tiles: [
+                                        {
+                                            id: "tile_cntrl_main",
+                                            tileType: "sap.ushell.ui.tile.StaticTile",
+                                            properties: {
+                                                title: "Central Master Data",
+                                                subtitle: "Category & Table Management",
+                                                icon: "sap-icon://database",
+                                                targetURL: "#zmdr_central_main-manage"
+                                            }
+                                        },
+                                        {
+                                            id: "tile_cntrl_cmn",
+                                            tileType: "sap.ushell.ui.tile.StaticTile",
+                                            properties: {
+                                                title: "Entity Create & Common",
+                                                subtitle: "Create Forms & Validation",
+                                                icon: "sap-icon://form",
+                                                targetURL: "#zmdr_central_cmn-manage"
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    id: "group_bulk",
+                                    title: "MDR Bulk Operations",
+                                    isPreset: true,
+                                    isVisible: true,
+                                    tiles: [
+                                        {
+                                            id: "tile_bulkload",
+                                            tileType: "sap.ushell.ui.tile.StaticTile",
+                                            properties: {
+                                                title: "Bulk Upload & Validate",
+                                                subtitle: "Excel Upload & Staging (G)",
+                                                icon: "sap-icon://upload",
+                                                targetURL: "#zmdr_bulkupload-manage"
+                                            }
+                                        },
+                                        {
+                                            id: "tile_bulkapprover",
+                                            tileType: "sap.ushell.ui.tile.StaticTile",
+                                            properties: {
+                                                title: "Bulk Approver Inbox",
+                                                subtitle: "Review Staged Requests & Decide",
+                                                icon: "sap-icon://approvals",
+                                                targetURL: "#bulkload-approve"
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    id: "group_analytics",
+                                    title: "MDR Reports & Audit",
+                                    isPreset: true,
+                                    isVisible: true,
+                                    tiles: [
+                                        {
+                                            id: "tile_wfauditrep",
+                                            tileType: "sap.ushell.ui.tile.StaticTile",
+                                            properties: {
+                                                title: "Workflow Audit Report",
+                                                subtitle: "Full Lifecycle Timeline & BPA",
+                                                icon: "sap-icon://history",
+                                                targetURL: "#zmdr_wfauditrep-display"
+                                            }
+                                        },
+                                        {
+                                            id: "tile_account_report",
+                                            tileType: "sap.ushell.ui.tile.StaticTile",
+                                            properties: {
+                                                title: "G/L Account Master Report",
+                                                subtitle: "Live Golden Records (Y, ACT)",
+                                                icon: "sap-icon://lead",
+                                                targetURL: "#AccountReport-display"
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    id: "group_admin",
+                                    title: "MDR Administration",
+                                    isPreset: true,
+                                    isVisible: true,
+                                    tiles: [
+                                        {
+                                            id: "tile_adminconsole",
+                                            tileType: "sap.ushell.ui.tile.StaticTile",
+                                            properties: {
+                                                title: "MDR Admin Console",
+                                                subtitle: "Screen Rules, Visibility & Approvers",
+                                                icon: "sap-icon://action-settings",
+                                                targetURL: "#zmdradminconsole-display"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+
+    <script src="https://ui5.sap.com/1.120.52/test-resources/sap/ushell/bootstrap/sandbox.js" id="sap-ushell-bootstrap"></script>
+    <script id="sap-ui-bootstrap"
+        src="https://ui5.sap.com/1.120.52/resources/sap-ui-core.js"
+        data-sap-ui-libs="sap.m,sap.ui.core,sap.ushell"
+        data-sap-ui-async="true"
+        data-sap-ui-preload="async"
+        data-sap-ui-theme="sap_horizon"
+        data-sap-ui-compatVersion="edge"
+        data-sap-ui-language="en"
+        data-sap-ui-resourceroots='{
+            "com.intapptics.zmdrcntrlmain": "/com.intapptics.zmdrcntrlmain/webapp/",
+            "com.intapptics.zmdrcntrlcmn": "/com.intapptics.zmdrcntrlcmn/webapp/",
+            "com.intapptics.zmdrbulkload": "/com.intapptics.zmdrbulkload/webapp/",
+            "com.intapptics.zmdrbulkapprover": "/com.intapptics.zmdrbulkapprover/webapp/",
+            "com.intapptics.zmdrwfauditrep": "/com.intapptics.zmdrwfauditrep/webapp/",
+            "com.intapptics.zmdraccountreport": "/com.intapptics.zmdraccountreport/webapp/",
+            "com.intapptics.zmdradminconsole": "/com.intapptics.zmdradminconsole/webapp/"
+        }'
+        data-sap-ui-frameOptions="allow">
+    </script>
+
+    <script>
+        sap.ui.getCore().attachInit(function () {
+            sap.ushell.bootstrap("local").then(function () {
+                sap.ushell.Container.createRenderer().placeAt("content");
+            });
+        });
+    </script>
+</head>
+
+<body class="sapUiBody" id="content">
+</body>
+</html>

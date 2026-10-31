@@ -1,0 +1,47 @@
+<mvc:View controllerName="com.intapptics.zmdrcntrlmain.controller.TableList" displayBlock="true" xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m" xmlns:f="sap.f" xmlns:core="sap.ui.core">
+    <f:DynamicPage id="dpTableList" showFooter="true">
+        <!-- Dynamic Page Title -->
+        <f:title>
+            <f:DynamicPageTitle id="dptTableList">
+                <f:heading>
+                    <Title id="ttlTableList" text="{i18n>tablePageTitle}" tooltip="{i18n>tablePageTitle}"></Title>
+                </f:heading>
+                <f:navigationActions>
+                    <OverflowToolbarButton id="btnEnterFullScreenTabList" type="Transparent" icon="sap-icon://full-screen"
+                        visible="true" tooltip="{i18n>enterFullScreen}" press="onPressNavActionBtns"></OverflowToolbarButton>
+                        <OverflowToolbarButton id="btnExitFullScreenTabList" type="Transparent" icon="sap-icon://exit-full-screen"
+                        visible="true" tooltip="{i18n>exitFullScreen}" press="onPressNavActionBtns"></OverflowToolbarButton>
+                        <OverflowToolbarButton id="btnClosePageTabList" type="Transparent" icon="sap-icon://decline"
+                        visible="true" tooltip="{i18n>closePage}" press="onPressNavActionBtns"></OverflowToolbarButton>
+                </f:navigationActions>
+            </f:DynamicPageTitle>
+        </f:title>
+        
+        <!-- Dynamic Page Content -->
+        <f:content>
+            <List id="tblTableList" inset="false" class="sapFDynamicPageAlignContent" width="auto" 
+                noDataText="{tableListViewModel>/noDataText}" updateFinished="onUpdateFinished_tblTableList"
+                mode="SingleSelectMaster" tooltip="{i18n>tableListTooltip}" selectionChange="onSelectionChange_tblTableList"
+                items="{ path: 'oUniqueTablesModel>/', sorter: { path: 'tableName', descending: false} }">
+                <headerToolbar>
+                    <OverflowToolbar id="ovtHtTblTableList">
+                        <Title id="ttlHtTblTableList" text="{tableListViewModel>/tableTitle}" level="H2"></Title>
+                        <ToolbarSpacer id="tbsHtTblTableList"></ToolbarSpacer>
+                        <SearchField id="sfTable" width="17.5rem" placeholder="{i18n>tableSearchfieldTooltip}"
+                            liveChange="onLiveChange_sfTable" tooltip="{i18n>tableSearchfieldTooltip}"></SearchField>
+                    </OverflowToolbar>
+                </headerToolbar>
+                <infoToolbar>
+                    <OverflowToolbar id="ovtItTblTableList">
+                        <Text id="txtTblTableList" text="{i18n>txtTblTableList}" tooltip="{i18n>txtTblTableList}"></Text>
+                    </OverflowToolbar>
+                </infoToolbar>
+                <items>
+                    <StandardListItem id="sliTblTableList" title="{oUniqueTablesModel>tableName}" 
+                        tooltip="{oUniqueTablesModel>tableName}"></StandardListItem>
+                </items>
+            </List>
+        </f:content>
+    </f:DynamicPage>
+</mvc:View>

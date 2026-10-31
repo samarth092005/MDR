@@ -169,6 +169,13 @@ sap.ui.define([
 
                         // Take reference of the Flexible Column Layout and set the end column to full screen
                         this.getView().getParent().getParent().setLayout("EndColumnFullScreen");
+                var aFilters = [];
+                var sTargetTable = (this.oSelectedTableInfo && (this.oSelectedTableInfo.tableId || this.oSelectedTableInfo.tableName)) || this.sTableId;
+                var sCreatedMat = (typeof window !== "undefined" && window.sessionStorage) ? window.sessionStorage.getItem("MDR_LAST_CREATED_MAT") : null;
+                if (sTargetTable === "ZMDR_MATERIAL" && sCreatedMat) {
+                    aFilters.push(new Filter("MATERIALNUM", FilterOperator.EQ, sCreatedMat));
+                }
+
 
                         // Log information
                         this.fn_getLogReference().info("Table Result Controller: End column set to full screen along with buttons visibility");
@@ -211,6 +218,21 @@ sap.ui.define([
              * @public
              * @returns {void}
              */
+            
+            onChange_swtHierarchyView: function (oEvent) {
+                var bState = oEvent.getParameter("state");
+                if (this.byId("tblResultSet")) {
+                    this.byId("tblResultSet").setVisible(!bState);
+                }
+                if (this.byId("tblTreeResultSet")) {
+                    this.byId("tblTreeResultSet").setVisible(bState);
+                }
+            },
+
+            onRowSelectionChange_tblTreeResultSet: function (oEvent) {
+                // Tree table row selection
+            },
+
             onPaginationAction: function (oEvent) {
                 // Log information
                 this.fn_getLogReference().info("Table Result Controller: Entering onPaginationAction method");
@@ -748,7 +770,9 @@ sap.ui.define([
                     oDate = new Date(), // Date reference
                     sDate, // Stores date in string format yyyyMMdd
                     sTime, // Stores time in string format HHMMSS
-                    sTableLabel = this.fn_getGlobalModel("oUniqueTablesModel").getData()[this.sTableId].tableName; // Stores extraction table label
+                    aUniqueTablesData = (this.fn_getGlobalModel("oUniqueTablesModel") && this.fn_getGlobalModel("oUniqueTablesModel").getData()) || [],
+                    oExportTableInfo = this._fn_findSelectedTable(aUniqueTablesData, this.sTableId),
+                    sTableLabel = oExportTableInfo ? oExportTableInfo.tableName : (this.sTableId || ""); // Stores extraction table label
 
                 /** Method Implementation */
                 // Get current date in yyyyMMdd format
@@ -1091,144 +1115,83 @@ sap.ui.define([
              * @public
              * @returns {void}
              */
-            onPress_actionButtons: function (oEvent) {
-                // Log information
-                this.fn_getLogReference().info("Table Result Controller: Entering onPress_actionButtons method");
+            
+onPress_actionButtons: function (oEvent) {
+    this.fn_getLogReference().info(
+        "Table Result Controller: Entering onPress_actionButtons method"
+    );
 
-                /** Define variables */
-                var sBtnText = oEvent.getSource().getText(), // Stores text of the pressed button
-                    oNavServiceToCommonApp,// Stores reference of navigation service
-                    oAppState, // Stores the application state
-                    oStateToSave, // Stores parameters before navigating
-                    oHashChanger, // Stores the hash changer instance
-                    sCurrentHash, // Stores the current hash
-                    sNewHash, // Stores the new hash
-                    aAppStateKeys; // Stores the current application state key
+    var oButton = oEvent.getSource();
+    var sBtnText = oButton.getText();
+    var oComponent = this.getOwnerComponent();
 
-                /** Method Implementation */
-                // Clear all messages of message manager
-                sap.ui.getCore().getMessageManager().removeAllMessages();
+    sap.ui.getCore().getMessageManager().removeAllMessages();
 
-                oStateToSave = {
-                    aSearchParameters: this.aSearchParameters,
-                    sPageNumber: this.byId("inpPageNum").getValue(),
-                    sPageSizeKey: this.byId("cbxPageSize").getSelectedKey(),
-                    aCntrlUiConfigData: this.fn_getGlobalModel("oFieldsDataModel").getData(),
-                    aUniqueRepositoriesData: this.fn_getGlobalModel("oUniqueRepositoriesModel").getData(),
-                    aUniqueTablesData: this.fn_getGlobalModel("oUniqueTablesModel").getData(),
-                    sRepositoryId: this.sRepositoryId,
-                    sTableId: this.sTableId,
-                    oSelectedTableData: this.oSelectedTableData,
-                    sTableServiceUrl: this.sServiceUrl,
-                    sTableEntitySet: this.sEntitySet,
-                    sBusyDialogId: this.getOwnerComponent()._oGlobalBusyDialog.getId()
-                };
+    var oStateToSave = {
+        aSearchParameters: this.aSearchParameters,
+        sPageNumber: this.byId("inpPageNum").getValue(),
+        sPageSizeKey: this.byId("cbxPageSize").getSelectedKey(),
+        aCntrlUiConfigData: this.fn_getGlobalModel("oFieldsDataModel").getData(),
+        aUniqueRepositoriesData: this.fn_getGlobalModel("oUniqueRepositoriesModel").getData(),
+        aUniqueTablesData: this.fn_getGlobalModel("oUniqueTablesModel").getData(),
+        sRepositoryId: this.sRepositoryId,
+        sTableId: this.sTableId,
+        oSelectedTableData: this.oSelectedTableData,
+        sTableServiceUrl: this.sServiceUrl,
+        sTableEntitySet: this.sEntitySet,
+        sBusyDialogId: oComponent._oGlobalBusyDialog.getId()
+    };
 
-                // Get reference of the cross app navigation service
-                if (sap.ushell && sap.ushell.Container) {
-                    // swapnil - commented below code for async call
-                    // oNavServiceToCommonApp = sap.ushell.Container.getService("CrossApplicationNavigation");
+    if (!(sap.ushell && sap.ushell.Container)) {
+        this.fn_getLogReference().error(
+            "Cross application navigation is not supported in standalone mode"
+        );
+        sap.m.MessageToast.show(
+            "Navigation to common app requires Fiori Launchpad"
+        );
+        return;
+    }
 
-                    // // Create an application state
-                    // oAppState = oNavServiceToCommonApp.createEmptyAppState(this.getOwnerComponent());
+    oButton.setEnabled(false);
 
-                    // // Set the parameters into the app state
-                    // oAppState.setData(oStateToSave);
+    sap.ushell.Container.getServiceAsync("CrossApplicationNavigation")
+        .then(function (oNavigationService) {
+            return oNavigationService.createEmptyAppStateAsync(oComponent)
+                .then(function (oAppState) {
+                    oAppState.setData(oStateToSave);
 
-                    // // Save the data
-                    // oAppState.save();
+                    var pSave = oAppState.saveAsync
+                        ? oAppState.saveAsync()
+                        : Promise.resolve(oAppState.save());
 
-                    // // Get reference of the hash changer service
-                    // oHashChanger = sap.ui.core.routing.HashChanger.getInstance();
-
-                    // // Get the current hash
-                    // sCurrentHash = oHashChanger.getHash();
-
-                    // // Check if any app state is already present in the current hash using regex
-                    // aAppStateKeys = /(?:sap-iapp-state=)([^&=]+)/.exec(sCurrentHash);
-
-                    // if (aAppStateKeys) {
-                    //     // Split the current hash and remove the current app state
-                    //     sCurrentHash = sCurrentHash.split("?")[0];
-                    // }
-
-                    // // Prepare the new hash by adding the new app state
-                    // sNewHash = sCurrentHash + "?sap-iapp-state=" + oAppState.getKey();
-
-                    // // Replace hash
-                    // oHashChanger.replaceHash(sNewHash);
-
-                    // /** eslint-disable sap-cross-application-navigation */
-                    // // Navigate to the child app
-                    // oNavServiceToCommonApp.toExternal({
-                    //     target: {
-                    //         semanticObject: "zmdr_central_cmn",
-                    //         action: "manage"
-                    //     },
-                    //     params: {
-                    //         sActionedBy: "Requestor",
-                    //         sActionType: sBtnText
-                    //     },
-                    //     appStateKey: oAppState.getKey()
-                    // });
-                    /** eslint-enable sap-cross-application-navigation */
-                    // swapnil - updated code for async call
-                    oNavServiceToCommonApp = sap.ushell.Container.getServiceAsync("CrossApplicationNavigation")
-                        .then(function (oService) {
-                            oNavServiceToCommonApp = oService;
-                            // Create an application state
-                            oAppState = oNavServiceToCommonApp.createEmptyAppStateAsync(_oSelf.getOwnerComponent())
-                                .then(function (oAppState) {
-                                    // Set the parameters into the app state
-                                    oAppState.setData(oStateToSave);
-
-                                    // Save the data and wait for completion before navigation
-                                    var pSave = oAppState.saveAsync ? oAppState.saveAsync() : Promise.resolve(oAppState.save());
-                                    return Promise.resolve(pSave).then(function () {
-                                        // Get reference of the hash changer service
-                                        oHashChanger = sap.ui.core.routing.HashChanger.getInstance();
-
-                                        // Get the current hash
-                                        sCurrentHash = oHashChanger.getHash();
-
-                                        // Check if any app state is already present in the current hash using regex
-                                        aAppStateKeys = /(?:sap-iapp-state=)([^&=]+)/.exec(sCurrentHash);
-
-                                        if (aAppStateKeys) {
-                                            // Split the current hash and remove the current app state
-                                            sCurrentHash = sCurrentHash.split("?")[0];
-                                        }
-
-                                        // Prepare the new hash by adding the new app state
-                                        sNewHash = sCurrentHash + "?sap-iapp-state=" + oAppState.getKey();
-
-                                        // Replace hash
-                                        oHashChanger.replaceHash(sNewHash);
-
-                                        // Navigate to the child app
-                                        oNavServiceToCommonApp.toExternal({
-                                            target: {
-                                                semanticObject: "zmdr_central_cmn",
-                                                action: "manage"
-                                            },
-                                            params: {
-                                                sActionedBy: "Requestor",
-                                                sActionType: sBtnText
-                                            },
-                                            appStateKey: oAppState.getKey()
-                                        });
-                                    });
-                                });
+                    return Promise.resolve(pSave).then(function () {
+                        oNavigationService.toExternal({
+                            target: {
+                                semanticObject: "zmdr_central_cmn",
+                                action: "manage"
+                            },
+                            params: {
+                                sActionedBy: "Requestor",
+                                sActionType: sBtnText
+                            },
+                            appStateKey: oAppState.getKey()
                         });
-                } else {
-                    // Running in standalone mode without Fiori Launchpad
-                    this.fn_getLogReference().error("Cross application navigation is not supported in standalone mode");
-                    sap.m.MessageToast.show("Navigation to common app requires Fiori Launchpad");
-                }
+                    });
+                });
+        })
+        .catch(function (oError) {
+            oButton.setEnabled(true);
 
-                // Log information
-                this.fn_getLogReference().info("Table Result Controller: Exiting onPress_actionButtons method");
-            },
+            this.fn_getLogReference().error(
+                "Central Common navigation failed: " +
+                (oError && oError.message ? oError.message : oError)
+            );
+
+            sap.m.MessageToast.show(
+                "Unable to open Central Common. Please try again."
+            );
+        }.bind(this));
+},
 
 
             /**
@@ -1244,11 +1207,137 @@ sap.ui.define([
              * @private
              * @returns {void}
              */
+            /**
+             * Safe helper to find a table configuration by numeric index, technical tableId, or tableName
+             * 
+             * @param {Array} aTables Array of table objects
+             * @param {string|number} sKey Index, tableId (e.g. ZMDR_BPMASTER), or tableName (e.g. Business Partner)
+             * @returns {Object|null} Matching table object or null
+             */
+            _fn_findSelectedTable: function (aTables, sKey) {
+                if (!Array.isArray(aTables) || aTables.length === 0 || sKey === undefined || sKey === null) {
+                    return null;
+                }
+                // Check if numeric index (e.g. 0 or "0")
+                if (typeof sKey === "number" || (/^\d+$/.test(String(sKey).trim()) && aTables[parseInt(sKey, 10)])) {
+                    var idx = parseInt(sKey, 10);
+                    if (aTables[idx]) {
+                        return aTables[idx];
+                    }
+                }
+                var sKeyStr = String(sKey).trim().toUpperCase();
+                var oMatch = aTables.find(function (t) {
+                    if (!t) return false;
+                    var sTId = (t.tableId || t.TableId || t.tableName || t.TableName || "").trim().toUpperCase();
+                    var sTName = (t.tableName || t.TableName || "").trim().toUpperCase();
+                    return sTId === sKeyStr || sTName === sKeyStr;
+                });
+                return oMatch || aTables[sKey] || null;
+            },
+
+            /**
+             * Ensure oUniqueTablesModel is populated, synthesizing from oCntrlUiConfigDataModel if needed
+             * 
+             * @returns {sap.ui.model.json.JSONModel|null}
+             */
+            _fn_ensureUniqueTablesModel: function () {
+                var oTablesModel = this.fn_getGlobalModel("oUniqueTablesModel");
+                if (oTablesModel && oTablesModel.getData() && oTablesModel.getData().length > 0) {
+                    return oTablesModel;
+                }
+                var oConfigModel = this.fn_getGlobalModel("oCntrlUiConfigDataModel");
+                var oRepoModel = this.fn_getGlobalModel("oUniqueRepositoriesModel");
+                if (!oConfigModel || !oRepoModel) {
+                    return null;
+                }
+                var aCntrlUiConfigData = oConfigModel.getData() || [];
+                var aRepos = oRepoModel.getData() || [];
+                var oSelectedRepo = null;
+                var sKey = this.sRepositoryId;
+                if (typeof sKey === "number" || (/^\d+$/.test(String(sKey).trim()) && aRepos[parseInt(sKey, 10)])) {
+                    oSelectedRepo = aRepos[parseInt(sKey, 10)];
+                } else if (sKey !== undefined && sKey !== null) {
+                    var sKeyStr = String(sKey).trim().toUpperCase();
+                    oSelectedRepo = aRepos.find(function (r) {
+                        return (r.repositoryName || "").toUpperCase() === sKeyStr || (r.repositoryLabel || "").toUpperCase() === sKeyStr;
+                    });
+                }
+                if (!oSelectedRepo && aRepos.length > 0) {
+                    oSelectedRepo = aRepos[0];
+                }
+                if (!oSelectedRepo) return null;
+
+                var aFilteredTables = aCntrlUiConfigData.filter(function (data) {
+                    var sRepo = data.repository || data.Repository;
+                    return sRepo === oSelectedRepo.repositoryName;
+                });
+                var aUniqueTables = [];
+                aFilteredTables.forEach(function (oDupTable) {
+                    var sTableLabel = oDupTable.TableLabel || oDupTable.Tablelabel;
+                    var sTableName = oDupTable.TableName || oDupTable.Tablename;
+                    if (aUniqueTables.filter(function (oUniqueTable) {
+                        return oUniqueTable.tableName === sTableLabel;
+                    }).length === 0) {
+                        aUniqueTables.push({
+                            "tableName": sTableLabel,
+                            "tableId": sTableName
+                        });
+                    }
+                });
+                oTablesModel = new JSONModel(aUniqueTables);
+                this.fn_setGlobalModel(oTablesModel, "oUniqueTablesModel");
+                return oTablesModel;
+            },
+
+            /**
+             * Loads CntrlUIConfig fields and triggers search form & table url loading
+             */
+            _fn_loadTableConfiguration: function (oSelectedTableData, oViewTableResultModel, oCompleteFieldsModel) {
+                this.oSelectedTableData = oSelectedTableData;
+                this.oSelectedTableInfo = oSelectedTableData;
+
+                oViewTableResultModel.setProperty("/pageTitle", this.fn_getResourceBundle().getText("tableResultPageTitle", [oSelectedTableData.tableName]));
+                oViewTableResultModel.setProperty("/tableTooltip", this.fn_getResourceBundle().getText("tableResultPageTitle", [oSelectedTableData.tableName]));
+
+                var aConfigFilters = [new sap.ui.model.Filter("TableName", sap.ui.model.FilterOperator.EQ, oSelectedTableData.tableId)];
+                this.fn_getGlobalModel().bindList("/CntrlUIConfig", null, null, aConfigFilters).requestContexts(0, Infinity).then(function (aContexts) {
+                    var aFieldsData = aContexts.map(function (oCtx) { return oCtx.getObject(); });
+                    if (aFieldsData.length !== 0) {
+                        aFieldsData.sort(function (a, b) {
+                            var aSeq = a.ColumnSeqNo !== undefined ? a.ColumnSeqNo : 0;
+                            var bSeq = b.ColumnSeqNo !== undefined ? b.ColumnSeqNo : 0;
+                            return aSeq - bSeq;
+                        });
+                        oCompleteFieldsModel.setData(aFieldsData);
+                        if (!this.fn_getGlobalModel("oFieldsDataModel")) {
+                            this.fn_setGlobalModel(oCompleteFieldsModel, "oFieldsDataModel");
+                        } else {
+                            this.fn_getGlobalModel("oFieldsDataModel").setData(aFieldsData);
+                        }
+                        this._fn_populateSearchForm(aFieldsData);
+                        this._fn_readTableUrl();
+                    } else {
+                        this.fn_getLogReference().error("Table Result Controller: Table configuration not maintained properly at the backend");
+                        this.fn_closeBusyDialog();
+                    }
+                }.bind(this)).catch(function (err) {
+                    this.fn_getLogReference().error("Table Result Controller: Backend error reading CntrlUIConfig");
+                    this.fn_closeBusyDialog();
+                }.bind(this));
+            },
+
             _fn_onObjectMatched: function (oEvent) {
                 // Log information
                 this.fn_getLogReference().info("Table Result Controller: Entering _fn_onObjectMatched method");
 
                 this.getView().getParent().getParent().setLayout("EndColumnFullScreen");
+                var aFilters = [];
+                var sTargetTable = (this.oSelectedTableInfo && (this.oSelectedTableInfo.tableId || this.oSelectedTableInfo.tableName)) || this.sTableId;
+                var sCreatedMat = (typeof window !== "undefined" && window.sessionStorage) ? window.sessionStorage.getItem("MDR_LAST_CREATED_MAT") : null;
+                if (sTargetTable === "ZMDR_MATERIAL" && sCreatedMat) {
+                    aFilters.push(new Filter("MATERIALNUM", FilterOperator.EQ, sCreatedMat));
+                }
+
 
                 /** Define Variables */
                 var oSelectedTableData, // Stores the selected table information
@@ -1315,149 +1404,81 @@ sap.ui.define([
 
                     if (aAppStateKeys) {
                         // External Navigation
-                        // Get the app state key
                         sAppStateKey = aAppStateKeys[1];
-
-                        // Log information
                         this.fn_getLogReference().info("Table Result Controller: App State Key - " + sAppStateKey);
 
-                        // Read data from the app state
                         sap.ushell.Container.getService("CrossApplicationNavigation").getAppState(this.getOwnerComponent(), sAppStateKey).done(function (oSavedAppState) {
-                            // Check if app state was saved
                             if (oSavedAppState.getData()) {
-                                // Read any preset search parameters
-                                this.aSearchParameters = oSavedAppState.getData().asearchParameters;
-
-                                // Set the page number
+                                this.aSearchParameters = oSavedAppState.getData().asearchParameters || [];
                                 this.sPageNumber = oSavedAppState.getData().sPageNumber;
 
                                 if (this.byId("cbxPageSize")) {
-                                    // Set the page size
                                     this.byId("cbxPageSize").setSelectedKey(oSavedAppState.getData().sPageSizeKey);
                                 }
 
-                                // Get the configuration data
                                 aCntrlUiConfigData = oSavedAppState.getData().aCntrlUiConfigData;
 
-                                // Set the models
                                 if (this.getOwnerComponent()) {
                                     this.fn_setGlobalModel(new JSONModel(oSavedAppState.getData().aUniqueRepositoriesData), "oUniqueRepositoriesModel");
                                     this.fn_setGlobalModel(new JSONModel(oSavedAppState.getData().aUniqueTablesData), "oUniqueTablesModel");
                                 }
 
-                                // Get selected table label
-                                oSelectedTableData = oSavedAppState.getData().aUniqueTablesData[this.sTableId];
+                                oSelectedTableData = this._fn_findSelectedTable(oSavedAppState.getData().aUniqueTablesData, this.sTableId);
 
                                 if (oSelectedTableData) {
                                     if (this.getOwnerComponent()) {
-                                        // Set the title of the page
-                                        oViewTableResultModel.setProperty("/pageTitle", this.fn_getResourceBundle().getText("tableResultPageTitle", [oSelectedTableData.tableName]));
-                                        oViewTableResultModel.setProperty("/tableTooltip", this.fn_getResourceBundle().getText("tableResultPageTitle", [oSelectedTableData.tableName]));
-
-                                        // Fetch the field configuration data based on the selected table directly from backend
-                                        // [V4 MIGRATION] Replaced V2 oModel.read() with native OData V4 bindList().requestContexts().
-                                        // /CntrlUIConfig is a @readonly EntitySet (central-service.cds line 14). bindList() is correct.
-                                        // Filter on tablename is preserved. All downstream logic is unchanged.
-                                        var aConfigFilters = [new sap.ui.model.Filter("TableName", sap.ui.model.FilterOperator.EQ, oSelectedTableData.tableId)];
-                                        this.fn_getGlobalModel().bindList("/CntrlUIConfig", null, null, aConfigFilters).requestContexts(0, Infinity).then(function (aContexts) {
-                                            var aFieldsData = aContexts.map(function (oCtx) { return oCtx.getObject(); });
-                                            if (aFieldsData.length !== 0) {
-                                                aFieldsData.sort(function (a, b) {
-                                                    var aSeq = a.ColumnSeqNo !== undefined ? a.ColumnSeqNo : a.ColumnSeqNo;
-                                                    var bSeq = b.ColumnSeqNo !== undefined ? b.ColumnSeqNo : b.ColumnSeqNo;
-                                                    return aSeq - bSeq;
-                                                });
-                                                oCompleteFieldsModel.setData(aFieldsData);
-                                                if (!this.fn_getGlobalModel("oFieldsDataModel")) {
-                                                    this.fn_setGlobalModel(oCompleteFieldsModel, "oFieldsDataModel");
-                                                } else {
-                                                    this.fn_getGlobalModel("oFieldsDataModel").setData(aFieldsData);
-                                                }
-                                                this._fn_populateSearchForm(aFieldsData);
-                                                this._fn_readTableUrl();
-                                            } else {
-                                                this.fn_getLogReference().error("Table Result Controller: Table configuration not maintained properly at the backend");
-                                                this.fn_closeBusyDialog();
-                                            }
-                                        }.bind(this)).catch(function (err) {
-                                            this.fn_getLogReference().error("Table Result Controller: Backend error reading CntrlUIConfig");
-                                            this.fn_closeBusyDialog();
-                                        }.bind(this));
+                                        this._fn_loadTableConfiguration(oSelectedTableData, oViewTableResultModel, oCompleteFieldsModel);
                                     }
                                 } else {
-                                    // Show error message in console
-                                    this.fn_getLogReference().error("Table Result Controller: Unable to read selected table info from navigation");
-
-                                    // Close the busy dialog
+                                    this.fn_getLogReference().error("Table Result Controller: Unable to read selected table info from navigation for table: " + this.sTableId);
                                     this.fn_closeBusyDialog();
+                                    this.sTableId = undefined;
+                                    this.fn_getRouter().navTo("category");
                                 }
                             } else {
-                                // Close the busy dialog
                                 this.fn_closeBusyDialog();
-
-                                // Clear the table selection
                                 this.sTableId = undefined;
-
-                                // Navigate to the home page
                                 this.fn_getRouter().navTo("category");
                             }
                         }.bind(this));
-                    } else if (this.fn_getGlobalModel("oCntrlUiConfigDataModel") && this.fn_getGlobalModel("oUniqueTablesModel")) {
-                        // Internal navigation
-                        /** Check if the table configuration data is already present because this holds the information of the selected table
-                         *  incase of internal navigation. If not present then navigate to the home page.
-                         */
-                        // Get the configuration data
-                        aCntrlUiConfigData = this.fn_getGlobalModel("oCntrlUiConfigDataModel").getData();
-
-                        // Get the selected table data
-                        oSelectedTableData = this.fn_getGlobalModel("oUniqueTablesModel").getData()[this.sTableId];
-
-                        // Null check of selected table data
-                        if (oSelectedTableData) {
-                            // Set the title of the page
-                            oViewTableResultModel.setProperty("/pageTitle", this.fn_getResourceBundle().getText("tableResultPageTitle", [oSelectedTableData.tableName]));
-                            oViewTableResultModel.setProperty("/tableTooltip", this.fn_getResourceBundle().getText("tableResultPageTitle", [oSelectedTableData.tableName]));
-                            // Fetch the configuration data based on the selected table directly from backend
-                            // [V4 MIGRATION] Replaced V2 oModel.read() with native OData V4 bindList().requestContexts().
-                            // /CntrlUIConfig is a @readonly EntitySet (central-service.cds line 14). bindList() is correct.
-                            // Filter on tablename is preserved. All downstream logic is unchanged
-                            var aConfigFilters = [new sap.ui.model.Filter("TableName", sap.ui.model.FilterOperator.EQ, oSelectedTableData.tableId)];
-                            this.fn_getGlobalModel().bindList("/CntrlUIConfig", null, null, aConfigFilters).requestContexts(0, Infinity).then(function (aContexts) {
-                                var aFieldsData = aContexts.map(function (oCtx) { return oCtx.getObject(); });
-                                if (aFieldsData.length !== 0) {
-                                    aFieldsData.sort(function (a, b) {
-                                        var aSeq = a.ColumnSeqNo !== undefined ? a.ColumnSeqNo : a.ColumnSeqNo;
-                                        var bSeq = b.ColumnSeqNo !== undefined ? b.ColumnSeqNo : b.ColumnSeqNo;
-                                        return aSeq - bSeq;
-                                    });
-                                    oCompleteFieldsModel.setData(aFieldsData);
-                                    if (!this.fn_getGlobalModel("oFieldsDataModel")) {
-                                        this.fn_setGlobalModel(oCompleteFieldsModel, "oFieldsDataModel");
-                                    } else {
-                                        this.fn_getGlobalModel("oFieldsDataModel").setData(aFieldsData);
-                                    }
-                                    this._fn_populateSearchForm(aFieldsData);
-                                    this._fn_readTableUrl();
-                                } else {
-                                    this.fn_getLogReference().error("Table Result Controller: Unable to read the field data of the selected table from the backend");
-                                    this.fn_closeBusyDialog();
-                                }
-                            }.bind(this)).catch(function (err) {
-                                this.fn_getLogReference().error("Table Result Controller: Backend error reading CntrlUIConfig");
-                                this.fn_closeBusyDialog();
-                            }.bind(this));
-                        } else {
-                            // oSelectedTableData is null — close busy dialog and go home
-                            this.fn_closeBusyDialog();
-                            this.sTableId = undefined;
-                            this.fn_getRouter().navTo("category");
-                        }
                     } else {
-                        // Neither external nav state nor global models — close and navigate home
-                        this.fn_closeBusyDialog();
-                        this.sTableId = undefined;
-                        this.fn_getRouter().navTo("category");
+                        // Internal navigation or browser refresh
+                        var fnProceedWithInternalNav = function () {
+                            this._fn_ensureUniqueTablesModel();
+                            var oTablesModel = this.fn_getGlobalModel("oUniqueTablesModel");
+                            var aUniqueTables = oTablesModel ? oTablesModel.getData() : [];
+                            oSelectedTableData = this._fn_findSelectedTable(aUniqueTables, this.sTableId);
+
+                            if (oSelectedTableData) {
+                                this._fn_loadTableConfiguration(oSelectedTableData, oViewTableResultModel, oCompleteFieldsModel);
+                            } else {
+                                this.fn_getLogReference().error("Table Result Controller: Selected table not found in configuration for key: " + this.sTableId);
+                                this.fn_closeBusyDialog();
+                                this.sTableId = undefined;
+                                this.fn_getRouter().navTo("category");
+                            }
+                        }.bind(this);
+
+                        if (this.fn_getGlobalModel("oCntrlUiConfigDataModel") && this.fn_getGlobalModel("oUniqueTablesModel")) {
+                            fnProceedWithInternalNav();
+                        } else {
+                            // Check if CntrlUIVis load is in flight (e.g. browser refresh directly on tableResult route)
+                            var oComp = this.getOwnerComponent();
+                            var pLoad = oComp ? oComp._pCntrlUiVisLoad : null;
+                            if (pLoad && typeof pLoad.then === "function") {
+                                pLoad.then(function () {
+                                    fnProceedWithInternalNav();
+                                }.bind(this)).catch(function () {
+                                    this.fn_closeBusyDialog();
+                                    this.sTableId = undefined;
+                                    this.fn_getRouter().navTo("category");
+                                }.bind(this));
+                            } else {
+                                this.fn_closeBusyDialog();
+                                this.sTableId = undefined;
+                                this.fn_getRouter().navTo("category");
+                            }
+                        }
                     }
                 }
 
@@ -1744,7 +1765,7 @@ sap.ui.define([
                     this.fn_getLogReference().info("Table Result Controller: Entity Set - " + this.sEntitySet);
 
                     // Resolve the service URL as per manifest
-                    var sResolvedServiceUri = this.getOwnerComponent().getManifestObject().resolveUri(this.sServiceUrl, "sap.app");
+                    var sResolvedServiceUri = this.getOwnerComponent().getManifestObject().resolveUri((this.sServiceUrl || "").replace(/^\/+/ , ""), "sap.app");
 
                     this.fn_getLogReference().info("Table Result Controller: Resolved Service URL - " + sResolvedServiceUri);
 

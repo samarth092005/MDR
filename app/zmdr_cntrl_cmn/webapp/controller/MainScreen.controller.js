@@ -30,6 +30,27 @@ sap.ui.define([
          * 
          * @memberof com.intapptics.zmdrcntrlcmn.view.MainScreen
          */
+        _fn_getAppPrefix: function () {
+            var sAppPrefix = "";
+            try {
+                sAppPrefix = sap.ui.require.toUrl("com/intapptics/zmdrcntrlcmn") || "";
+            } catch (e) {
+                sAppPrefix = "";
+            }
+            if (sAppPrefix && sAppPrefix !== "." && !sAppPrefix.startsWith("./")) {
+                return sAppPrefix.replace(/\/+$/, "");
+            }
+            try {
+                var oComp = this.getOwnerComponent();
+                if (oComp && oComp.getManifestObject) {
+                    var sBase = oComp.getManifestObject().getBaseUrl();
+                    if (sBase && sBase !== "." && !sBase.startsWith("./")) {
+                        return sBase.replace(/\/+$/, "");
+                    }
+                }
+            } catch (e) {}
+            return "";
+        },
         onInit: function () {
             // Log message
             this.fn_getLogReference().info("Main Screen Controller: Entering onInit method");
@@ -48,9 +69,38 @@ sap.ui.define([
             // Set the view model
             this.fn_setLocalModel(oViewModel, "mainScreenViewModel");
 
-            // Attach pattern matched
-            this.fn_getRouter().getRoute("mainscreen").attachPatternMatched(this._fn_onObjectMatched, this);
-            this.fn_getRouter().getRoute("approvaltask").attachPatternMatched(this._fn_onObjectMatched, this);
+            // Attach pattern matched safely
+            var oRouter = this.fn_getRouter();
+            if (oRouter) {
+                var oMainRoute = oRouter.getRoute("mainscreen");
+                if (oMainRoute) {
+                    oMainRoute.attachPatternMatched(this._fn_onObjectMatched, this);
+                }
+                var oApprovalRoute = oRouter.getRoute("approvaltask");
+                if (oApprovalRoute) {
+                    oApprovalRoute.attachPatternMatched(this._fn_onObjectMatched, this);
+                }
+                var oDefaultRoute = oRouter.getRoute("default");
+                if (oDefaultRoute) {
+                    oDefaultRoute.attachPatternMatched(this._fn_onObjectMatched, this);
+                }
+                var oCatchAllRoute = oRouter.getRoute("catchall");
+                if (oCatchAllRoute) {
+                    oCatchAllRoute.attachPatternMatched(this._fn_onObjectMatched, this);
+                }
+                oRouter.attachBypassed(this._fn_onObjectMatched, this);
+            } else {
+                this.fn_getLogReference().warn("Main Screen Controller: Router not available during onInit");
+            }
+
+            // If running inside My Inbox / Task container, trigger initialization directly
+            var oCompData = this.getOwnerComponent() && this.getOwnerComponent().getComponentData();
+            var oStartup = (oCompData && oCompData.startupParameters) || {};
+            if (oStartup.taskModel || oStartup.inboxAPI) {
+                setTimeout(function () {
+                    this._fn_onObjectMatched();
+                }.bind(this), 0);
+            }
 
             // Set the message model
             this.fn_setLocalModel(oMessageManager.getMessageModel(), "messageModel");
@@ -99,6 +149,15 @@ sap.ui.define([
          * @memberof com.intapptics.zmdrcntrlcmn.view.MainScreen
          * @public
          */
+                onPress_btnNavBack: function () {
+            this.fn_getLogReference().info("Main Screen Controller: Navigating back to table");
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = "/com.intapptics.zmdrcntrlmain/index.html";
+            }
+        },
+
         onPress_btnSubmit: function (oEvent) {
             // Log info
             this.fn_getLogReference().info("Main Screen Controller: Entering onPress_btnSubmit method");
@@ -660,6 +719,9 @@ sap.ui.define([
             this._fn_dynamicFormPreparation();
 
             // Disable create button and enable submit button
+            if (this.byId("btnBackToTable")) {
+                this.byId("btnBackToTable").setVisible(false);
+            }
             this.byId("btnCreate").setVisible(false);
             this.byId("btnSubmit").setVisible(true);
 
@@ -1242,6 +1304,24 @@ sap.ui.define([
          * @memberof com.intapptics.zmdrcntrlcmn.view.MainScreen
          * @public
          */
+        _fn_getVersionActiveField: function () {
+            var sTable = (this.sSelectedTableName || this.sTableLabel || this.sTableEntitySet || "").trim().toUpperCase();
+            if (sTable.indexOf("MATERIAL") !== -1 || sTable.indexOf("SERV") !== -1 || sTable.indexOf("CONTRACT") !== -1 ||
+                sTable.indexOf("LOCATION") !== -1 || sTable.indexOf("PRICE") !== -1 || sTable.indexOf("TARRF") !== -1 ||
+                sTable.indexOf("SLA") !== -1 || sTable.indexOf("CUST_SG") !== -1) {
+                return "VERSION_ACTIVE";
+            }
+            if (this.oSelectedTableData && typeof this.oSelectedTableData.VERSION_ACTIVE !== "undefined") {
+                return "VERSION_ACTIVE";
+            }
+            if (this.aFieldDetails && this.aFieldDetails.some(function (f) {
+                return (f.ColumnName || f.columnName || "").toUpperCase() === "VERSION_ACTIVE";
+            })) {
+                return "VERSION_ACTIVE";
+            }
+            return "VersionActive";
+        },
+
         onPress_btnSeeChanges: function (oEvent) {
             // Log info
             this.fn_getLogReference().info("Main Screen Controller: Entering onPress_btnSeeChanges method");
@@ -1265,10 +1345,10 @@ sap.ui.define([
             aPrimaryKeys.forEach(function (oPrimaryKey) {
                 aFilters.push(new Filter(oPrimaryKey.ColumnName, FilterOperator.EQ, this.oSelectedTableData[oPrimaryKey.ColumnName]));
             }, this);
-            aFilters.push(new Filter("VersionActive", FilterOperator.EQ, "Y"));
+            aFilters.push(new Filter(this._fn_getVersionActiveField(), FilterOperator.EQ, "Y"));
 
             // Read active data to compare
-            var oListBinding = this.oTableModel.bindList("/" + this.sTableEntitySet, null, null, aFilters);
+            var oListBinding = this.oTableModel.bindList("/" + (this.sTableEntitySet || "").replace(/^\/+/, ""), null, null, aFilters);
             oListBinding.requestContexts(0, 2).then(function (aContexts) {
                 // Check if data is available
                 if (aContexts.length === 1) {
@@ -1414,18 +1494,32 @@ sap.ui.define([
             /** Temporary Debug Logs */
             console.log("ComponentData:", oComponentData);
             console.log("Startup Parameters:", oComponentData?.startupParameters);
-            console.log("Route Arguments:", oEvent.getParameter("arguments"));
+            console.log("Route Arguments:", oEvent?.getParameter ? oEvent.getParameter("arguments") : null);
             console.log("Hash:", window.location.hash);
 
             /** Method Implementation */
-            // Check if mandatory startup parameters are passed
+            var oContextData = {};
             if (oComponentData && oComponentData.startupParameters) {
+                var oStartupParams = oComponentData.startupParameters;
+                var bHasTask = !!(oStartupParams.taskModel || oStartupParams.inboxAPI);
+
+                // If running in Inbox or missing action parameters, wait for contextLoaded
+                if (bHasTask || !oStartupParams.sActionType) {
+                    if (this.getOwnerComponent().contextLoaded) {
+                        try {
+                            await this.getOwnerComponent().contextLoaded;
+                        } catch (e) {
+                            console.warn("contextLoaded failed or rejected:", e);
+                        }
+                    }
+                    var oContextModel = this.getOwnerComponent().getModel("context");
+                    oContextData = (oContextModel && oContextModel.getData()) || {};
+                }
+
                 // Safely read action type
-                sActionType = oComponentData.startupParameters.sActionType ? oComponentData.startupParameters.sActionType[0] : "";
-                if (sActionType === "") {
-                    await this.getOwnerComponent().contextLoaded;
-                    var oContextData = this.getOwnerComponent().getModel("context").getData();
-                    sActionType = oContextData.sActionType || "";
+                sActionType = oStartupParams.sActionType ? oStartupParams.sActionType[0] : "";
+                if (!sActionType) {
+                    sActionType = oContextData.sActionType || oContextData.operationtype || oContextData.operationType || oContextData.OperationType || "CREATE";
                 }
 
                 // Get user action type
@@ -1436,9 +1530,9 @@ sap.ui.define([
                 }
 
                 // Read who is calling the component
-                this.sActionedBy = oComponentData.startupParameters.sActionedBy ? oComponentData.startupParameters.sActionedBy[0] : "";
+                this.sActionedBy = oStartupParams.sActionedBy ? oStartupParams.sActionedBy[0] : "";
                 if (this.sActionedBy === "") {
-                    this.sActionedBy = oContextData.sActionedBy || "";
+                    this.sActionedBy = oContextData.sActionedBy || (bHasTask ? "Approver" : "");
                 }
 
                 if (this.sActionedBy === "Requestor") {
@@ -1493,6 +1587,19 @@ sap.ui.define([
 
                     var oStateData = oSavedAppState && oSavedAppState.getData ? oSavedAppState.getData() : null;
 
+                    // Fallback to sessionStorage for standalone mode navigation
+                    if (!oStateData && typeof window !== "undefined" && window.sessionStorage) {
+                        try {
+                            var sSessionState = window.sessionStorage.getItem("MDR_NAV_STATE");
+                            if (sSessionState) {
+                                oStateData = JSON.parse(sSessionState);
+                                this.fn_getLogReference().info("Main Screen Controller: Successfully restored app state from sessionStorage");
+                            }
+                        } catch (e) {
+                            this.fn_getLogReference().error("Main Screen Controller: Error reading session navigation state: " + (e.message || e));
+                        }
+                    }
+
                     if (oStateData) {
                         this.fn_getLogReference().info("Main Screen Controller: Successfully read app state data");
 
@@ -1515,25 +1622,51 @@ sap.ui.define([
                             this.sRepositoryName = oStateData.aUniqueRepositoriesData[oStateData.sRepositoryId].repositoryName ||
                                 oStateData.aUniqueRepositoriesData[oStateData.sRepositoryId].RepositoryName || "";
                         }
-                        if (oStateData.aUniqueTablesData && oStateData.sTableId && oStateData.aUniqueTablesData[oStateData.sTableId]) {
-                            var oTableEntry = oStateData.aUniqueTablesData[oStateData.sTableId];
-                            this.sTableLabel = oTableEntry.tableName || oTableEntry.TableName || oTableEntry.tableId || "";
-                            this.sSelectedTableName = oTableEntry.tableId || oTableEntry.TableId || oTableEntry.tableName || "";
+                        if (oStateData.aUniqueTablesData && oStateData.sTableId) {
+                            var oTableEntry = null;
+                            if (Array.isArray(oStateData.aUniqueTablesData)) {
+                                oTableEntry = oStateData.aUniqueTablesData.find(function (t) {
+                                    return t.tableId === oStateData.sTableId || t.tableName === oStateData.sTableId;
+                                }) || oStateData.aUniqueTablesData[oStateData.sTableId];
+                            } else {
+                                oTableEntry = oStateData.aUniqueTablesData[oStateData.sTableId];
+                            }
+                            if (oTableEntry) {
+                                this.sTableLabel = oTableEntry.tableName || oTableEntry.TableName || oTableEntry.tableId || "";
+                                this.sSelectedTableName = oTableEntry.tableId || oTableEntry.TableId || oTableEntry.tableName || "";
+                            }
+                        }
+                        if (!this.sSelectedTableName && oStateData.sSelectedTableName) {
+                            this.sSelectedTableName = oStateData.sSelectedTableName;
+                        }
+                        if (!this.sTableLabel && oStateData.sSelectedTableLabel) {
+                            this.sTableLabel = oStateData.sSelectedTableLabel;
+                        }
+                        if (!this.sSelectedTableName && oStateData.sTableId) {
+                            this.sSelectedTableName = oStateData.sTableId;
                         }
 
                         if (this.sRepositoryName) {
-                            this.byId("obatHdr1").setText(this.sRepositoryName).setVisible(true);
+                            if (this.byId("obatHdr1")) this.byId("obatHdr1").setText(this.sRepositoryName).setVisible(true); if (this.byId("obatHdr1Snapped")) this.byId("obatHdr1Snapped").setText(this.sRepositoryName).setVisible(true);
                         }
                         if (this.sTableLabel) {
-                            this.byId("obatHdr2").setText(this.sTableLabel).setVisible(true);
+                            if (this.byId("obatHdr2")) this.byId("obatHdr2").setText(this.sTableLabel).setVisible(true); if (this.byId("obatHdr2Snapped")) this.byId("obatHdr2Snapped").setText(this.sTableLabel).setVisible(true);
                         }
 
                         // Table service URL and entity set
                         var sTableServiceUrl = oStateData.sTableServiceUrl;
-                        this.sTableServiceUrl = sTableServiceUrl;
-                        this.sTableEntitySet = oStateData.sTableEntitySet;
                         if (sTableServiceUrl) {
-                            var sResolvedServiceUri = this.getOwnerComponent().getManifestObject().resolveUri(sTableServiceUrl, "sap.app");
+                            sTableServiceUrl = "/" + sTableServiceUrl.replace(/^\/+/, "");
+                            if (!sTableServiceUrl.endsWith("/")) {
+                                sTableServiceUrl += "/";
+                            }
+                        }
+                        this.sTableServiceUrl = sTableServiceUrl;
+                        this.sTableEntitySet = oStateData.sTableEntitySet ? ("/" + oStateData.sTableEntitySet.replace(/^\/+/, "")) : "";
+                        if (sTableServiceUrl) {
+                            var sCleanUrl = (sTableServiceUrl || "").replace(/^\/+/, "").replace(/\/+$/, "");
+                            var sAppPrefix = this._fn_getAppPrefix();
+                            var sResolvedServiceUri = sAppPrefix ? (sAppPrefix + "/" + sCleanUrl + "/") : ("/" + sCleanUrl + "/");
                             this.oTableModel = new ODataModel({
                                 serviceUrl: sResolvedServiceUri,
                                 synchronizationMode: "None",
@@ -1616,7 +1749,7 @@ sap.ui.define([
                     }
 
                     // Get previous stage
-                    this.sPreviousStage = oContextData.sPreviousStage || "";
+                    this.sPreviousStage = oContextData.sPreviousStage || oContextData.sPrvStage || oContextData.initialstage || "LEVEL1";
                     if (oContextData.sNextStage === "END") {
                         this.sFinalApproval = "Y";
                     } else {
@@ -1624,13 +1757,13 @@ sap.ui.define([
                     }
 
                     // Read table name
-                    this.sSelectedTableName = oContextData.sTablename || "";
+                    this.sSelectedTableName = oContextData.sTablename || oContextData.tablename || oContextData.TableName || oContextData.entityname || oContextData.entityName || (oComponentData.startupParameters.sTablename ? oComponentData.startupParameters.sTablename[0] : "");
 
                     // Set form title
                     this.fn_getLocalModel("mainScreenViewModel").setProperty("/formTitle", this.fn_getResourceBundle().getText("approverFormHeading"));
 
                     // Get workflow id and workitem id
-                    this.sWorkflowID = oContextData.sWorkflowID || "";
+                    this.sWorkflowID = oContextData.sWorkflowID || oContextData.workflowid || oContextData.workflowId || oContextData.WorkflowId || (oComponentData.startupParameters.sWorkflowID ? oComponentData.startupParameters.sWorkflowID[0] : "");
 
                     if (this.sSelectedTableName) {
                         // Clear any previous filters
@@ -1706,6 +1839,7 @@ sap.ui.define([
 
                         // Add message in message manager
                         sap.ui.getCore().getMessageManager().addMessages(oMessage);
+                        this.fn_closeBusyDialog();
                     }
                 } else {
                     // Log error message
@@ -2678,7 +2812,7 @@ sap.ui.define([
             var iLastIndex = oField.lkpodata.lastIndexOf("/"), // Stores index of last "/"
                 sServiceUrl = oField.lkpodata.substring(0, iLastIndex), // Stores lookup service url
                 sEntitySet = oField.lkpodata.substring(iLastIndex, oField.lkpodata.length), // Stores lookup entity set
-                oLookupModel = new ODataModel(sServiceUrl).getNativeModel(), // Stores oData V4 model for lookup field
+                oLookupModel = new ODataModel({ serviceUrl: sServiceUrl.endsWith("/") ? sServiceUrl : sServiceUrl + "/", synchronizationMode: "None" }), // Stores oData V4 model for lookup field
                 oFilter; // Filter added in the lookup search field
 
             /** Method implementation */
@@ -2761,7 +2895,7 @@ sap.ui.define([
             var iLastIndex = oField.lkpodata.lastIndexOf("/"), // Stores index of last "/"
                 sServiceUrl = oField.lkpodata.substring(0, iLastIndex), // Stores lookup service url
                 sEntitySet = oField.lkpodata.substring(iLastIndex, oField.lkpodata.length), // Stores lookup entity set
-                oLookupModel = new ODataModel(sServiceUrl).getNativeModel(), // Stores oData V4 model for lookup field
+                oLookupModel = new ODataModel({ serviceUrl: sServiceUrl.endsWith("/") ? sServiceUrl : sServiceUrl + "/", synchronizationMode: "None" }), // Stores oData V4 model for lookup field
                 oLookupDataModel = new JSONModel(), // Stores lookup data in JSON Model
                 aLookupData, // Array of lookup data
                 sKeyField = oField.ColumnName, // Stores the key field of the lookup
@@ -3738,9 +3872,9 @@ sap.ui.define([
             });
             aFilters.push(new Filter({
                 filters: [
-                    new Filter("VersionActive", FilterOperator.EQ, "Y"),
-                    new Filter("VersionActive", FilterOperator.EQ, "I"),
-                    new Filter("VersionActive", FilterOperator.EQ, "G")
+                    new Filter(this._fn_getVersionActiveField(), FilterOperator.EQ, "Y"),
+                    new Filter(this._fn_getVersionActiveField(), FilterOperator.EQ, "I"),
+                    new Filter(this._fn_getVersionActiveField(), FilterOperator.EQ, "G")
                 ],
                 and: false
             }));
@@ -3780,7 +3914,7 @@ sap.ui.define([
                     this.byId("msgStripMainScreen").setType("Error");
                     this.byId("msgStripMainScreen").setVisible(true);
 
-                    if (oInProgressData.VersionActive === "Y") {
+                    if (oInProgressData.VersionActive === "Y" || oInProgressData.VERSION_ACTIVE === "Y") {
                         // Set error text in message strip
                         this.byId("msgStripMainScreen").setText("<strong>Error: </strong><em>Error while processing. For more info </em>");
 
@@ -3870,10 +4004,22 @@ sap.ui.define([
                 oPayload.VersionStartDate = new Date().toISOString();
             }
 
-            var oListBinding = this.oTableModel.bindList(this.sTableEntitySet);
-            // [ORIGINAL CODE COMMENTED]
-            // var oContext = oListBinding.create(oTableData);
-            var oContext = oListBinding.create(oPayload);
+            try {
+                if (!this.oTableModel) {
+                    throw new Error("Table OData Model is not initialized for " + (this.sSelectedTableName || "selected entity"));
+                }
+                var oListBinding = this.oTableModel.bindList(this.sTableEntitySet, null, null, null, {
+                    $$groupId: "$auto",
+                    $$updateGroupId: "$auto"
+                });
+                var oContext = oListBinding.create(oPayload);
+                if (this.oTableModel.submitBatch) {
+                    try {
+                        this.oTableModel.submitBatch(this.oTableModel.getUpdateGroupId());
+                    } catch (e) {
+                        console.warn("submitBatch error:", e);
+                    }
+                }
             oContext.created().then(function () {
                 var oData = oContext.getObject() || {};
                 // Get the message reference post creation of table data at the backend
@@ -3912,6 +4058,13 @@ sap.ui.define([
                 // Close busy dialog
                 this.fn_closeBusyDialog();
             }.bind(this));
+            } catch (syncErr) {
+                this.fn_getLogReference().error("Main Screen Controller: Exception in _fn_pushDataToBackend", syncErr);
+                this.byId("msgStripMainScreen").setText("<strong>Error: </strong><em>" + syncErr.message + "</em>");
+                this.byId("msgStripMainScreen").setType("Error");
+                this.byId("msgStripMainScreen").setVisible(true);
+                this.fn_closeBusyDialog();
+            }
 
             // Log info
             this.fn_getLogReference().info("Main Screen Controller: Exiting _fn_pushDataToBackend method");
@@ -3966,9 +4119,9 @@ sap.ui.define([
                 OperationType: this.sActionType,
                 UserRemarks: this.sUserRemarks,
                 WorkflowIdentifier: "CENTRAL"
-            };            // [FIXED] Use fetch() instead of OData V4 bindContext/batch to avoid 403 errors
-
-            var sServiceUrl = sap.ui.require.toUrl("com/intapptics/zmdrcntrlcmn") + "/mdrapi/workflow/";
+            };            // [FIXED] Use fetch() with app-scoped prefix to route correctly via Approuter in FLP
+            var sAppPrefix = this._fn_getAppPrefix();
+            var sServiceUrl = (sAppPrefix ? (sAppPrefix + "/") : "/") + "mdrapi/workflow/";
             var sTriggerUrl = sServiceUrl + "TriggerWorkflowSet";
 
             fetch(sServiceUrl, {
@@ -4027,6 +4180,28 @@ sap.ui.define([
                 }
 
                 // Disable the submit button and enable create button only for create scenario
+                // Store last created entity in sessionStorage
+                try {
+                    var sCreatedKey = (oTableData && oTableData.MATERIALNUM) || sEntityId || "";
+                    if (typeof window !== "undefined" && window.sessionStorage) {
+                        if (this.sSelectedTableName === "ZMDR_MATERIAL" && sCreatedKey) {
+                            window.sessionStorage.setItem("MDR_LAST_CREATED_MAT", sCreatedKey);
+                        } else {
+                            window.sessionStorage.removeItem("MDR_LAST_CREATED_MAT");
+                        }
+                        if (sCreatedKey) {
+                            window.sessionStorage.setItem("MDR_LAST_CREATED_ENTITY", JSON.stringify({
+                                tableName: this.sSelectedTableName || "",
+                                key: sCreatedKey
+                            }));
+                        }
+                    }
+                } catch (e) {}
+
+                if (this.byId("btnBackToTable")) {
+                    this.byId("btnBackToTable").setVisible(true);
+                }
+
                 this.byId("btnSubmit").setVisible(false);
                 if (this.sActionType === "Create") {
                     this.byId("btnCreate").setVisible(true);
@@ -4144,8 +4319,14 @@ sap.ui.define([
                     this.fn_getLogReference().info("Main Screen Controller: Service URL - " + sTableServiceUrl);
                     this.fn_getLogReference().info("Main Screen Controller: Entity Set - " + this.sTableEntitySet);
 
+                    // Ensure sTableServiceUrl is an absolute path with leading and trailing slashes
+                    var sCleanUrl = (sTableServiceUrl || "").replace(/^\/+/, "").replace(/\/+$/, "");
+                    sTableServiceUrl = "/" + sCleanUrl + "/";
+                    this.sTableEntitySet = "/" + (this.sTableEntitySet || "").replace(/^\/+/, "");
+
                     // Resolve the service URL as per manifest
-                    var sResolvedServiceUri = this.getOwnerComponent().getManifestObject().resolveUri(sTableServiceUrl, "sap.app");
+                    var sAppPrefix = this._fn_getAppPrefix();
+                    var sResolvedServiceUri = sAppPrefix ? (sAppPrefix + "/" + sCleanUrl + "/") : ("/" + sCleanUrl + "/");
 
                     this.fn_getLogReference().info("Main Screen Controller: Resolved Service URL - " + sResolvedServiceUri);
 
@@ -4194,66 +4375,70 @@ sap.ui.define([
             this.fn_getLogReference().info("Main Screen Controller: Entering _fn_readWfData method");
 
             /** Define variables */
-            var aFilters = [], // Stores filter information
-                oMessage; // Stores message for message manager
+            var aFilters = [],
+                oMessage;
 
-            /** Method Implementation */
+            var sWfField = "WorkflowId";
+            if (this.aFieldDetails && this.aFieldDetails.some(function (f) {
+                return (f.ColumnName || "").toUpperCase() === "WORKFLOW_ID";
+            })) {
+                sWfField = "WORKFLOW_ID";
+            }
+
+            var sVerField = this._fn_getVersionActiveField ? this._fn_getVersionActiveField() : "VERSION_ACTIVE";
+
             // Add filters
-            aFilters.push(new Filter("WorkflowId", FilterOperator.EQ, this.sWorkflowID));
-            aFilters.push(new Filter("VersionActive", FilterOperator.EQ, "I"));
+            aFilters.push(new Filter(sWfField, FilterOperator.EQ, this.sWorkflowID));
+            if (sVerField) {
+                aFilters.push(new Filter(sVerField, FilterOperator.EQ, "I"));
+            }
 
             // Read data from backend using this.oTableModel or fallback to global model
             var oModel = this.oTableModel || this.fn_getGlobalModel();
             var oListBinding = oModel.bindList(this.sTableEntitySet, null, null, aFilters);
             oListBinding.requestContexts(0, 2).then(function (aContexts) {
-                if (aContexts.length >= 1) {
-                    // Set the table data
+                if (aContexts && aContexts.length >= 1) {
                     this.oSelectedTableData = aContexts[0].getObject();
-
-                    // Prepare the form
                     this._fn_dynamicFormPreparation();
-
-                    // Read User remarks
-                    // this._fn_readRemarks(); //to do
                 } else {
-                    // Set error in message strip
-                    var oMsgStrip = this.byId("msgStripMainScreen");
-                    if (oMsgStrip) {
-                        oMsgStrip.setText("<strong>Error: </strong><em>Error while processing. For more info </em>");
-                        oMsgStrip.setType("Error");
-                        oMsgStrip.setVisible(true);
-                    }
+                    // Fallback: try query with Workflow ID alone (without version filter)
+                    var aFallbackFilters = [new Filter(sWfField, FilterOperator.EQ, this.sWorkflowID)];
+                    var oFallbackBinding = oModel.bindList(this.sTableEntitySet, null, null, aFallbackFilters);
+                    oFallbackBinding.requestContexts(0, 2).then(function (aFbContexts) {
+                        if (aFbContexts && aFbContexts.length >= 1) {
+                            this.oSelectedTableData = aFbContexts[0].getObject();
+                            this._fn_dynamicFormPreparation();
+                        } else {
+                            // Still no record in DB — render empty dynamic form and show informative message
+                            this.oSelectedTableData = {};
+                            this._fn_dynamicFormPreparation();
 
-                    // Set the message
-                    oMessage = new Message({
-                        id: "sIdTechError",
-                        message: "Error reading data based on workflow id",
-                        type: MessageType.Error,
-                        additionalText: "Backend data issue",
-                        description: "Failed to read data based on workflow id " + this.sWorkflowID,
-                        target: "/TechnicalError",
-                        processor: this.fn_getLocalModel("messageModel")
-                    });
-                    sap.ui.getCore().getMessageManager().addMessages(oMessage);
-
-                    // Close busy dialog
-                    this.fn_closeBusyDialog();
-
-                    // Log error
-                    this.fn_getLogReference().error("Main Screen Controller: Error reading workflow data for workflow id " + this.sWorkflowID + ". " + aContexts.length + " data returned.");
+                            var oMsgStrip = this.byId("msgStripMainScreen");
+                            if (oMsgStrip) {
+                                oMsgStrip.setText("<strong>Notice: </strong><em>Draft record for Workflow ID <strong>" + (this.sWorkflowID || "") + "</strong> could not be located in table " + (this.sSelectedTableName || "") + ". It may have already been approved or processed.</em>");
+                                oMsgStrip.setType("Information");
+                                oMsgStrip.setVisible(true);
+                            }
+                            this.fn_closeBusyDialog();
+                        }
+                    }.bind(this)).catch(function (oFbErr) {
+                        this.oSelectedTableData = {};
+                        this._fn_dynamicFormPreparation();
+                        this.fn_closeBusyDialog();
+                    }.bind(this));
                 }
             }.bind(this)).catch(function (oError) {
-                // Set error in message strip
+                this.oSelectedTableData = {};
+                this._fn_dynamicFormPreparation();
+
                 var oMsgStrip = this.byId("msgStripMainScreen");
                 if (oMsgStrip) {
-                    oMsgStrip.setText("<strong>Error: </strong><em>Error while processing. For more info </em>");
+                    oMsgStrip.setText("<strong>Error: </strong><em>Error reading workflow data.</em>");
                     oMsgStrip.setType("Error");
                     oMsgStrip.setVisible(true);
                 }
 
                 this.fn_showServiceError(oError);
-
-                // Close busy dialog
                 this.fn_closeBusyDialog();
             }.bind(this));
 
@@ -4271,23 +4456,19 @@ sap.ui.define([
             // Log info
             this.fn_getLogReference().info("Main Screen Controller: Entering _fn_readRemarks method");
 
-            /** Define variables */
-            var oWorkflowModel = this.fn_getGlobalModel("ZMDR_UTILITY_WORKFLOW_SRV"), // Stores odata model of workflow service
-                aPrimaryKeys, // Stores primary key fields
-                sEntityId, // Stores entity id of the entry
-                sEntityName = this.sTableLabel, // Stores entity name
-                sCurrentStage = this.sPreviousStage, // Stores current stage of the workflow
-                sEntitySet = "/UserRemarksSet"; // Stores entity set of the workflow service
+            var aPrimaryKeys,
+                sEntityId = "",
+                sEntityName = this.sTableLabel || "",
+                sCurrentStage = this.sPreviousStage || "";
 
-            /** Method Implementation */
             // Get primary key fields
-            aPrimaryKeys = this.aFieldDetails.filter(function (oField) {
+            aPrimaryKeys = (this.aFieldDetails || []).filter(function (oField) {
                 return oField.PrimaryKeyFlag === "Y";
             });
 
             // Prepare entity id
             aPrimaryKeys.forEach(function (oPrimaryKey) {
-                if (this.oSelectedTableData[oPrimaryKey.ColumnName]) {
+                if (this.oSelectedTableData && this.oSelectedTableData[oPrimaryKey.ColumnName]) {
                     if (sEntityId) {
                         sEntityId = sEntityId + "|" + this.oSelectedTableData[oPrimaryKey.ColumnName].toString();
                     } else {
@@ -4296,55 +4477,38 @@ sap.ui.define([
                 }
             }, this);
 
-            // Prepare complete entity set
-            sEntitySet = sEntitySet + encodeURIComponent("(EntityId='" + sEntityId + "',EntityName='" + sEntityName + "',CurrentStage='" + sCurrentStage + "',WorkflowId='" + this.sWorkflowID + "')");
+            var sAppPrefix = this._fn_getAppPrefix();
+            var sBaseUrl = (sAppPrefix ? (sAppPrefix + "/") : "/") + "mdrapi/workflow/";
+            var sUrl = sBaseUrl + "UserRemarksSet(EntityId='" + encodeURIComponent(sEntityId) +
+                "',EntityName='" + encodeURIComponent(sEntityName) +
+                "',CurrentStage='" + encodeURIComponent(sCurrentStage) +
+                "',WorkflowId='" + encodeURIComponent(this.sWorkflowID || "") + "')";
 
-            // TODO: Migrate to native V4 once UserRemarksSet is mapped in backend
-            // Read remarks data
-            oWorkflowModel.read(sEntitySet, {
+            fetch(sUrl, {
                 method: "GET",
-                async: true,
-                success: function (oData) {
-                    if (oData) {
-                        // Set the visibility of the requestor remarks section and field values
-                        this.byId("frmRemarks").setVisible(true);
-                        this.byId("txtReqId").setValue(oData.RequestorId);
-                        this.byId("txtReqId").setTooltip(oData.RequestorId);
-                        this.byId("txtReqName").setValue(oData.RequestorName);
-                        this.byId("txtReqName").setTooltip(oData.RequestorName);
-                        this.byId("txtReqEmail").setValue(oData.RequestorEmail);
-                        this.byId("txtReqEmail").setTooltip(oData.RequestorEmail);
-                        this.byId("txtReqRemarks").setValue(oData.RequestorRemarks);
-                        this.byId("txtReqRemarks").setTooltip(oData.RequestorRemarks);
+                headers: { "Accept": "application/json" }
+            }).then(function (res) {
+                if (!res.ok) return null;
+                return res.json();
+            }).then(function (oData) {
+                if (oData) {
+                    var d = oData.value || oData;
+                    if (this.byId("frmRemarks")) this.byId("frmRemarks").setVisible(true);
+                    if (this.byId("txtReqId")) { this.byId("txtReqId").setValue(d.RequestorId || ""); this.byId("txtReqId").setTooltip(d.RequestorId || ""); }
+                    if (this.byId("txtReqName")) { this.byId("txtReqName").setValue(d.RequestorName || ""); this.byId("txtReqName").setTooltip(d.RequestorName || ""); }
+                    if (this.byId("txtReqEmail")) { this.byId("txtReqEmail").setValue(d.RequestorEmail || ""); this.byId("txtReqEmail").setTooltip(d.RequestorEmail || ""); }
+                    if (this.byId("txtReqRemarks")) { this.byId("txtReqRemarks").setValue(d.RequestorRemarks || ""); this.byId("txtReqRemarks").setTooltip(d.RequestorRemarks || ""); }
 
-                        if (oData.ApproverRemarks) {
-                            // Set the visibility of the approver remarks section and field values
-                            this.byId("fcntApprHeader").setVisible(true);
-                            this.byId("txtApprId").setValue(oData.ApproverId);
-                            this.byId("txtApprId").setTooltip(oData.ApproverId);
-                            this.byId("txtApprName").setValue(oData.ApproverName);
-                            this.byId("txtApprName").setTooltip(oData.ApproverName);
-                            this.byId("txtApprEmail").setValue(oData.ApproverEmail);
-                            this.byId("txtApprEmail").setTooltip(oData.ApproverEmail);
-                            this.byId("txtApprRemarks").setValue(oData.ApproverRemarks);
-                            this.byId("txtApprRemarks").setTooltip(oData.ApproverRemarks);
-                        }
-                    } else {
-                        // Log Error
-                        this.fn_getLogReference().error("Main Screen Controller: No remarks data found for workflow id " + this.sWorkflowID + ".");
+                    if (d.ApproverRemarks) {
+                        if (this.byId("fcntApprHeader")) this.byId("fcntApprHeader").setVisible(true);
+                        if (this.byId("txtApprId")) { this.byId("txtApprId").setValue(d.ApproverId || ""); this.byId("txtApprId").setTooltip(d.ApproverId || ""); }
+                        if (this.byId("txtApprName")) { this.byId("txtApprName").setValue(d.ApproverName || ""); this.byId("txtApprName").setTooltip(d.ApproverName || ""); }
+                        if (this.byId("txtApprEmail")) { this.byId("txtApprEmail").setValue(d.ApproverEmail || ""); this.byId("txtApprEmail").setTooltip(d.ApproverEmail || ""); }
+                        if (this.byId("txtApprRemarks")) { this.byId("txtApprRemarks").setValue(d.ApproverRemarks || ""); this.byId("txtApprRemarks").setTooltip(d.ApproverRemarks || ""); }
                     }
-                }.bind(this),
-                error: function (oError) {
-                    // Set error in message strip
-                    this.byId("msgStripMainScreen").setText("<strong>Error: </strong><em>Error while processing. For more info </em>");
-                    this.byId("msgStripMainScreen").setType("Error");
-                    this.byId("msgStripMainScreen").setVisible(true);
-
-                    this.fn_showServiceError(oError);
-
-                    // Close busy dialog
-                    this.fn_closeBusyDialog();
-                }.bind(this)
+                }
+            }.bind(this)).catch(function (err) {
+                console.warn("[MainScreen] Could not fetch UserRemarksSet:", err);
             });
 
             // Log info
@@ -4549,118 +4713,9 @@ sap.ui.define([
          * @private
          */
         _fn_approverAction: function () {
-            // Log info
             this.fn_getLogReference().info("Main Screen Controller: Entering _fn_approverAction method");
-
-            /** Define variables */
-            var oTableModel, // Stores odata model of selected table
-                oTableData, // Stores table data
-                aPrimaryKeys, // Array of all primary keys of the selected table
-                sTableEntitySet, // Stores entity set of the selected table
-                sPath = "(", // Stores path of the selected table
-                aMessages, // Array to hold message information
-                aMessagesRemove; // Array to hold message information to be removed
-
-            /** Method Implementation */
-            // Set update group
-            this.oTableModel.setSubmitBatchMode(sap.ui.model.odata.v4.SubmitMode.Auto);
-
-            // Get the primary key fields
-            aPrimaryKeys = this.aFieldDetails.filter(function (oField) {
-                return oField.PrimaryKeyFlag === "Y";
-            });
-
-            aPrimaryKeys.forEach(function (oPrimaryKey, index) {
-                if (index === aPrimaryKeys.length - 1) {
-                    var sDataType = (oPrimaryKey.ColumnDataType || "").toUpperCase();
-                    if (sDataType.includes("INTEGER") || sDataType.includes("INT") || sDataType === "NUMC" || sDataType === "DEC") {
-                        sPath = sPath + oPrimaryKey.ColumnName + "=" + this.oSelectedTableData[oPrimaryKey.ColumnName] + ")";
-                    } else {
-                        sPath = sPath + oPrimaryKey.ColumnName + "='" + this.oSelectedTableData[oPrimaryKey.ColumnName] + "')";
-                    }
-                } else {
-                    var sDataType = (oPrimaryKey.ColumnDataType || "").toUpperCase();
-                    if (sDataType.includes("INTEGER") || sDataType.includes("INT") || sDataType === "NUMC" || sDataType === "DEC") {
-                        sPath = sPath + oPrimaryKey.ColumnName + "=" + this.oSelectedTableData[oPrimaryKey.ColumnName] + ",";
-                    } else {
-                        sPath = sPath + oPrimaryKey.ColumnName + "='" + this.oSelectedTableData[oPrimaryKey.ColumnName] + "',";
-                    }
-                }
-            }, this);
-
-            // Prepare the complete entity set
-            sTableEntitySet = this.sTableEntitySet + encodeURIComponent(sPath);
-
-            if (this.sApproverAction === "Approve") {
-                oTableData = {
-                    "WORKFLOW_ID": this.sWorkflowID,
-                    "OPERATIONTYPE": this.sActionType,
-                    "ISFINALAPPROVAL": this.sFinalApproval
-                };
-
-                // Update the table data
-                var oContextBinding = this.oTableModel.bindContext("/" + sTableEntitySet);
-                oContextBinding.requestObject().then(function () {
-                    var oContext = oContextBinding.getBoundContext();
-                    for (var sKey in oTableData) {
-                        oContext.setProperty(sKey, oTableData[sKey]);
-                    }
-                    return this.oTableModel.submitBatch(this.oTableModel.getUpdateGroupId());
-                }.bind(this)).then(function () {
-                    aMessages = sap.ui.getCore().getMessageManager().getMessageModel().getData();
-                    aMessagesRemove = aMessages.filter(function (oMessage) {
-                        return oMessage.code === "";
-                    });
-                    sap.ui.getCore().getMessageManager().removeMessages(aMessagesRemove);
-
-                    // Complete the workflow task
-                    this._fn_completeWorkflowTask();
-                }.bind(this)).catch(function (oError) {
-                    // Set error in message strip
-                    var oMsgStrip = this.byId("msgStripMainScreen");
-                    if (oMsgStrip) {
-                        oMsgStrip.setText("<strong>Error: </strong><em>Error while processing. For more info </em>");
-                        oMsgStrip.setType("Error");
-                        oMsgStrip.setVisible(true);
-                    }
-
-                    this.fn_showServiceError(oError);
-
-                    // Close busy dialog
-                    this.fn_closeBusyDialog();
-                }.bind(this));
-            } else {
-                // Remove the data from backend
-                var oContextBinding = this.oTableModel.bindContext("/" + sTableEntitySet);
-                oContextBinding.requestObject().then(function () {
-                    var oContext = oContextBinding.getBoundContext();
-                    return oContext.delete();
-                }).then(function () {
-                    aMessages = sap.ui.getCore().getMessageManager().getMessageModel().getData();
-                    aMessagesRemove = aMessages.filter(function (oMessage) {
-                        return oMessage.code === "";
-                    });
-                    sap.ui.getCore().getMessageManager().removeMessages(aMessagesRemove);
-
-                    // Complete the workflow task
-                    this._fn_completeWorkflowTask();
-                }.bind(this)).catch(function (oError) {
-                    // Set error in message strip
-                    var oMsgStrip = this.byId("msgStripMainScreen");
-                    if (oMsgStrip) {
-                        oMsgStrip.setText("<strong>Error: </strong><em>Error while processing. For more info </em>");
-                        oMsgStrip.setType("Error");
-                        oMsgStrip.setVisible(true);
-                    }
-
-                    this.fn_showServiceError(oError);
-
-                    // Close busy dialog
-                    this.fn_closeBusyDialog();
-                }.bind(this));
-            }
-
-            // Log info
+            // Directly trigger workflow completion & CAP takeActionCentral
+            this._fn_completeWorkflowTask();
             this.fn_getLogReference().info("Main Screen Controller: Exiting _fn_approverAction method");
         },
 
@@ -4674,78 +4729,48 @@ sap.ui.define([
             // Log info
             this.fn_getLogReference().info("Main Screen Controller: Entering _fn_completeWorkflowTask method");
 
-            /** Define variables */
-            var oWorkflowModel = this.fn_getGlobalModel("ZMDR_UTILITY_WORKFLOW_SRV"), // Stores odata model of workflow service
-                sMsgText, // Stores message text to be shown to the approver
-                oWorkflowData, // Stores the workflow data in json format
-                oMessage; // Stores message for message manager
+            var bIsApprove = this.sApproverAction === "Approve";
+            var sAction = bIsApprove ? "APPROVED" : "REJECTED";
+            var sOutcomeId = bIsApprove ? "approve" : "reject";
+            var sMsgText = bIsApprove ? "approved" : "rejected";
 
-            /** Method Implementation */
-            // Assign the workflow data
-            if (this.sApproverAction === "Approve") {
-                sMsgText = "approved"
-
-                oWorkflowData = {
-                    WorkitemId: this.iWorkitemID,
-                    Action: "APPROVED",
-                    ApproverComments: this.sUserRemarks
-                };
-            } else {
-                sMsgText = "rejected"
-
-                oWorkflowData = {
-                    WorkitemId: this.iWorkitemID,
-                    Action: "REJECTED",
-                    ApproverComments: this.sUserRemarks
-                };
+            // Close comments dialog if open
+            if (this.byId("dlgComment")) {
+                this.byId("dlgComment").close();
+            }
+            // 1. Complete workflow and promote record via owner component (prevents duplicate fetches)
+            var oOwnerComponent = this.getOwnerComponent();
+            if (oOwnerComponent && typeof oOwnerComponent._callTakeActionCentral === "function") {
+                oOwnerComponent._callTakeActionCentral(this.sWorkflowID || "", sAction, this.sUserRemarks || "");
             }
 
-            // TODO: Migrate to native V4 once CompleteWorkitemSet is mapped in backend
-            // Complete the workflow task
-            oWorkflowModel.create("/CompleteWorkitemSet", oWorkflowData, {
-                method: "POST",
-                success: function (oData) {
-                    // Close the comments dialog
-                    this.byId("dlgComment").close();
+            // 2. Complete task in My Inbox
+            var oOwnerComponent = this.getOwnerComponent();
+            if (oOwnerComponent && typeof oOwnerComponent.completeTask === "function") {
+                try {
+                    oOwnerComponent.completeTask(bIsApprove, sOutcomeId, this.sUserRemarks || "");
+                } catch (taskErr) {
+                    console.warn("completeTask execution notice:", taskErr);
+                }
+            }
 
-                    // Set the message
-                    oMessage = new Message({
-                        id: "approverAction",
-                        message: "Successfully " + sMsgText + " the workflow task",
-                        type: MessageType.Success,
-                        additionalText: this.sWorkflowID,
-                        target: "/ApprAction",
-                        processor: this.fn_getLocalModel("messageModel")
-                    });
+            // 3. Update UI
+            this.fn_closeBusyDialog();
 
-                    sap.ui.getCore().getMessageManager().addMessages(oMessage);
+            var oMsgStrip = this.byId("msgStripMainScreen");
+            if (oMsgStrip) {
+                oMsgStrip.setText("Workflow " + (this.sWorkflowID || "") + " has been " + sMsgText + " successfully.");
+                oMsgStrip.setType("Success");
+                oMsgStrip.setVisible(true);
+            }
 
-                    // Set the success message in message strip
-                    this.byId("msgStripMainScreen").setText("<strong>Success: </strong><em>Workflow <strong>" + this.sWorkflowID + "</strong> is successfully " + sMsgText + ". For audit information of the workflow </em>");
-                    this.byId("msgStripMainScreen").setType("Success");
-                    this.byId("msgStripMainScreen").setVisible(true);
+            // Disable action buttons
+            if (this.byId("btnApprove")) this.byId("btnApprove").setVisible(false);
+            if (this.byId("btnReject")) this.byId("btnReject").setVisible(false);
+            if (this.byId("btnRelease")) this.byId("btnRelease").setVisible(false);
+            if (this.byId("btnSeeChanges")) this.byId("btnSeeChanges").setVisible(false);
 
-                    // Disbale the form of item details and remarks
-                    this.byId("sfrmItemDetails").setVisible(false);
-                    this.byId("frmRemarks").setVisible(false);
-                    // Disable buttons
-                    this.byId("btnApprove").setVisible(false);
-                    this.byId("btnReject").setVisible(false);
-                    this.byId("btnRelease").setVisible(false);
-                    this.byId("btnSeeChanges").setVisible(false);
-                }.bind(this),
-                error: function (oError) {
-                    // Set error in message strip
-                    this.byId("msgStripMainScreen").setText("<strong>Error: </strong><em>Error while processing. For more info </em>");
-                    this.byId("msgStripMainScreen").setType("Error");
-                    this.byId("msgStripMainScreen").setVisible(true);
-
-                    this.fn_showServiceError(oError);
-
-                    // Close busy dialog
-                    this.fn_closeBusyDialog();
-                }.bind(this)
-            });
+            sap.m.MessageBox.success("Workflow request " + (this.sWorkflowID || "") + " has been " + sMsgText + " successfully.");
 
             // Log info
             this.fn_getLogReference().info("Main Screen Controller: Exiting _fn_completeWorkflowTask method");

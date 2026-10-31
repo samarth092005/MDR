@@ -1,0 +1,231 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2500 1680" width="2500" height="1680">
+  <defs>
+    <style>
+      .bg { fill: #F8FAFC; }
+      .header-bg { fill: #0F172A; }
+      .header-accent { fill: #0284C7; }
+      .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-weight: bold; font-size: 32px; fill: #FFFFFF; }
+      .subtitle { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 17px; fill: #94A3B8; }
+      .layer-card { fill: #FFFFFF; stroke: #CBD5E1; stroke-width: 2; rx: 14; }
+      .sub-card { rx: 10; stroke-width: 1; }
+      .card-title { font-family: sans-serif; font-weight: bold; font-size: 17px; }
+      .card-sub { font-family: sans-serif; font-weight: 600; font-size: 14px; fill: #334155; }
+      .text-meta { font-family: sans-serif; font-size: 12px; fill: #475569; }
+      .layer-title { font-family: sans-serif; font-weight: bold; font-size: 20px; fill: #1E293B; }
+    </style>
+  </defs>
+  <rect width="2500" height="1680" class="bg"/>
+  <rect width="2500" height="110" class="header-bg"/>
+  <rect y="106" width="2500" height="4" class="header-accent"/>
+  <text x="40" y="55" class="title">SAP BTP — Master Data Repository (MDR) Solution Architecture</text>
+  <text x="42" y="88" class="subtitle">Cloud-Native CAP Architecture (OData V4 &amp; REST) • SAP HANA Cloud HDI • SAP Build Process Automation (BPA)</text>
+  
+  <!-- Layer 1 -->
+  <rect x="40" y="135" width="2420" height="160" class="layer-card"/>
+  <rect x="40" y="135" width="8" height="160" fill="#3B82F6" rx="4"/>
+  <text x="65" y="165" class="layer-title">1. CLIENT &amp; CONSUMPTION LAYER (Omnichannel Access)</text>
+  
+  <!-- Client cards -->
+  <rect x="60" y="185" width="570" height="95" class="sub-card" fill="#EFF6FF" stroke="#93C5FD"/>
+  <text x="75" y="212" class="card-title" fill="#1D4ED8">SAP Build Work Zone</text>
+  <text x="75" y="235" class="card-sub">Standard Fiori Launchpad</text>
+  <text x="75" y="260" class="text-meta">Central Access Point, Single Sign-On, Tile Navigation</text>
+
+  <rect x="650" y="185" width="570" height="95" class="sub-card" fill="#EFF6FF" stroke="#93C5FD"/>
+  <text x="665" y="212" class="card-title" fill="#1D4ED8">Custom Fiori Web Apps</text>
+  <text x="665" y="235" class="card-sub">Desktop / Tablet Browsers</text>
+  <text x="665" y="260" class="text-meta">Responsive SAPUI5 1.120+ Views, XML MVC, OData V4</text>
+
+  <rect x="1240" y="185" width="570" height="95" class="sub-card" fill="#EFF6FF" stroke="#93C5FD"/>
+  <text x="1255" y="212" class="card-title" fill="#1D4ED8">BPA My Inbox App</text>
+  <text x="1255" y="235" class="card-sub">Standard Approver Portal</text>
+  <text x="1255" y="260" class="text-meta">Workflow Task Lists, Task Claims, Item Details &amp; Audit</text>
+
+  <rect x="1830" y="185" width="590" height="95" class="sub-card" fill="#EFF6FF" stroke="#93C5FD"/>
+  <text x="1845" y="212" class="card-title" fill="#1D4ED8">Enterprise Excel Upload</text>
+  <text x="1845" y="235" class="card-sub">Data Stewards / Finance</text>
+  <text x="1845" y="260" class="text-meta">Mass Upload (.xlsx) with pre-configured schemas</text>
+
+  <!-- Layer 2 -->
+  <rect x="40" y="335" width="2420" height="165" class="layer-card"/>
+  <rect x="40" y="335" width="8" height="165" fill="#6366F1" rx="4"/>
+  <text x="65" y="365" class="layer-title">2. GATEWAY &amp; SECURITY TIER (SAP BTP Cloud Foundry Infrastructure)</text>
+  
+  <rect x="60" y="385" width="775" height="100" class="sub-card" fill="#EEF2FF" stroke="#A5B4FC"/>
+  <text x="75" y="410" class="card-title" fill="#4338CA">mdr-cap-btp-approuter (Reverse Proxy)</text>
+  <text x="75" y="430" class="card-sub">Central entrypoint: cfapps.eu30.hana.ondemand.com</text>
+  <text x="75" y="450" class="text-meta">• Route matching: /api/*, /mdrapi/*, /sap/*</text>
+  <text x="75" y="468" class="text-meta">• Automated Principal Propagation &amp; Token Exchange</text>
+
+  <rect x="855" y="385" width="775" height="100" class="sub-card" fill="#EEF2FF" stroke="#A5B4FC"/>
+  <text x="870" y="410" class="card-title" fill="#4338CA">SAP XSUAA Service (mdr-cap-btp-auth)</text>
+  <text x="870" y="430" class="card-sub">Identity &amp; Access Management</text>
+  <text x="870" y="450" class="text-meta">• OAuth 2.0 / JWT validation &amp; User scopes (Requester, Approver, Admin)</text>
+  <text x="870" y="468" class="text-meta">• Cross-Site Request Forgery (CSRF) token issuance</text>
+
+  <rect x="1650" y="385" width="770" height="100" class="sub-card" fill="#EEF2FF" stroke="#A5B4FC"/>
+  <text x="1665" y="410" class="card-title" fill="#4338CA">HTML5 Application Repository Host / Runtime</text>
+  <text x="1665" y="430" class="card-sub">Static Assets Runtime (html5-apps-repo-rt)</text>
+  <text x="1665" y="450" class="text-meta">• Hosts all deployed UI5 build bundles (.zip)</text>
+  <text x="1665" y="468" class="text-meta">• Direct approuter destination mapping for 7 apps</text>
+
+  <!-- Layer 3 -->
+  <rect x="40" y="540" width="2420" height="240" class="layer-card"/>
+  <rect x="40" y="540" width="8" height="240" fill="#0EA5E9" rx="4"/>
+  <text x="65" y="570" class="layer-title">3. SAPUI5 / FIORI FRONTEND APPS (Stored in HTML5 Repo, Executed in Browser)</text>
+
+  <!-- 7 Apps -->
+  <g transform="translate(60, 590)">
+    <rect x="0" y="0" width="330" height="170" class="sub-card" fill="#F0F9FF" stroke="#BAE6FD"/>
+    <text x="15" y="25" class="card-title" fill="#0369A1">zmdr_cntrl_main</text>
+    <text x="15" y="48" class="card-sub">Central List Explorer</text>
+    <text x="15" y="75" class="text-meta">Main dashboard &amp; searchable list of</text>
+    <text x="15" y="93" class="text-meta">all master data entities with</text>
+    <text x="15" y="111" class="text-meta">multi-filter &amp; workflow tracking.</text>
+
+    <rect x="345" y="0" width="330" height="170" class="sub-card" fill="#F0F9FF" stroke="#BAE6FD"/>
+    <text x="360" y="25" class="card-title" fill="#0369A1">zmdr_cntrl_cmn</text>
+    <text x="360" y="48" class="card-sub">Dynamic Detail Forms</text>
+    <text x="360" y="75" class="text-meta">Metadata-driven form engine.</text>
+    <text x="360" y="93" class="text-meta">Renders forms based on CntrlUIConfig</text>
+    <text x="360" y="111" class="text-meta">for Create, Amend &amp; Close actions.</text>
+
+    <rect x="690" y="0" width="330" height="170" class="sub-card" fill="#F0F9FF" stroke="#BAE6FD"/>
+    <text x="705" y="25" class="card-title" fill="#0369A1">zmdr_bulkload</text>
+    <text x="705" y="48" class="card-sub">Bulk Upload &amp; Validate</text>
+    <text x="705" y="75" class="text-meta">Multi-sheet Excel upload, row</text>
+    <text x="705" y="93" class="text-meta">validation against regex &amp; lookups.</text>
+    <text x="705" y="111" class="text-meta">Shows valid vs invalid splits.</text>
+
+    <rect x="1035" y="0" width="330" height="170" class="sub-card" fill="#F0F9FF" stroke="#BAE6FD"/>
+    <text x="1050" y="25" class="card-title" fill="#0369A1">zmdr_bulkapprover</text>
+    <text x="1050" y="48" class="card-sub">Bulk Approver Inbox</text>
+    <text x="1050" y="75" class="text-meta">Specialized UI for managers to</text>
+    <text x="1050" y="93" class="text-meta">review batches of proposed records</text>
+    <text x="1050" y="111" class="text-meta">and mass approve/reject.</text>
+
+    <rect x="1380" y="0" width="330" height="170" class="sub-card" fill="#F0F9FF" stroke="#BAE6FD"/>
+    <text x="1395" y="25" class="card-title" fill="#0369A1">zmdr_account_report</text>
+    <text x="1395" y="48" class="card-sub">G/L Account Report</text>
+    <text x="1395" y="75" class="text-meta">Analytical explorer for G/L Account</text>
+    <text x="1395" y="93" class="text-meta">records with live filtering,</text>
+    <text x="1395" y="111" class="text-meta">search &amp; Excel export.</text>
+
+    <rect x="1725" y="0" width="330" height="170" class="sub-card" fill="#F0F9FF" stroke="#BAE6FD"/>
+    <text x="1740" y="25" class="card-title" fill="#0369A1">zmdr_wfauditrep</text>
+    <text x="1740" y="48" class="card-sub">Workflow Audit Report</text>
+    <text x="1740" y="75" class="text-meta">Historical audit log viewer.</text>
+    <text x="1740" y="93" class="text-meta">Tracks initiation, approval steps,</text>
+    <text x="1740" y="111" class="text-meta">timestamps, comments &amp; actors.</text>
+
+    <rect x="2070" y="0" width="310" height="170" class="sub-card" fill="#F0F9FF" stroke="#BAE6FD"/>
+    <text x="2085" y="25" class="card-title" fill="#0369A1">zmdr_adminconsole</text>
+    <text x="2085" y="48" class="card-sub">Admin Console</text>
+    <text x="2085" y="75" class="text-meta">Administrative control center for</text>
+    <text x="2085" y="93" class="text-meta">entity rules, approver classes &amp;</text>
+    <text x="2085" y="111" class="text-meta">UI field configurations.</text>
+  </g>
+
+  <!-- Layer 4 -->
+  <rect x="40" y="815" width="2420" height="320" class="layer-card"/>
+  <rect x="40" y="815" width="8" height="320" fill="#10B981" rx="4"/>
+  <text x="65" y="845" class="layer-title">4. CAP APPLICATION LAYER (Node.js Service Layer • mdr-cap-btp-srv)</text>
+  
+  <g transform="translate(60, 865)">
+    <rect x="0" y="0" width="775" height="250" class="sub-card" fill="#F0FDF4" stroke="#BBF7D0"/>
+    <text x="20" y="30" class="card-title" fill="#15803D">OData V4 Services Layer</text>
+    <text x="20" y="55" class="card-sub">Native Enterprise OData V4 Protocols</text>
+    <text x="20" y="85" class="card-sub" fill="#166534">• CentralService (/mdrapi/central): CRUD for records, UI config &amp; mappings</text>
+    <text x="20" y="115" class="card-sub" fill="#166534">• BulkService (/mdrapi/bulk): Validations, temp staging &amp; bulk submit</text>
+    <text x="20" y="145" class="card-sub" fill="#166534">• WorkflowService (/mdrapi/workflow): Task claim, BPA webhooks &amp; audit</text>
+    <text x="20" y="175" class="card-sub" fill="#166534">• MainDataService (/mdrapi/maindata): Golden Records (VERSION_ACTIVE='Y')</text>
+    <text x="20" y="205" class="card-sub" fill="#166534">• ReportingService (/mdrapi/reporting): Analytical workflow views</text>
+    <text x="20" y="235" class="card-sub" fill="#166534">• AdminService (/mdrapi/admin): Configuration tables maintenance</text>
+
+    <rect x="795" y="0" width="775" height="250" class="sub-card" fill="#F0FDF4" stroke="#BBF7D0"/>
+    <text x="815" y="30" class="card-title" fill="#15803D">High-Performance REST Endpoints</text>
+    <text x="815" y="55" class="card-sub">Express Routes (server.js) for Bulk Operations</text>
+    <text x="815" y="85" class="card-sub" fill="#166534">• POST /mdrapi/bulk/rest/validateBulkData: Fast multi-row parser</text>
+    <text x="815" y="115" class="card-sub" fill="#166534">• POST /mdrapi/bulk/rest/submitBulkData: Batched transactional persistence</text>
+    <text x="815" y="145" class="card-sub" fill="#166534">• POST /mdrapi/bulk/rest/triggerBulkWorkflow: Invokes BPA instance</text>
+    <text x="815" y="175" class="card-sub" fill="#166534">• POST /mdrapi/central/rest/*: Express endpoints for single submissions</text>
+    <text x="815" y="205" class="card-sub" fill="#166534">• Gateway Router Middleware (/sap/*): Local fixture &amp; reverse-proxy to S21</text>
+    <text x="815" y="235" class="card-sub" fill="#166534">• Hardened middleware chain: CORS, CSRF &amp; GZIP compression</text>
+
+    <rect x="1590" y="0" width="770" height="250" class="sub-card" fill="#F0FDF4" stroke="#BBF7D0"/>
+    <text x="1610" y="30" class="card-title" fill="#15803D">Business Logic Engine (lib/)</text>
+    <text x="1610" y="55" class="card-sub">Replacement for Legacy ABAP Function Modules</text>
+    <text x="1610" y="85" class="card-sub" fill="#166534">• process-bulk.js: Master coordinator for bulk parsing &amp; schema mapping</text>
+    <text x="1610" y="115" class="card-sub" fill="#166534">• validate.js: Field regex, data types &amp; composite lookup checks</text>
+    <text x="1610" y="145" class="card-sub" fill="#166534">• db-dynamic.js: Dynamic SQL generator bridging CAP ORM with raw queries</text>
+    <text x="1610" y="175" class="card-sub" fill="#166534">• insert.js: Versioned row insertion &amp; staging control (Y, G, F, N)</text>
+    <text x="1610" y="205" class="card-sub" fill="#166534">• bpa-client.js: REST client for BPA OAuth2 tokens &amp; instance startup</text>
+    <text x="1610" y="235" class="card-sub" fill="#166534">• wf-utilities.js &amp; wf-id.js: Number ranges &amp; approver resolution</text>
+  </g>
+
+  <!-- Layer 5 -->
+  <rect x="40" y="1170" width="1500" height="460" class="layer-card"/>
+  <rect x="40" y="1170" width="8" height="460" fill="#3B82F6" rx="4"/>
+  <text x="65" y="1200" class="layer-title">5. PERSISTENCE LAYER — SAP HANA CLOUD (HDI Container: mdr-cap-manual-hdi)</text>
+
+  <g transform="translate(60, 1220)">
+    <rect x="0" y="0" width="470" height="390" class="sub-card" fill="#F8FAFC" stroke="#E2E8F0"/>
+    <text x="20" y="30" class="card-title" fill="#0284C7">Master Data Entities</text>
+    <text x="20" y="65" class="card-sub">• GLAccount (General Ledger Master)</text>
+    <text x="20" y="95" class="card-sub">• BPMaster (Business Partner Master)</text>
+    <text x="20" y="125" class="card-sub">• ZMDR_SERVCATALOG (Services Catalog)</text>
+    <text x="20" y="155" class="card-sub">• ZMDR_SERVCATEGRY (Categories)</text>
+    <text x="20" y="185" class="card-sub">• ZMDR_CONTRACT (Contracts)</text>
+    <text x="20" y="215" class="card-sub">• ZMDR_LOCATION (Locations)</text>
+    <text x="20" y="245" class="card-sub">• ZMDR_PRICE_TARRF (Tariffs)</text>
+    <text x="20" y="275" class="card-sub">• ZMDR_SLA (Service Level Agrmts)</text>
+    <text x="20" y="305" class="card-sub">• BPRoleRef &amp; Vendors / Employees</text>
+    <text x="20" y="345" class="text-meta">Versionable Aspect: VERSION_ACTIVE = 'Y' for Golden Records</text>
+
+    <rect x="490" y="0" width="470" height="390" class="sub-card" fill="#F8FAFC" stroke="#E2E8F0"/>
+    <text x="510" y="30" class="card-title" fill="#0284C7">Metadata &amp; Config Tables</text>
+    <text x="510" y="65" class="card-sub">• BulkHdrConfig (Upload rules per table/role)</text>
+    <text x="510" y="95" class="card-sub">• BulkItmConfig (Per-column validation schemas)</text>
+    <text x="510" y="125" class="card-sub">• CntrlUIConfig (Dynamic UI layouts &amp; sections)</text>
+    <text x="510" y="155" class="card-sub">• CntrlUIVis (Role-based table visibility)</text>
+    <text x="510" y="185" class="card-sub">• CntrlUIApprStage (Multi-stage approvals)</text>
+    <text x="510" y="215" class="card-sub">• ApproverClass &amp; Approver (Role groups)</text>
+    <text x="510" y="245" class="card-sub">• CntrlUIUrl (Registered CRUD URL actions)</text>
+    <text x="510" y="275" class="card-sub">• CntrlUIVal &amp; CntrlUIProcess</text>
+    <text x="510" y="345" class="text-meta">Auditable Aspect: created_on/by, updated_on/by</text>
+
+    <rect x="980" y="0" width="460" height="390" class="sub-card" fill="#F8FAFC" stroke="#E2E8F0"/>
+    <text x="1000" y="30" class="card-title" fill="#0284C7">Staging, Workflows &amp; Lookups</text>
+    <text x="1000" y="65" class="card-sub">• BulkTemp (In-flight unapproved bulk rows)</text>
+    <text x="1000" y="95" class="card-sub">• WFAudit (Immutable full audit log)</text>
+    <text x="1000" y="125" class="card-sub">• MDRWorkflowLink (Internal WF &lt;-&gt; BPA instance)</text>
+    <text x="1000" y="155" class="card-sub">• WFSequence (Sequential number generator)</text>
+    <text x="1000" y="195" class="card-title" fill="#0284C7">Lookup Reference Tables</text>
+    <text x="1000" y="225" class="card-sub">• Country (T005), Currency (TCURC)</text>
+    <text x="1000" y="255" class="card-sub">• Language (T002), BPStatus, T052, TINC</text>
+    <text x="1000" y="285" class="card-sub">• ApprovalStatus (ZMDXCNAPPSTATS01)</text>
+  </g>
+
+  <!-- Right side: Integrations -->
+  <rect x="1570" y="1170" width="890" height="460" class="layer-card"/>
+  <rect x="1570" y="1170" width="8" height="460" fill="#F59E0B" rx="4"/>
+  <text x="1595" y="1200" class="layer-title">PROCESS AUTOMATION &amp; INTEGRATION LAYER</text>
+
+  <g transform="translate(1595, 1220)">
+    <rect x="0" y="0" width="840" height="185" class="sub-card" fill="#FFFBEB" stroke="#FDE68A"/>
+    <text x="20" y="30" class="card-title" fill="#B45309">SAP Build Process Automation (BPA)</text>
+    <text x="20" y="55" class="card-sub">Deployed Project: eu30.sap-btp-ais-d0a7p7v8.mdrprocessautomation</text>
+    <text x="20" y="85" class="card-sub">• Bulk Approval Workflow: mdrbulkapproval (Version 33)</text>
+    <text x="20" y="110" class="card-sub">• Central Approval Workflow: mdrcentralapproval (Version 34)</text>
+    <text x="20" y="135" class="card-sub">• Webhook Service Tasks: Invokes /mdrapi/workflow/* for emails and audit events</text>
+    <text x="20" y="160" class="card-sub">• Escalations &amp; Reminders: Automated timer escalations to senior managers</text>
+
+    <rect x="0" y="205" width="840" height="185" class="sub-card" fill="#FFFBEB" stroke="#FDE68A"/>
+    <text x="20" y="235" class="card-title" fill="#B45309">SAP Cloud Connector &amp; S/4HANA / ECC Gateway</text>
+    <text x="20" y="260" class="card-sub">Destinations: S21 / run-time-destination-s21 (sap-client: 200)</text>
+    <text x="20" y="290" class="card-sub">• Secure TLS tunnel to On-Premise SAP S/4HANA &amp; ECC Systems</text>
+    <text x="20" y="315" class="card-sub">• Principal Propagation for authenticated user identity preservation</text>
+    <text x="20" y="340" class="card-sub">• Legacy ZMDR_CNTRL_MATERIAL_SRV and Master Data Synchronizations</text>
+    <text x="20" y="365" class="card-sub">• Virtual host mapping: kbl_fiori:8000 and aissapsrv.abhiyantatech.com:44300</text>
+  </g>
+</svg>

@@ -184,11 +184,26 @@ sap.ui.define(
               },
               error: function (oError) {
                 self.fn_closeBusyIndicator(oDataModel);
-                MessageBox.show(
-                  "Error in getting request",
-                  MessageBox.Icon.ERROR,
-                  "Error"
-                );
+                var oComp = self.getOwnerComponent();
+                var oCtxModel = oComp && oComp.getModel("context");
+                var oCtx = (oCtxModel && oCtxModel.getData()) || {};
+                var sWf = self.workflowId || (oCtx && (oCtx.sWorkflowID || oCtx.workflowId || oCtx.workflowid));
+                var sTb = self.TableName || (oCtx && (oCtx.sTablename || oCtx.tablename));
+                if (sWf) {
+                    self.workflowId = sWf;
+                    self.TableName = sTb;
+                    if (self.getView().byId("txt_table")) self.getView().byId("txt_table").setText(self.TableName || "");
+                    if (self.getView().byId("txt_wfid")) self.getView().byId("txt_wfid").setText(self.workflowId || "");
+                    if (self.getView().byId("form_bulkappr")) self.getView().byId("form_bulkappr").setVisible(true);
+                    if (self.getView().byId("btn_approve")) self.getView().byId("btn_approve").setVisible(true);
+                    if (self.getView().byId("btn_reject")) self.getView().byId("btn_reject").setVisible(true);
+                } else {
+                    MessageBox.show(
+                      "Error in getting request",
+                      MessageBox.Icon.ERROR,
+                      "Error"
+                    );
+                }
               },
             });
   

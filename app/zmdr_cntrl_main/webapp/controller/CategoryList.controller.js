@@ -51,11 +51,18 @@ sap.ui.define([
                 // /CntrlUIVis is a plain EntitySet (central-service.cds line 11). bindList() is correct.
                 // The V2-only `async: true` parameter is removed (implicit in V4).
                 // Success/error logic is preserved exactly — data is mapped to plain objects via getObject().
-                oCntrlUiConfigOdataModel.bindList("/CntrlUIVis").requestContexts(0, Infinity).then(function (aContexts) {
+                var oLoadPromise = oCntrlUiConfigOdataModel.bindList("/CntrlUIVis").requestContexts(0, Infinity).then(function (aContexts) {
                     var aData = aContexts.map(function (oContext) { return oContext.getObject(); });
 
+                    // Filter out Finance functional area
+                    aData = aData.filter(function (item) {
+                        var rep = (item.Repository || item.REPOSITORY || "").toUpperCase();
+                        var repl = (item.RepositoryLabel || item.REPOSITORYLABEL || "").toUpperCase();
+                        return rep !== "FINANCE" && repl !== "FINANCE";
+                    });
+
                     // Update the data to the model if it exists or set the model globally if does not exist
-                    if (!this.fn_getGlobalModel("oCntrlUiConfigLocalModel")) {
+                    if (!this.fn_getGlobalModel("oCntrlUiConfigDataModel")) {
                         oCntrlUiConfigDataModel.setData(aData);
                         this.fn_setGlobalModel(oCntrlUiConfigDataModel, "oCntrlUiConfigDataModel");
                     } else {
@@ -71,6 +78,10 @@ sap.ui.define([
                     // Log Error
                     this.fn_getLogReference().error("Odata Read Error", "Unable to read data Cntrl UI Visibility Service");
                 }.bind(this));
+
+                if (this.getOwnerComponent()) {
+                    this.getOwnerComponent()._pCntrlUiVisLoad = oLoadPromise;
+                }
 
                 // Attach routing pattern match function to be called
                 this.fn_getRouter().getRoute("category").attachPatternMatched(this._fn_onObjectMatched, this);
@@ -322,7 +333,12 @@ sap.ui.define([
                     if (!this.fn_getGlobalModel("oUniqueRepositoriesModel")) {
                         oUniqueRepositoriesModel = new JSONModel(aUniqueRepositories);
                         this.fn_setGlobalModel(oUniqueRepositoriesModel, "oUniqueRepositoriesModel");
+                    } else {
+                        this.fn_getGlobalModel("oUniqueRepositoriesModel").setData(aUniqueRepositories);
                     }
+
+                    // Close busy dialog now that repository configuration is loaded
+                    this.fn_closeBusyDialog();
 
                     // Log information
                     this.fn_getLogReference().info("Category List Controller: Applicable repository data model is set");
@@ -352,10 +368,16 @@ sap.ui.define([
                 // Log information
                 this.fn_getLogReference().info("Category List Controller: Entering _fn_onObjectMatched method");
 
-                this.byId("tblCategoryList").removeSelections();
+                var oList = this.byId("tblCategoryList");
+                if (oList) {
+                    oList.removeSelections();
+                }
+
+                // Ensure busy dialog is closed on landing or returning to category list
+                this.fn_closeBusyDialog();
 
                 // Log information
-                this.fn_getLogReference().info("Category List Controller: Table selection cleared");
+                this.fn_getLogReference().info("Category List Controller: Table selection cleared and busy dialog closed");
 
                 // Log information
                 this.fn_getLogReference().info("Category List Controller: Exiting _fn_onObjectMatched method");

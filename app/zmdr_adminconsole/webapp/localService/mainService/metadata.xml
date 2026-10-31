@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="1.0" xmlns:edmx="http://schemas.microsoft.com/ado/2007/06/edmx" xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata" xmlns:sap="http://www.sap.com/Protocols/SAPData">
+    <edmx:DataServices m:DataServiceVersion="2.0">
+        <Schema Namespace="ZMDR_CNTRL_UICONFIG_SRV" xml:lang="en" sap:schema-version="1" xmlns="http://schemas.microsoft.com/ado/2008/09/edm">
+            <EntityType Name="UIConfig" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="Tablename"/>
+                    <PropertyRef Name="Columnname"/>
+                </Key>
+                <Property Name="Role" Type="Edm.String" Nullable="false" MaxLength="30" sap:unicode="false" sap:label="SAP Role Name" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Tablename" Type="Edm.String" Nullable="false" MaxLength="20" sap:unicode="false" sap:label="Table Name" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Columnseqno" Type="Edm.Byte" Nullable="false" sap:unicode="false" sap:label="Column Sequence" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Columnname" Type="Edm.String" Nullable="false" MaxLength="50" sap:unicode="false" sap:label="Column Name" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Repository" Type="Edm.String" Nullable="false" MaxLength="30" sap:unicode="false" sap:label="Category Name" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Repositorylabel" Type="Edm.String" Nullable="false" MaxLength="70" sap:unicode="false" sap:label="Category Label" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Tablelabel" Type="Edm.String" Nullable="false" MaxLength="70" sap:unicode="false" sap:label="Table Label" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Approvaltype" Type="Edm.String" Nullable="false" MaxLength="10" sap:unicode="false" sap:label="Approval Type" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Approvallevel" Type="Edm.Byte" Nullable="false" sap:unicode="false" sap:label="Approval Level" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Ishierarchy" Type="Edm.Boolean" Nullable="false" sap:unicode="false" sap:label="Hierarchy Flag" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Columndatatype" Type="Edm.String" Nullable="false" MaxLength="20" sap:unicode="false" sap:label="Column Data Type" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Columnlabel" Type="Edm.String" Nullable="false" MaxLength="70" sap:unicode="false" sap:label="Column Label" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Fieldsize" Type="Edm.Int32" Nullable="false" sap:unicode="false" sap:label="Field Size" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Defaultvalue" Type="Edm.String" Nullable="false" MaxLength="100" sap:unicode="false" sap:label="Default Value" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Lkpodata" Type="Edm.String" Nullable="false" MaxLength="120" sap:unicode="false" sap:label="Lookup Odata URL" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Lkpfieldsname" Type="Edm.String" Nullable="false" MaxLength="120" sap:unicode="false" sap:label="Lookup Fields Name" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Lkpfieldslabel" Type="Edm.String" Nullable="false" MaxLength="120" sap:unicode="false" sap:label="Lookup Fields Label" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Lkpfieldstype" Type="Edm.String" Nullable="false" MaxLength="120" sap:unicode="false" sap:label="Lookup Fields Type" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Lkpdatarestfield" Type="Edm.String" Nullable="false" MaxLength="50" sap:unicode="false" sap:label="Lkp Data Rest Field" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Lkpdatarestcond" Type="Edm.String" Nullable="false" MaxLength="30" sap:unicode="false" sap:label="Lkp Data Rest Cond" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Lkpdatarestvalue" Type="Edm.String" Nullable="false" MaxLength="50" sap:unicode="false" sap:label="Lkp Data Rest Value" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Mandatoryflag" Type="Edm.Boolean" Nullable="false" sap:unicode="false" sap:label="Mandatory Flag" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Visibilityflag" Type="Edm.Boolean" Nullable="false" sap:unicode="false" sap:label="Visibility FLag" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Editableflag" Type="Edm.Boolean" Nullable="false" sap:unicode="false" sap:label="Editable Flag" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Searchfieldflag" Type="Edm.Boolean" Nullable="false" sap:unicode="false" sap:label="Searchfield Flag" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Resultsetfieldflag" Type="Edm.Boolean" Nullable="false" sap:unicode="false" sap:label="Resultset Flag" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Itemdetailsflag" Type="Edm.Boolean" Nullable="false" sap:unicode="false" sap:label="Itemdetails Flag" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Primarykeyflag" Type="Edm.Boolean" Nullable="false" sap:unicode="false" sap:label="Primary Key Flag" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Parentfieldflag" Type="Edm.Boolean" Nullable="false" sap:unicode="false" sap:label="Parent Field Flag" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Childfieldflag" Type="Edm.Boolean" Nullable="false" sap:unicode="false" sap:label="Child Field Flag" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Levelnumberfieldflag" Type="Edm.Boolean" Nullable="false" sap:unicode="false" sap:label="Level Number Flag" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Childdescriptionflag" Type="Edm.Boolean" Nullable="false" sap:unicode="false" sap:label="Child Desc Flag" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Levelapplicabilityflag" Type="Edm.Boolean" Nullable="false" sap:unicode="false" sap:label="Level Applicable" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Levelnumbervalfld" Type="Edm.String" Nullable="false" MaxLength="5" sap:unicode="false" sap:label="Level Number Val Fld" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Displayfieldflag" Type="Edm.Boolean" Nullable="false" sap:unicode="false" sap:label="Display Field Flag" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Displayfieldof" Type="Edm.String" Nullable="false" MaxLength="50" sap:unicode="false" sap:label="Display Field Of" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+            </EntityType>
+            <EntityContainer Name="ZMDR_CNTRL_UICONFIG_SRV_Entities" m:IsDefaultEntityContainer="true" sap:supported-formats="atom json xlsx">
+                <EntitySet Name="UIConfigSet" EntityType="ZMDR_CNTRL_UICONFIG_SRV.UIConfig" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:pageable="false" sap:content-version="1"/>
+            </EntityContainer>
+            <Annotation Term="Core.SchemaVersion" String="1.0.0" xmlns="http://docs.oasis-open.org/odata/ns/edm"/>
+            <atom:link rel="self" href="http://cloud9.way2erp.us:8000/sap/opu/odata/sap/ZMDR_CNTRL_UICONFIG_SRV/$metadata" xmlns:atom="http://www.w3.org/2005/Atom"/>
+            <atom:link rel="latest-version" href="http://cloud9.way2erp.us:8000/sap/opu/odata/sap/ZMDR_CNTRL_UICONFIG_SRV/$metadata" xmlns:atom="http://www.w3.org/2005/Atom"/>
+        </Schema>
+    </edmx:DataServices>
+</edmx:Edmx>

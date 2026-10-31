@@ -1,0 +1,39 @@
+<mvc:View controllerName="com.intapptics.zmdrcntrlmain.controller.CategoryList" displayBlock="true" xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m" xmlns:f="sap.f" xmlns:core="sap.ui.core">
+    <f:DynamicPage id="dpCategoryList" showFooter="true">
+        <!-- Dynamic Page Title -->
+        <f:title>
+            <f:DynamicPageTitle id="dptCategoryList">
+                <f:heading>
+                    <Title id="ttlCategoryPage" text="{i18n>categoryPageTitle}" tooltip="{i18n>categoryPageTitle}"></Title>
+                </f:heading>
+            </f:DynamicPageTitle>
+        </f:title>
+        
+        <!-- Dynamic Page Content -->
+        <f:content>
+            <List id="tblCategoryList" inset="false" class="sapFDynamicPageAlignContent" width="auto" 
+                noDataText="{categoryViewModel>/noDataText}" updateFinished="onUpdateFinished_tblCategoryList"
+                mode="SingleSelectMaster" tooltip="{categoryViewModel>/categoryListTooltip}" selectionChange="onSelectionChange_tblCategoryList"
+                items="{ path: 'oUniqueRepositoriesModel>/', sorter: { path: 'repositoryName', descending: false} }">
+                <headerToolbar>
+                    <OverflowToolbar id="ovtHtTblCategoryList">
+                        <Title id="ttlHtTblCategoryList" text="{categoryViewModel>/tableTitle}" level="H2"></Title>
+                        <ToolbarSpacer id="tbsHtTblCategoryList"></ToolbarSpacer>
+                        <SearchField id="sfCategory" width="17.5rem" placeholder="{i18n>categorySearchfieldTooltip}"
+                            liveChange="onLiveChange_sfCategory"></SearchField>
+                    </OverflowToolbar>
+                </headerToolbar>
+                <infoToolbar>
+                    <OverflowToolbar id="ovtItTblCategoryList">
+                        <Text id="txtTblCategoryList" text="{i18n>txtTblCategoryList}" tooltip="{i18n>txtTblCategoryList}"></Text>
+                    </OverflowToolbar>
+                </infoToolbar>
+                <items>
+                    <StandardListItem id="sliTblCategoryList" title="{oUniqueRepositoriesModel>repositoryLabel}" 
+                        tooltip="{oUniqueRepositoriesModel>repositoryLabel}"></StandardListItem>
+                </items>
+            </List>
+        </f:content>
+    </f:DynamicPage>
+</mvc:View>

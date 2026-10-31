@@ -1,4 +1,4 @@
-_schema-version: '3.1'
+﻿_schema-version: '3.1'
 ID: mdr-cap-btp
 version: 1.0.0
 description: "A simple CAP project."
@@ -28,6 +28,7 @@ modules:
       - name: mdr-cap-btp-destination
       - name: mdr-cap-btp-db
       - name: mdr-cap-btp-auth
+      - name: mdr-cap-manual-bpa
 
   - name: mdr-cap-btp-db-deployer
     type: hdb
@@ -51,6 +52,7 @@ modules:
         - "zmdr_cntrl_cmn/"
         - "zmdr_wfauditrep/"
         - "zmdr_bulkapprover/"
+        - "zmdr_account_report/"
         - "node_modules/"
     parameters:
       keep-existing-routes: true
@@ -97,6 +99,10 @@ modules:
         - artifacts:
             - zmdr_bulkapprover.zip
           name: zmdr_bulkapprover
+          target-path: resources/
+        - artifacts:
+            - zmdr_account_report.zip
+          name: zmdr_account_report
           target-path: resources/
 
   - name: mdr-cap-btp-destinations
@@ -189,6 +195,17 @@ modules:
         - bash -c "cp xs-app.json dist/ && cd dist && zip -r zmdr_wfauditrep.zip *"
       supported-platforms: []
 
+  - name: zmdr_account_report
+    type: html5
+    path: app/zmdr_account_report
+    build-parameters:
+      build-result: dist
+      builder: custom
+      commands:
+        - npm install --no-workspaces
+        - npm run build
+        - bash -c "cp xs-app.json dist/ && cd dist && zip -r zmdr_account_report.zip *"
+      supported-platforms: []
   - name: zmdr_bulkapprover
     type: html5
     path: app/zmdr_bulkapprover
@@ -214,6 +231,10 @@ resources:
     type: org.cloudfoundry.existing-service
     parameters:
       service-name: mdr-cap-manual-auth
+  - name: mdr-cap-manual-bpa
+    type: org.cloudfoundry.existing-service
+    parameters:
+      service-name: mdr-cap-manual-bpa
   - name: mdr-btp-destination
     type: org.cloudfoundry.managed-service
     parameters:

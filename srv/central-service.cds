@@ -60,7 +60,7 @@ service CentralService @(path: '/mdrapi/central',
   };
 
   // @requires: 'any'
-  action takeActionCentral(workflowid: String, action: String, remarks: String, bpaInstanceId: String) returns {
+  action takeActionCentral(workflowid: String, action: String, remarks: String, bpaInstanceId: String, taskId: String) returns {
     message : String;
     type    : String
   };

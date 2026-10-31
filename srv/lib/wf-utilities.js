@@ -3,38 +3,64 @@
 const cds = require('@sap/cds');
 
 function getEntity(name) {
-    const zEntities = cds.entities ? cds.entities('zmdr') : null;
-    return (zEntities && zEntities[name]) || (cds.entities && cds.entities[name]) || (cds.entities && cds.entities[`zmdr.${name}`]);
+    if (typeof cds.entities === 'function') {
+        const zEntities = cds.entities('zmdr');
+        if (zEntities && zEntities[name]) return zEntities[name];
+    }
+    const model = cds.model || cds.db?.model;
+    if (model && model.entities) {
+        if (model.entities[`zmdr.${name}`]) return model.entities[`zmdr.${name}`];
+        if (model.entities[name]) return model.entities[name];
+    }
+    if (cds.entities && typeof cds.entities === 'object') {
+        return cds.entities[name] || cds.entities[`zmdr.${name}`];
+    }
+    return null;
 }
 
 async function insertWFAudit(d) {
     const db = await cds.connect.to('db');
     const WFAudit = getEntity('WFAudit') || db.entities?.WFAudit;
-    const count = await db.run(
-        SELECT.from(WFAudit).where(`WorkflowId = '${d.workflowid}' or workflowid = '${d.workflowid}'`)
-    ).then(r => r.length).catch(() => 0);
-    const sequenceid = `${d.workflowid}-${count + 1}`;
+    
+    // Safely calculate the next sequence number by checking existing entries
+    let sequenceid = d.workflowid + '-1';
+    try {
+        const existing = await db.run(
+            SELECT.from(WFAudit).where({ WorkflowId: d.workflowid })
+        );
+        let maxNum = 0;
+        if (Array.isArray(existing) && existing.length > 0) {
+            for (const row of existing) {
+                const sId = row.SequenceId || row.sequenceid || row.SEQUENCEID || row['SEQUENCEID'] || '';
+                const m = sId.match(/-(\d+)(?:-\d+)?$/);
+                if (m) {
+                    const n = parseInt(m[1], 10);
+                    if (n > maxNum) maxNum = n;
+                }
+            }
+            if (maxNum === 0) maxNum = existing.length;
+            sequenceid = d.workflowid + '-' + (maxNum + 1);
+            if (existing.some(r => (r.SequenceId || r.sequenceid || r.SEQUENCEID) === sequenceid)) {
+                sequenceid = d.workflowid + '-' + (maxNum + 1) + '-' + Date.now();
+            }
+        } else {
+            sequenceid = d.workflowid + '-1';
+        }
+    } catch (e) {
+        sequenceid = d.workflowid + '-' + Date.now();
+    }
+
     await db.run(INSERT.into(WFAudit).entries({
         SequenceId: sequenceid,
-        sequenceid,
         WorkflowId: d.workflowid,
-        workflowid: d.workflowid,
         EntityId: d.entityid || '',
-        entityid: d.entityid || '',
         ActionTime: new Date().toISOString(),
-        actiontime: new Date().toISOString(),
-        OperationType: d.operationtype,
-        operationtype: d.operationtype,
+        OperationType: d.operationtype || 'APPROVAL_DECISION',
         EntityName: d.entityname || '',
-        entityname: d.entityname || '',
         WfStage: d.wfstage || '',
-        wfstage: d.wfstage || '',
         Action: d.action,
-        action: d.action,
         UserRemarks: d.userremarks || '',
-        userremarks: d.userremarks || '',
         ActioningUser: d.actioninguser || '',
-        actioninguser: d.actioninguser || '',
     }));
     return { sequenceid, message: 'Audit created' };
 }

@@ -3,4 +3,6 @@ zmdr_bulkload/
 zmdr_cntrl_main/
 zmdr_cntrl_cmn/
 zmdr_wfauditrep/
+zmdr_account_report/
+zmdr_bulkapprover/
 .*

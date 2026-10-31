@@ -56,6 +56,10 @@ sap.ui.define([
          * 
          * @alias com.intapptics.zmdrcntrlmain.controller.ErrorHandler
          */
+        _showMetadataError: function (sDetails) {
+            this._showServiceError(sDetails);
+        },
+
         _showServiceError: function (sDetails) {
             /** Define Variables */
             var parser, // The parser object
@@ -87,6 +91,10 @@ sap.ui.define([
                         oError = sDetails;
                     }    
                 }
+            } else if (sDetails instanceof Error) {
+                oError = sDetails.message || String(sDetails);
+            } else if (sDetails && sDetails.message) {
+                oError = sDetails.message;
             } else {
                 oError = sDetails;
             }

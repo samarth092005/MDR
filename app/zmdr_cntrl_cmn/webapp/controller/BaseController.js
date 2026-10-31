@@ -123,6 +123,13 @@ sap.ui.define([
                 if (oComponent && oComponent._oGlobalBusyDialog) {
                     oComponent._oGlobalBusyDialog.close();
                 }
+                if (typeof document !== "undefined") {
+                    var oSplash = document.getElementById("ui5-splash-screen");
+                    if (oSplash) {
+                        oSplash.style.opacity = "0";
+                        setTimeout(function () { if (oSplash && oSplash.parentNode) oSplash.parentNode.removeChild(oSplash); }, 250);
+                    }
+                }
             },
 
             /**
@@ -132,7 +139,12 @@ sap.ui.define([
              * @param {string} sDetails Error message in case of any error
              */
             fn_showServiceError: function(sDetails) {
-                this.getOwnerComponent()._oErrorHandler._showServiceError(sDetails);
+                var oComponent = this.getOwnerComponent();
+                if (oComponent && oComponent._oErrorHandler) {
+                    oComponent._oErrorHandler._showServiceError(sDetails);
+                } else if (sap.m && sap.m.MessageBox) {
+                    sap.m.MessageBox.error(typeof sDetails === 'string' ? sDetails : JSON.stringify(sDetails));
+                }
             }
         });
     }

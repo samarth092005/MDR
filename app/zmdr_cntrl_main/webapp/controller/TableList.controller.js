@@ -102,13 +102,14 @@ sap.ui.define([
                     sHash; // Current hash tag value
 
                 /** Method Implementation */
-                // Get the selected repository value
-                if (this.sRepositoryId) {
-                    oSelectedRepository = this.fn_getGlobalModel("oUniqueRepositoriesModel").getData()[this.sRepositoryId];
-                } else {
+                // Get the selected repository value safely
+                if (!this.sRepositoryId) {
                     sHash = sap.ui.core.routing.HashChanger.getInstance().getHash();
-                    oSelectedRepository = this.fn_getGlobalModel("oUniqueRepositoriesModel").getData()[sHash.split("/")[1]];
+                    if (sHash && sHash.indexOf("category/") !== -1) {
+                        this.sRepositoryId = sHash.split("category/")[1].split("/")[0];
+                    }
                 }
+                oSelectedRepository = this._fn_getSelectedRepository();
 
                 // Check if category name is present and not undefined
                 if (oSelectedRepository) {
@@ -163,8 +164,12 @@ sap.ui.define([
                 this.byId("btnExitFullScreenTabList").setVisible(false);
                 this.byId("btnClosePageTabList").setVisible(false);
 
-                // Get the selected table id
-                this.sTableId = sSelectedPath.substring(1)
+                // Get the selected table id - use technical tableId when available
+                var oSelectedItem = oEvent.getSource().getSelectedItem();
+                var oBindingContext = oSelectedItem ? oSelectedItem.getBindingContext("oUniqueTablesModel") : null;
+                var oSelectedTable = oBindingContext ? oBindingContext.getObject() : null;
+                var sTableId = oSelectedTable ? (oSelectedTable.tableId || oSelectedTable.tableName) : (sSelectedPath ? sSelectedPath.substring(1) : "");
+                this.sTableId = sTableId;
 
                 // Log information
                 this.fn_getLogReference().info("Table List Controller: Navigating to table list view of the app");
@@ -371,82 +376,127 @@ sap.ui.define([
              * 
              * @memberof com.intapptics.zmdrcntrlmain.view.TableList 
              */
+            _fn_getSelectedRepository: function () {
+                var oRepoModel = this.fn_getGlobalModel("oUniqueRepositoriesModel");
+                if (!oRepoModel) {
+                    return null;
+                }
+                var aRepos = oRepoModel.getData();
+                if (!Array.isArray(aRepos) || aRepos.length === 0) {
+                    return null;
+                }
+                var sKey = this.sRepositoryId;
+                if (sKey === undefined || sKey === null || sKey === "") {
+                    return aRepos[0] || null;
+                }
+                if (typeof sKey === "number" || /^\d+$/.test(String(sKey).trim())) {
+                    var idx = parseInt(sKey, 10);
+                    if (aRepos[idx]) {
+                        return aRepos[idx];
+                    }
+                }
+                var sKeyStr = String(sKey).trim().toUpperCase();
+                var oFound = aRepos.find(function (r) {
+                    if (!r) return false;
+                    var rName = (r.repositoryName || "").toUpperCase();
+                    var rLabel = (r.repositoryLabel || "").toUpperCase();
+                    return rName === sKeyStr || rLabel === sKeyStr;
+                });
+                return oFound || aRepos[sKey] || null;
+            },
+
+            _fn_populateTables: function () {
+                var oRepoModel = this.fn_getGlobalModel("oUniqueRepositoriesModel");
+                var oConfigModel = this.fn_getGlobalModel("oCntrlUiConfigDataModel");
+                if (!oRepoModel || !oConfigModel) {
+                    return;
+                }
+
+                var oCntrlUiConfigData = oConfigModel.getData() || [];
+                var oSelectedRepository = this._fn_getSelectedRepository();
+                if (!oSelectedRepository) {
+                    this.fn_getLogReference().warning("Table List Controller: Repository not found for ID: " + this.sRepositoryId);
+                    this.fn_closeBusyDialog();
+                    return;
+                }
+
+                this.fn_getLogReference().info("Table List Controller: Selected repository - " + oSelectedRepository.repositoryName);
+
+                var aFilteredTables = oCntrlUiConfigData.filter(function (data) {
+                    var sRepo = data.repository || data.Repository;
+                    return sRepo === oSelectedRepository.repositoryName;
+                });
+
+                var aUniqueTables = [];
+                aFilteredTables.forEach(function (oDupTable) {
+                    var sTableLabel = oDupTable.TableLabel || oDupTable.Tablelabel;
+                    var sTableName = oDupTable.TableName || oDupTable.Tablename;
+                    if (aUniqueTables.filter(function (oUniqueTable) {
+                        return oUniqueTable.tableName === sTableLabel;
+                    }).length === 0) {
+                        aUniqueTables.push({
+                            "tableName": sTableLabel,
+                            "tableId": sTableName
+                        });
+                    }
+                });
+
+                this.fn_getLogReference().info("Table List Controller: Total tables applicable - " + aUniqueTables.length);
+
+                var oUniqueTablesModel = this.fn_getGlobalModel("oUniqueTablesModel");
+                if (!oUniqueTablesModel) {
+                    oUniqueTablesModel = new JSONModel(aUniqueTables);
+                    this.fn_setGlobalModel(oUniqueTablesModel, "oUniqueTablesModel");
+                } else {
+                    oUniqueTablesModel.setData(aUniqueTables);
+                }
+
+                if (this.byId("btnEnterFullScreenTabList")) this.byId("btnEnterFullScreenTabList").setVisible(true);
+                if (this.byId("btnExitFullScreenTabList")) this.byId("btnExitFullScreenTabList").setVisible(false);
+                if (this.byId("btnClosePageTabList")) this.byId("btnClosePageTabList").setVisible(true);
+
+                var oList = this.byId("tblTableList");
+                if (oList) {
+                    oList.removeSelections();
+                }
+                this.fn_closeBusyDialog();
+            },
+
             _fn_onObjectMatched: function (oEvent) {
                 // Log information
                 this.fn_getLogReference().info("Table List Controller: Entering _fn_onObjectMatched method");
 
-                this.getView().getParent().getParent().setLayout("TwoColumnsMidExpanded");
+                var oFcl = this.getView().getParent().getParent();
+                if (oFcl && oFcl.setLayout) {
+                    oFcl.setLayout("TwoColumnsMidExpanded");
+                }
 
-                /** Define Variables */
-                var oCntrlUiConfigData, // Stores all the Central UI configuration data applicable to the logged in user
-                    aFilteredTables = [], // Array of all tables applicable to the selected repository
-                    oSelectedRepository, // Selected repository value
-                    aUniqueTables = [], // Array of unique tables applicable to the selected repository based on logged in user
-                    oUniqueTablesModel; // JSON Model to hold unique tables
-
-                /** Method Implementation */
-                // Get the selected repository id
                 this.sRepositoryId = oEvent.getParameter("arguments").sCategoryPath;
 
-                // Initiate busy indicator
-                // this.fn_openBusyDialog(); // Removed synchronous busy dialog call
-
-                // Check if model is present or not
                 if (this.fn_getGlobalModel("oUniqueRepositoriesModel") && this.fn_getGlobalModel("oCntrlUiConfigDataModel")) {
-                    // Get the complete table configuration
-                    oCntrlUiConfigData = this.fn_getGlobalModel("oCntrlUiConfigDataModel").getData();
-
-                    // Get the selected repository value
-                    oSelectedRepository = this.fn_getGlobalModel("oUniqueRepositoriesModel").getData()[this.sRepositoryId];
-
-                    // Log information
-                    this.fn_getLogReference().info("Table List Controller: Selected repository - " + oSelectedRepository.repositoryName);
-                    
-                    // Filter the config model based on the selected repository
-                    // Handle both lowercase (OData V4 / CAP default) and PascalCase (OData V2 proxy)
-                    aFilteredTables = oCntrlUiConfigData.filter(function (data) {
-                        var sRepo = data.repository || data.Repository;
-                        return sRepo === oSelectedRepository.repositoryName;
-                    });
-
-                    // Get unique tables from the above filtered data
-                    aFilteredTables.forEach(function (oDupTable) {
-                        var sTableLabel = oDupTable.TableLabel || oDupTable.Tablelabel;
-                        var sTableName = oDupTable.TableName || oDupTable.Tablename;
-                        if (aUniqueTables.filter(function (oUniqueTable) {
-                            return oUniqueTable.tableName === sTableLabel;
-                        }).length === 0) {
-                            aUniqueTables.push({
-                                "tableName": sTableLabel,
-                                "tableId": sTableName
-                            });
-                        }
-                    }, this);
-
-                    // Log total number of tables
-                    this.fn_getLogReference().info("Table List Controller: Total number of tables applicable for logged in user - " + aUniqueTables.length);
-
-                    // Assign the unique tables to the model
-                    if (!this.fn_getGlobalModel("oUniqueTablesModel")) {
-                        oUniqueTablesModel = new JSONModel(aUniqueTables);
-                        this.fn_setGlobalModel(oUniqueTablesModel, "oUniqueTablesModel");
-                    } else {
-                        // Update the model with new data
-                        this.fn_getGlobalModel("oUniqueTablesModel").setData(aUniqueTables);
-                    }
-
-                    // Set default visibility of the buttons
-                    this.byId("btnEnterFullScreenTabList").setVisible(true);
-                    this.byId("btnExitFullScreenTabList").setVisible(false);
-                    this.byId("btnClosePageTabList").setVisible(true);
-
-                    // Clear any previous table selections
-                    this.byId("tblTableList").removeSelections();
+                    this._fn_populateTables();
                 } else {
-                    // Navigate to home page
-                    this.fn_getRouter().navTo("category");
+                    // Check if CntrlUIVis load is in flight (e.g. browser refresh)
+                    var oComp = this.getOwnerComponent();
+                    var pLoad = oComp ? oComp._pCntrlUiVisLoad : null;
+                    if (pLoad && typeof pLoad.then === "function") {
+                        this.fn_openBusyDialog();
+                        pLoad.then(function () {
+                            this.fn_closeBusyDialog();
+                            if (this.fn_getGlobalModel("oUniqueRepositoriesModel") && this.fn_getGlobalModel("oCntrlUiConfigDataModel")) {
+                                this._fn_populateTables();
+                            } else {
+                                this.fn_getRouter().navTo("category");
+                            }
+                        }.bind(this)).catch(function () {
+                            this.fn_closeBusyDialog();
+                            this.fn_getRouter().navTo("category");
+                        }.bind(this));
+                    } else {
+                        this.fn_closeBusyDialog();
+                        this.fn_getRouter().navTo("category");
+                    }
                 }
-                // Log information
                 this.fn_getLogReference().info("Table List Controller: Exiting _fn_onObjectMatched method");
             }
         });

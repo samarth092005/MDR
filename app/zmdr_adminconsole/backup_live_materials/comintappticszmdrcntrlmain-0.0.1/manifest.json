@@ -1,0 +1,215 @@
+{
+  "_version": "1.53.0",
+  "sap.app": {
+    "id": "com.intapptics.zmdrcntrlmain",
+    "type": "application",
+    "i18n": "i18n/i18n.properties",
+    "applicationVersion": {
+      "version": "0.0.1"
+    },
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "sourceTemplate": {
+      "id": "@sap/generator-fiori:basic",
+      "version": "1.16.5",
+      "toolsId": "d875c47f-6388-40b7-97a8-c4835db4af83"
+    },
+    "crossNavigation": {
+      "inbounds": {
+        "zmdr_cntrl_main-display": {
+          "semanticObject": "zmdr_cntrl_main",
+          "action": "display",
+          "title": "Central Master Data",
+          "subTitle": "Create and maintain master data in a central location",
+          "signature": {
+            "parameters": {},
+            "additionalParameters": "allowed"
+          }
+        },
+        "zmdr_central_main-manage": {
+          "semanticObject": "zmdr_central_main",
+          "action": "manage",
+          "title": "Central Master Data",
+          "subTitle": "Create and maintain master data in a central location",
+          "signature": {
+            "parameters": {},
+            "additionalParameters": "allowed"
+          }
+        }
+      }
+    },
+    "dataSources": {
+      "mainService": {
+        "uri": "mdrapi/central/",
+        "type": "OData",
+        "settings": {
+          "annotations": [],
+          "localUri": "localService/mainService/metadata.xml",
+          "odataVersion": "4.0"
+        }
+      }
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "icons": {
+      "icon": "",
+      "favIcon": "",
+      "phone": "",
+      "phone@2": "",
+      "tablet": "",
+      "tablet@2": ""
+    },
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "flexEnabled": true,
+    "dependencies": {
+      "minUI5Version": "1.120.20",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {},
+        "sap.f": {},
+        "sap.ui.export": {},
+        "sap.ui.layout": {},
+        "sap.ui.unified": {},
+        "sap.ui.table": {}
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "com.intapptics.zmdrcntrlmain.i18n.i18n",
+          "supportedLocales": [
+            ""
+          ],
+          "fallbackLocale": ""
+        }
+      },
+      "": {
+        "type": "sap.ui.model.odata.v4.ODataModel",
+        "dataSource": "mainService",
+        "preload": true,
+        "settings": {
+          "operationMode": "Server",
+          "autoExpandSelect": true,
+          "earlyRequests": true
+        }
+      }
+    },
+    "resources": {
+      "css": [
+        {
+          "uri": "css/style.css"
+        }
+      ]
+    },
+    "routing": {
+      "config": {
+        "routerClass": "sap.f.routing.Router",
+        "viewType": "XML",
+        "async": true,
+        "viewPath": "com.intapptics.zmdrcntrlmain.view",
+        "transition": "slide",
+        "controlId": "fcl",
+        "layout": "OneColumn",
+        "bypassed": {
+          "target": [
+            "notFound"
+          ]
+        }
+      },
+      "routes": [
+        {
+          "name": "category",
+          "pattern": "",
+          "layout": "OneColumn",
+          "target": [
+            "category"
+          ]
+        },
+        {
+          "name": "table",
+          "pattern": "category/{sCategoryPath}",
+          "layout": "TwoColumnsMidExpanded",
+          "target": [
+            "category",
+            "table"
+          ]
+        },
+        {
+          "name": "tableResult",
+          "pattern": "category/{sCategoryPath}/table/{sTablePath}/:?sap-iapp-state:",
+          "layout": "EndColumnFullScreen",
+          "target": [
+            "category",
+            "table",
+            "tableResult"
+          ]
+        },
+        {
+          "name": "noCategory",
+          "pattern": "noCategory",
+          "layout": "OneColumn",
+          "target": [
+            "noCategory"
+          ]
+        }
+      ],
+      "targets": {
+        "category": {
+          "viewId": "categoryList",
+          "viewName": "CategoryList",
+          "viewLevel": 1,
+          "title": "{i18n>categoryPageTitle}",
+          "controlAggregation": "beginColumnPages"
+        },
+        "table": {
+          "viewId": "tableList",
+          "viewName": "TableList",
+          "viewLevel": 2,
+          "title": "{i18n>tablePageTitle}",
+          "controlAggregation": "midColumnPages"
+        },
+        "tableResult": {
+          "viewId": "tableResult",
+          "viewName": "TableResult",
+          "viewLevel": 3,
+          "title": "{i18n>tableResultPageTitle}",
+          "controlAggregation": "endColumnPages"
+        },
+        "notFound": {
+          "viewId": "notFound",
+          "viewName": "NotFound",
+          "controlAggregation": "beginColumnPages",
+          "layout": "OneColumn",
+          "title": "{i18n>notFoundPageTitle}"
+        },
+        "noCategory": {
+          "viewId": "noCategory",
+          "viewName": "NoCategory",
+          "controlAggregation": "beginColumnPages"
+        }
+      }
+    },
+    "rootView": {
+      "viewName": "com.intapptics.zmdrcntrlmain.view.App",
+      "type": "XML",
+      "async": true,
+      "id": "fcl"
+    }
+  },
+  "sap.cloud": {
+    "public": true,
+    "service": "mdr.cap.btp"
+  }
+}

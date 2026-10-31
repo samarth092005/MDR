@@ -1,0 +1,24 @@
+/* Compact SAP Fiori styling with grey table headers and grid lines */
+.entityAccountReportTable .sapMListTblHeader,
+.entityAccountReportTable th {
+  background-color: #f2f4f8 !important;
+  font-weight: 600 !important;
+  border-bottom: 2px solid #d1d5db !important;
+}
+
+.entityAccountReportTable .sapMListTblCell {
+  border-right: 1px solid #e5e7eb;
+}
+
+.entityAccountReportTable .sapMListTblHeaderCell {
+  border-right: 1px solid #d1d5db;
+}
+
+.entityAccountReportTable .sapMListTblRow:hover {
+  background-color: #f8fafc !important;
+}
+
+.entityAccountReportTable th .sapMColumnHeaderContent {
+  color: #374151 !important;
+  font-size: 0.85rem;
+}

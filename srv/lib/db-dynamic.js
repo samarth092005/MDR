@@ -40,9 +40,10 @@ function buildRowFromSplit(splitData, lineitemConfig, extraFields = {}) {
 function buildKeyWhere(splitData, lineitemConfig, keyFields) {
   const parts = [], values = [];
   for (const kf of keyFields) {
-    const cfg = lineitemConfig.find(c => c.Columnname === kf);
+    const kfUpper = String(kf).toUpperCase();
+    const cfg = lineitemConfig.find(c => c.Columnname === kf || (c.Columnname && c.Columnname.toUpperCase() === kfUpper));
     if (!cfg) continue;
-    parts.push(`${kf.toUpperCase()} = ?`);
+    parts.push(`${kfUpper} = ?`);
     values.push(splitData[cfg.Colseqno - 1] ?? '');
   }
   return { clause: parts.join(' AND '), values };
@@ -59,22 +60,63 @@ function getEntityDef(tablename) {
     || defs[`zmdr.${tablename}`]
     || defs[`zmdr.${cleanName}`]
     || defs[`BulkService.${tablename}`]
-    || Object.values(defs).find(
-         d => d && (d.kind === 'entity' || d.kind === 'type') && d.name && (
-           d.name.split('.').pop().toUpperCase() === tablename.toUpperCase() ||
-           d.name.split('.').pop().toUpperCase() === cleanName.toUpperCase()
+    || Object.entries(defs).find(
+         ([k, d]) => d && (d.kind === 'entity' || d.kind === 'type') && (
+           k.toUpperCase() === tablename.toUpperCase() ||
+           k.toUpperCase() === 'ZMDR.' + tablename.toUpperCase() ||
+           k.toUpperCase() === 'ZMDR.' + cleanName.toUpperCase() ||
+           k.split('.').pop().toUpperCase() === tablename.toUpperCase() ||
+           k.split('.').pop().toUpperCase() === cleanName.toUpperCase()
          )
-       );
+       )?.[1];
 
-  // If this entity is a projection (e.g. BulkService.ZMDR_BPMASTER -> zmdr.BPMaster), resolve the underlying base entity
-  while (entity && entity.target && defs[entity.target]) {
-    entity = defs[entity.target];
+  // 1. If cds.entities is available, prefer active runtime linked entity definitions (already have .name and query metadata)
+  if (cds.entities) {
+    const z = typeof cds.entities === 'function' ? cds.entities('zmdr') : cds.entities.zmdr;
+    if (z) {
+      const match = Object.keys(z).find(
+        k => k.toUpperCase() === cleanName.toUpperCase() || k.toUpperCase() === tablename.toUpperCase()
+      );
+      if (match && z[match]) {
+        return z[match];
+      }
+    }
+    const topMatch = Object.keys(cds.entities).find(
+      k => k.toUpperCase() === cleanName.toUpperCase() || k.toUpperCase() === tablename.toUpperCase()
+    );
+    if (topMatch && cds.entities[topMatch]) {
+      return cds.entities[topMatch];
+    }
   }
 
-  // Also check cds.entities
-  if (!entity && cds.entities) {
-    const z = cds.entities('zmdr');
-    entity = (z && (z[tablename] || z[cleanName])) || cds.entities[tablename] || cds.entities[cleanName];
+  // 2. If this entity is a projection (e.g. BulkService.ZMDR_BPMASTER -> zmdr.BPMaster), unwrap without mutating shared CSN
+  let resolvedTarget = null;
+  while (entity && (entity.target || entity.projection?.from?.ref?.[0])) {
+    const target = entity.target || entity.projection?.from?.ref?.[0];
+    if (target && defs[target]) {
+      entity = defs[target];
+      resolvedTarget = target;
+    } else {
+      break;
+    }
+  }
+
+  // 3. If entity definition lacks .name, create a lightweight non-mutating prototype wrapper
+  if (entity && !entity.name) {
+    let entityName = resolvedTarget;
+    if (!entityName) {
+      for (const [k, v] of Object.entries(defs)) {
+        if (v === entity) {
+          entityName = k;
+          break;
+        }
+      }
+    }
+    if (entityName) {
+      return Object.create(entity, {
+        name: { value: entityName, writable: false, enumerable: true }
+      });
+    }
   }
 
   return entity;

@@ -115,7 +115,12 @@ sap.ui.define([
              * @param {string} sDetails Error message in case of any error
              */
             fn_showServiceError: function(sDetails) {
-                this.getOwnerComponent()._oErrorHandler._showServiceError(sDetails);
+                var oComponent = this.getOwnerComponent();
+                if (oComponent && oComponent._oErrorHandler) {
+                    oComponent._oErrorHandler._showServiceError(sDetails);
+                } else if (sap.m && sap.m.MessageBox) {
+                    sap.m.MessageBox.error(typeof sDetails === 'string' ? sDetails : JSON.stringify(sDetails));
+                }
             }
         });
     }

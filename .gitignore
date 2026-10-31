@@ -1,4 +1,4 @@
-default-env.json
+﻿default-env.json
 node_modules/
 .env
 gen/
@@ -14,8 +14,22 @@ package-lock.json
 .cdsrc-private.json
 mta_logs
 
-# developer notes (local only)
-docs/
+# developer notes / backups
+__pycache__/
+*.bak
+*.backup
+*.backup*
+backup-*/
+*-release-*/
+html5-repo-backup-*/
+mdr-recovery-release/
+recovery-backup/
+repush-all-apps/
+restore-five-apps/
+verify-*/
+account-report-push/
+app/zmdr_cntrl_main/backup_live_materials/
+mta.yaml.account-report-backup
 
 # Unused / Garbage Files
 garbage/

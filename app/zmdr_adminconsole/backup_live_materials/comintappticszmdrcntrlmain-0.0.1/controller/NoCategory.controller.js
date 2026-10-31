@@ -1,0 +1,2 @@
+sap.ui.define(["com/intapptics/zmdrcntrlmain/controller/BaseController","sap/m/library"],function(t,n){"use strict";var o=n.URLHelper;return t.extend("com.intapptics.zmdrcntrlmain.controller.NoCategory",{onPress_btnContactSupport:function(){this.fn_getLogReference().info("No Category Controller: Entering onPress_btnContactSupport method");o.triggerEmail("intapptics@gmail.com");this.fn_getLogReference().info("No Category Controller: Exiting onPress_btnContactSupport method")}})});
+//# sourceMappingURL=NoCategory.controller.js.map

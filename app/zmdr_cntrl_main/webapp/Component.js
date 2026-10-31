@@ -78,6 +78,134 @@ sap.ui.define([
             };
         }
 
+        
+
+
+        // Sanitize cache-buster URLs for child applications (e.g. comintappticszmdrcntrlcmn)
+        function sanitizeChildAppUrl(sUrl) {
+            if (typeof sUrl !== "string") { return sUrl; }
+            if (sUrl.includes("comintappticszmdrcntrlcmn")) {
+                // Replace any /mdrcapbtp.comintappticszmdrcntrlcmn/~<token>~/ with /mdrcapbtp.comintappticszmdrcntrlcmn-0.0.1/
+                return sUrl.replace(/\/mdrcapbtp\.comintappticszmdrcntrlcmn\/~[^/]+~\/?/, "/mdrcapbtp.comintappticszmdrcntrlcmn-0.0.1/");
+            }
+            if (sUrl.includes("comintappticszmdrwfauditrep")) {
+                return sUrl.replace(/\/mdrcapbtp\.comintappticszmdrwfauditrep\/~[^/]+~\/?/, "/mdrcapbtp.comintappticszmdrwfauditrep-0.0.1/");
+            }
+            return sUrl;
+        }
+
+        // Configure UI5 loader path
+        try {
+            if (sap.ui && sap.ui.loader && sap.ui.loader.config) {
+                sap.ui.loader.config({
+                    paths: {
+                        "com/intapptics/zmdrcntrlcmn": "/mdrcapbtp.comintappticszmdrcntrlcmn-0.0.1"
+                    }
+                });
+            }
+        } catch (e) {}
+
+        // Intercept DOM script element creation to rewrite script src if launchpad injects stale cache-buster URL
+        try {
+            if (typeof document !== "undefined" && !document._mdrScriptPatched) {
+                document._mdrScriptPatched = true;
+                var fnOrigCreateElement = document.createElement;
+                document.createElement = function (tagName) {
+                    var el = fnOrigCreateElement.apply(this, arguments);
+                    if (tagName && typeof tagName === "string" && tagName.toLowerCase() === "script") {
+                        var fnOrigSetAttr = el.setAttribute;
+                        el.setAttribute = function (name, value) {
+                            if (name === "src") {
+                                value = sanitizeChildAppUrl(value);
+                            }
+                            return fnOrigSetAttr.call(this, name, value);
+                        };
+                        try {
+                            var oDesc = Object.getOwnPropertyDescriptor(HTMLScriptElement.prototype, "src") ||
+                                        Object.getOwnPropertyDescriptor(HTMLElement.prototype, "src");
+                            if (oDesc && oDesc.set) {
+                                var fnOrigSrcSet = oDesc.set;
+                                Object.defineProperty(el, "src", {
+                                    set: function (val) {
+                                        fnOrigSrcSet.call(this, sanitizeChildAppUrl(val));
+                                    },
+                                    get: function () {
+                                        return el.getAttribute("src");
+                                    },
+                                    configurable: true
+                                });
+                            }
+                        } catch (e) {}
+                    }
+                    return el;
+                };
+            }
+        } catch (e) {}
+
+        // Intercept XMLHttpRequest to rewrite stale cache-buster URLs
+        try {
+            if (typeof XMLHttpRequest !== "undefined" && XMLHttpRequest.prototype && !XMLHttpRequest.prototype._mdrPatched) {
+                XMLHttpRequest.prototype._mdrPatched = true;
+                var fnOrigXhrOpen = XMLHttpRequest.prototype.open;
+                XMLHttpRequest.prototype.open = function (method, url) {
+                    if (typeof url === "string") {
+                        arguments[1] = sanitizeChildAppUrl(url);
+                    }
+                    return fnOrigXhrOpen.apply(this, arguments);
+                };
+            }
+        } catch (e) {}
+
+        // Intercept window.fetch to rewrite stale cache-buster URLs
+        try {
+            if (typeof window !== "undefined" && typeof window.fetch === "function" && !window.fetch._mdrPatched) {
+                var fnOrigFetch = window.fetch;
+                window.fetch = function (resource, init) {
+                    if (typeof resource === "string") {
+                        resource = sanitizeChildAppUrl(resource);
+                    } else if (resource && typeof resource.url === "string") {
+                        try {
+                            resource = new Request(sanitizeChildAppUrl(resource.url), resource);
+                        } catch (e) {}
+                    }
+                    return fnOrigFetch.call(this, resource, init);
+                };
+                window.fetch._mdrPatched = true;
+            }
+        } catch (e) {}
+
+        // Intercept sap.ui.component.load and sap.ui.core.Component.load
+        try {
+            if (sap.ui && sap.ui.component && typeof sap.ui.component.load === "function" && !sap.ui.component.load._mdrPatched) {
+                var fnOrigCompLoad = sap.ui.component.load;
+                sap.ui.component.load = function (mConfig) {
+                    if (mConfig) {
+                        if (mConfig.name === "com.intapptics.zmdrcntrlcmn") {
+                            mConfig.url = "/mdrcapbtp.comintappticszmdrcntrlcmn-0.0.1/";
+                        } else if (typeof mConfig.url === "string") {
+                            mConfig.url = sanitizeChildAppUrl(mConfig.url);
+                        }
+                    }
+                    return fnOrigCompLoad.apply(this, arguments);
+                };
+                sap.ui.component.load._mdrPatched = true;
+            }
+            if (sap.ui && sap.ui.core && sap.ui.core.Component && typeof sap.ui.core.Component.load === "function" && !sap.ui.core.Component.load._mdrPatched) {
+                var fnOrigCoreCompLoad = sap.ui.core.Component.load;
+                sap.ui.core.Component.load = function (mConfig) {
+                    if (mConfig) {
+                        if (mConfig.name === "com.intapptics.zmdrcntrlcmn") {
+                            mConfig.url = "/mdrcapbtp.comintappticszmdrcntrlcmn-0.0.1/";
+                        } else if (typeof mConfig.url === "string") {
+                            mConfig.url = sanitizeChildAppUrl(mConfig.url);
+                        }
+                    }
+                    return fnOrigCoreCompLoad.apply(this, arguments);
+                };
+                sap.ui.core.Component.load._mdrPatched = true;
+            }
+        } catch (e) {}
+
         return UIComponent.extend("com.intapptics.zmdrcntrlmain.Component", {
             metadata: {
                 manifest: "json",
@@ -113,6 +241,47 @@ sap.ui.define([
 
                 // Initialize the error handler with the component
                 this._oErrorHandler = new ErrorHandler(this);
+
+                // Intercept Fiori Launchpad ClientSideTargetResolution to sanitize outdated cache-buster GUIDs
+                try {
+                    if (sap.ushell && sap.ushell.Container) {
+                        sap.ushell.Container.getServiceAsync("ClientSideTargetResolution").then(function (oCSTR) {
+                            if (!oCSTR) { return; }
+
+                            // Fix inbounds currently in memory
+                            if (oCSTR._aInbounds && Array.isArray(oCSTR._aInbounds)) {
+                                oCSTR._aInbounds.forEach(function (oInbound) {
+                                    if (oInbound && oInbound.resolutionResult && oInbound.resolutionResult.url) {
+                                        oInbound.resolutionResult.url = sanitizeChildAppUrl(oInbound.resolutionResult.url);
+                                    }
+                                });
+                            }
+
+                            // Intercept resolveHashFragment calls
+                            if (!oCSTR._patchedForMdrNav && typeof oCSTR.resolveHashFragment === "function") {
+                                oCSTR._patchedForMdrNav = true;
+                                var fnOrigResolve = oCSTR.resolveHashFragment;
+                                oCSTR.resolveHashFragment = function (sHashFragment) {
+                                    return fnOrigResolve.apply(this, arguments).then(function (oRes) {
+                                        if (oRes) {
+                                            if (oRes.ui5ComponentName === "com.intapptics.zmdrcntrlcmn") {
+                                                oRes.url = "/mdrcapbtp.comintappticszmdrcntrlcmn-0.0.1/";
+                                            } else if (typeof oRes.url === "string") {
+                                                oRes.url = sanitizeChildAppUrl(oRes.url);
+                                            }
+                                        }
+                                        return oRes;
+                                    });
+                                };
+                            }
+                        }).catch(function (err) {
+                            console.warn("ClientSideTargetResolution could not be patched:", err);
+                        });
+                    }
+                } catch (e) {
+                    console.warn("Error setting up CSTR navigation patch:", e);
+                }
+
 
                 // enable routing
                 this.getRouter().initialize();

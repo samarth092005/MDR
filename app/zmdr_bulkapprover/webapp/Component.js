@@ -74,10 +74,26 @@ sap.ui.define([
 
         _loadTaskContext: function () {
             var taskContextModel = new sap.ui.model.json.JSONModel();
+            var sUrl = this._getTaskInstancesBaseURL() + "/context";
             return taskContextModel
-                .loadData(this._getTaskInstancesBaseURL() + "/context")
+                .loadData(sUrl)
                 .then(() => {
                     this.setModel(taskContextModel, "context");
+                    return taskContextModel.getData();
+                })
+                .catch((err) => {
+                    console.warn("Direct bulk task context load failed with " + sUrl + ", attempting fallback...", err);
+                    var sFallbackUrl = "/api/public/workflow/rest/v1/task-instances/" + this.getTaskInstanceID() + "/context";
+                    return taskContextModel.loadData(sFallbackUrl)
+                        .then(() => {
+                            this.setModel(taskContextModel, "context");
+                            return taskContextModel.getData();
+                        })
+                        .catch((err2) => {
+                            console.error("All bulk task context load attempts failed:", err2);
+                            this.setModel(taskContextModel, "context");
+                            return {};
+                        });
                 });
         },
 
@@ -90,11 +106,13 @@ sap.ui.define([
         },
 
         _getWorkflowRuntimeBaseURL: function () {
-            var ui5CloudService = this.getManifestEntry("/sap.cloud/service").replaceAll(".", "");
-            var ui5ApplicationName = this.getManifestEntry("/sap.app/id").replaceAll(".", "");
-            var appPath = `${ui5CloudService}.${ui5ApplicationName}`;
-            return `/${appPath}/api/public/workflow/rest/v1`
-
+            var ui5CloudService = (this.getManifestEntry("/sap.cloud/service") || "").replaceAll(".", "");
+            var ui5ApplicationName = (this.getManifestEntry("/sap.app/id") || "").replaceAll(".", "");
+            var appPath = (ui5CloudService && ui5ApplicationName) ? `${ui5CloudService}.${ui5ApplicationName}` : "";
+            if (appPath) {
+                return `/${appPath}/api/public/workflow/rest/v1`;
+            }
+            return "/api/public/workflow/rest/v1";
         },
 
         getTaskInstanceID: function () {
@@ -116,39 +134,45 @@ sap.ui.define([
             const context = this.getModel("context").getData();
             var data = {
                 status: "COMPLETED",
-                context: { ...context, comment: context.comment || '' },
+                context: Object.assign({}, context, { comment: context.comment || '' }),
                 decision: outcomeId
             };
 
-            jQuery.ajax({
-                url: `${this._getTaskInstancesBaseURL()}`,
-                method: "PATCH",
-                contentType: "application/json",
-                async: true,
-                data: JSON.stringify(data),
-                headers: {
-                    "X-CSRF-Token": this._fetchToken(),
-                },
-            }).done(() => {
+            var sUrl = this._getTaskInstancesBaseURL();
+            this._fetchTokenAsync().then(function (sToken) {
+                return fetch(sUrl, {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json",
+                        "X-CSRF-Token": sToken || ""
+                    },
+                    credentials: "include",
+                    body: JSON.stringify(data)
+                });
+            }.bind(this)).then(function (res) {
+                console.log("[Bulk Component] Task completed:", res.status);
                 this._refreshTaskList();
-            })
+            }.bind(this)).catch(function (err) {
+                console.warn("[Bulk Component] Notice patching task instance:", err);
+                this._refreshTaskList();
+            }.bind(this));
         },
 
-        _fetchToken: function () {
-            var fetchedToken;
-
-            jQuery.ajax({
-                url: this._getWorkflowRuntimeBaseURL() + "/xsrf-token",
+        _fetchTokenAsync: function () {
+            var sUrl = this._getWorkflowRuntimeBaseURL() + "/xsrf-token";
+            return fetch(sUrl, {
                 method: "GET",
-                async: false,
                 headers: {
-                    "X-CSRF-Token": "Fetch",
+                    "X-CSRF-Token": "Fetch"
                 },
-                success(result, xhr, data) {
-                    fetchedToken = data.getResponseHeader("X-CSRF-Token");
-                },
+                credentials: "include"
+            }).then(function (res) {
+                return res.headers.get("X-CSRF-Token") || "";
+            }).catch(function (e) {
+                console.warn("[Bulk Component] Notice fetching XSRF token:", e);
+                return "";
             });
-            return fetchedToken;
         },
 
         _refreshTaskList: function () {

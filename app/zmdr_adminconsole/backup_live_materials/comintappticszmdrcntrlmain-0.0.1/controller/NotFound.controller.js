@@ -1,0 +1,2 @@
+sap.ui.define(["com/intapptics/zmdrcntrlmain/controller/BaseController"],function(o){"use strict";return o.extend("com.intapptics.zmdrcntrlmain.controller.NotFound",{onPress_lnkToCategory:function(){this.fn_getLogReference().info("Not Found Controller: Entering onPress_lnkToCategory method");this.fn_getLogReference().info("Not Found Controller: Navigating to the category view (home page)");this.fn_getRouter().navTo("category");this.fn_getLogReference().info("Not Found Controller: Exiting onPress_lnkToCategory method")}})});
+//# sourceMappingURL=NotFound.controller.js.map

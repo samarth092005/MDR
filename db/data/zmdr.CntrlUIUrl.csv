@@ -2,3 +2,13 @@ TableName,OdataUrl,ColumnCount
 ZMDR_BPMASTER,/mdrapi/maindata/BPMaster,37
 ZMDR_MATERIAL,/sap/opu/odata/sap/ZMDR_CNTRL_MATERIAL_SRV/MaterialSet,12
 ZMDR_SERVCATALOG,/sap/opu/odata/sap/ZMDR_CNTRL_SERVICES_SRV/ServCatalogSet,10
+ZMDR_SERVCATEGRY,/sap/opu/odata/sap/ZMDR_CNTRL_SERVICES_SRV/ServCategorySet,10
+ZMDR_CONTRACT,/sap/opu/odata/sap/ZMDR_CNTRL_SERVICES_SRV/ContractSet,10
+ZMDR_CUST_SG_ELG,/sap/opu/odata/sap/ZMDR_CNTRL_SERVICES_SRV/CustSegmentElgSet,8
+ZMDR_LOCATION,/sap/opu/odata/sap/ZMDR_CNTRL_SERVICES_SRV/LocationSet,9
+ZMDR_PRICE_TARRF,/sap/opu/odata/sap/ZMDR_CNTRL_SERVICES_SRV/PriceTariffSet,9
+ZMDR_SLA,/sap/opu/odata/sap/ZMDR_CNTRL_SERVICES_SRV/SLASet,8
+ZMDR_SERVOFFRING,/sap/opu/odata/sap/ZMDR_CNTRL_SERVICES_SRV/ServOfferingSet,8
+ZMDR_SERVPKGBNDL,/sap/opu/odata/sap/ZMDR_CNTRL_SERVICES_SRV/ServPkgBundleSet,8
+ZMDR_SERV_PROV,/sap/opu/odata/sap/ZMDR_CNTRL_SERVICES_SRV/ServProviderSet,8
+ZMDR_GLACCOUNT,/mdrapi/maindata/GLAccount,6

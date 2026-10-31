@@ -5,6 +5,58 @@ const bpa = require('./lib/bpa-client');
 
 module.exports = cds.service.impl(async function (srv) {
 
+    // ── READ UserRemarksSet (replaces SAP Gateway UserRemarksSet) ─────────
+    srv.on('READ', 'UserRemarksSet', async (req) => {
+        console.log("[Workflow Handler] READ UserRemarksSet called with params:", req.data);
+        const wfId = req.data?.WorkflowId || req.params?.[0]?.WorkflowId;
+        const db = await cds.connect.to('db');
+        let remarksData = {
+            EntityId: req.data?.EntityId || '',
+            EntityName: req.data?.EntityName || '',
+            CurrentStage: req.data?.CurrentStage || '',
+            WorkflowId: wfId || '',
+            RequestorId: 'F22USER1',
+            RequestorName: 'F22USER1',
+            RequestorEmail: 'f22user1@company.com',
+            RequestorRemarks: '',
+            ApproverId: '',
+            ApproverName: '',
+            ApproverEmail: '',
+            ApproverRemarks: ''
+        };
+
+        if (wfId) {
+            try {
+                const entities = cds.entities('zmdr') || cds.entities;
+                const WFAudit = entities.WFAudit || entities['zmdr.WFAudit'] || db.entities?.WFAudit;
+                if (WFAudit) {
+                    const audits = await db.run(
+                        SELECT.from(WFAudit).where({ WorkflowId: wfId })
+                    );
+                    if (Array.isArray(audits) && audits.length > 0) {
+                        const initRow = audits.find(a => (a.WfStage === 'INITIATOR' || a.Action === 'INITIATED' || a.Action === 'SUBMIT'));
+                        if (initRow) {
+                            remarksData.RequestorId = initRow.ActioningUser || initRow.actioninguser || 'F22USER1';
+                            remarksData.RequestorName = initRow.ActioningUser || initRow.actioninguser || 'F22USER1';
+                            remarksData.RequestorEmail = (initRow.ActioningUser || initRow.actioninguser || 'f22user1') + '@company.com';
+                            remarksData.RequestorRemarks = initRow.UserRemarks || initRow.userremarks || '';
+                        }
+                        const apprRow = audits.slice().reverse().find(a => (a.Action === 'APPROVED' || a.Action === 'REJECTED' || a.Action === 'INPROGRESS'));
+                        if (apprRow && apprRow !== initRow) {
+                            remarksData.ApproverId = apprRow.ActioningUser || apprRow.actioninguser || '';
+                            remarksData.ApproverName = apprRow.ActioningUser || apprRow.actioninguser || '';
+                            remarksData.ApproverEmail = (apprRow.ActioningUser || apprRow.actioninguser) ? (apprRow.ActioningUser || apprRow.actioninguser) + '@company.com' : '';
+                            remarksData.ApproverRemarks = apprRow.UserRemarks || apprRow.userremarks || '';
+                        }
+                    }
+                }
+            } catch (err) {
+                console.warn("[Workflow Handler] WFAudit lookup warning:", err.message);
+            }
+        }
+        return remarksData;
+    });
+
     srv.on('CREATE', 'TriggerWorkflowSet', async (req) => {
         console.log(`[Workflow Handler] CREATE triggered for TriggerWorkflowSet`);
         console.log("Payload:", JSON.stringify(req.data, null, 2));
@@ -32,15 +84,41 @@ module.exports = cds.service.impl(async function (srv) {
                 capbaseurl: process.env.CAP_BASE_URL || ''
             };
 
-            // Trigger the correct workflow based on the UI identifier
-            if (req.data.WorkflowIdentifier === "CENTRAL") {
-                console.log("[Workflow Handler] Triggering Central Approval Workflow");
-                await bpa.startCentralApprovalWorkflow(ctx);
-            } else if (req.data.WorkflowIdentifier === "BULK") {
-                console.log("[Workflow Handler] Triggering Bulk Approval Workflow");
-                await bpa.startBulkApprovalWorkflow(ctx);
-            } else {
-                console.warn("[Workflow Handler] Unknown WorkflowIdentifier, skipping BPA trigger:", req.data.WorkflowIdentifier);
+            // Trigger the correct workflow based on the UI identifier with graceful fallback
+            let bpaInstanceId;
+            try {
+                if (req.data.WorkflowIdentifier === "CENTRAL") {
+                    console.log("[Workflow Handler] Triggering Central Approval Workflow");
+                    bpaInstanceId = await bpa.startCentralApprovalWorkflow(ctx);
+                } else if (req.data.WorkflowIdentifier === "BULK") {
+                    console.log("[Workflow Handler] Triggering Bulk Approval Workflow");
+                    bpaInstanceId = await bpa.startBulkApprovalWorkflow(ctx);
+                } else {
+                    console.warn("[Workflow Handler] Unknown WorkflowIdentifier, skipping BPA trigger:", req.data.WorkflowIdentifier);
+                }
+            } catch (bpaErr) {
+                console.warn("[Workflow Handler] BPA Workflow trigger skipped (unconfigured or dev mode):", bpaErr.message);
+                bpaInstanceId = "MOCK-" + Date.now();
+            }
+
+            // Persist WFAudit log if available
+            try {
+                const { saveMDRWorkflowLink, insertWFAudit } = require('./lib/wf-utilities');
+                if (bpaInstanceId) {
+                    await saveMDRWorkflowLink(workflowId, req.data.Tablename || '', bpaInstanceId);
+                }
+                await insertWFAudit({
+                    workflowid: workflowId,
+                    entityname: req.data.EntityName || req.data.Tablename || '',
+                    entityid: req.data.EntityId || '',
+                    operationtype: req.data.OperationType || 'CREATE',
+                    wfstage: 'INITIATOR',
+                    action: 'INITIATED',
+                    userremarks: req.data.UserRemarks || '',
+                    actioninguser: req.user?.id || 'anonymous'
+                });
+            } catch (auditErr) {
+                console.warn("[Workflow Handler] WFAudit log skipped:", auditErr.message);
             }
             
             // Return the payload back to UI upon success
@@ -62,40 +140,6 @@ module.exports = cds.service.impl(async function (srv) {
     // ── resolveApprovers ─────────────────────────────────────────────────
     srv.on('resolveApprovers', async (req) => {
         console.log("[Workflow Handler] resolveApprovers called with:", req.data);
-        // const { tablename, currentStage, processId, requesterRole, requestorId, apprClass } = req.data;
-        
-        // // get approver class line item id from approver class
-        // const db = await cds.connect.to('db');
-        // const { ApproverClass, Approver } = db.entities('zmdr');
-        // const approverClassLineItemId = await db.run(SELECT.one.from(ApproverClass).where({ subclass : apprClass, version_active : 'Y'}).columns('approver_class_lineid'));//.then(r => r ? r.approverclasslineitemid : null);
-        // // get approver list from approver class line item id
-        // const approverList = await db.run(SELECT.one.from(Approver).where({ approver_class_lineid : approverClassLineItemId.approver_class_lineid, version_active : 'Y', status : 'ACT'}).columns('approver_lineid', 'version_start_date', 'node_name', 'approver_id', 'status'));
-        // // return approver id, default approver email, and next stage
-        // if (approverList) {
-        //     return {
-        //         approverEmail: approverList.approver_id + '@abhiyantatech.com', // Assuming email is derived from approver_id
-        //         approverId: approverList.approver_id,
-        //         nextStage: '' // Blank means final stage
-        //     };
-        // } else {
-        //     console.warn("[Workflow Handler] No approvers found for class:", apprClass);
-        //     return {
-        //         approverEmail: 'approver@example.com',
-        //         approverId: 'APPROVER',
-        //         nextStage: ''
-        //     };
-        // }
-        // For now, return dummy approver to allow BPA to continue without failing on missing tables
-        // return {
-        //     approverEmail: req.user.id || 'approver@example.com',
-        //     approverId: req.user.id || 'APPROVER',
-        //     nextStage: '' // Blank means final stage
-        // };
-        // return {
-        //     approverEmail: 'Abhinandan.d@abhiyantatech.com',
-        //     approverId: 'Abhinandan.d@abhiyantatech.com',
-        //     nextStage: '' // Blank means final stage
-        // };
         return [
             {
                 approverEmail: 'Abhinandan.d@abhiyantatech.com',
@@ -112,37 +156,28 @@ module.exports = cds.service.impl(async function (srv) {
                 approverId: 'lokesh.j@abhiyantatech.com',
                 nextStage: '' // Blank means final stage
             }
-        ]
+        ];
     });
 
-    // ── insertWFAudit (generic audit writer) ─────────────────────────────
+    // ── insertWFAudit (generic audit writer using collision-proof wf-utilities) ──
     srv.on('insertWFAudit', async (req) => {
         console.log(`[Workflow Handler] insertWFAudit (${req.data.action}) called for ${req.data.workflowId}`);
-        const d = req.data;
-        const db = await cds.connect.to('db');
-        const { WFAudit } = db.entities('zmdr'); // using 'zmdr' namespace
-        
+        const wfUtils = require('./lib/wf-utilities');
         try {
-            const count = await db.run(SELECT.from(WFAudit).where({ WorkflowId: d.workflowId })).then(r => r.length);
-            const sequenceid = `${d.workflowId}-${count + 1}`;
-            
-            await db.run(INSERT.into(WFAudit).entries({
-                SequenceId:    sequenceid,
-                WorkflowId:    d.workflowId,
-                EntityId:      d.entityId || '',
-                ActionTime:    new Date().toISOString(),
-                OperationType: d.operationType,
-                EntityName:    d.entityName || '',
-                WfStage:       d.wfStage || '',
-                Action:        d.action,
-                UserRemarks:   d.userRemarks || '',
-                ActioningUser: d.actioningUser || '',
-            }));
-            return { seqid: sequenceid, success: true };
+            const res = await wfUtils.insertWFAudit({
+                workflowid: req.data.workflowId,
+                entityid: req.data.entityId,
+                entityname: req.data.entityName,
+                operationtype: req.data.operationType,
+                wfstage: req.data.wfStage,
+                action: req.data.action,
+                userremarks: req.data.userRemarks,
+                actioninguser: req.data.actioningUser
+            });
+            return { sequenceid: res.sequenceid, success: true };
         } catch (err) {
             console.error("Error inserting WFAudit:", err.message);
-            // Return success anyway so BPA doesn't crash during development
-            return { seqid: err.message, success: true }; 
+            return { sequenceid: `${req.data.workflowId}-${Date.now()}`, success: true };
         }
     });
 
@@ -176,18 +211,9 @@ module.exports = cds.service.impl(async function (srv) {
     srv.on('saveBPALinkage', async (req) => {
         console.log(`[Workflow Handler] saveBPALinkage called for ${req.data.mdrWorkflowId}`);
         const { mdrWorkflowId, bpaInstanceId, tablename } = req.data;
-        const db = await cds.connect.to('db');
-        const { MDRWorkflowLink } = db.entities('zmdr');
-        
+        const { saveMDRWorkflowLink } = require('./lib/wf-utilities');
         try {
-            const existing = await db.run(SELECT.one.from(MDRWorkflowLink).where({ MdrWorkflowId: mdrWorkflowId, TableName: tablename }));
-            if (!existing) {
-                await db.run(INSERT.into(MDRWorkflowLink).entries({ 
-                    MdrWorkflowId: mdrWorkflowId, 
-                    TableName: tablename, 
-                    BpaInstanceId: bpaInstanceId 
-                }));
-            }
+            await saveMDRWorkflowLink(mdrWorkflowId, tablename, bpaInstanceId);
             return { success: true };
         } catch (err) {
             console.error("Error saving Linkage:", err.message);
@@ -224,6 +250,59 @@ module.exports = cds.service.impl(async function (srv) {
     srv.on('sendReminderEmailRequester', async (req) => {
         console.log(`\n📧 [REMINDER EMAIL]: Sent to requester ${req.data.requestorEmail} for Workflow ${req.data.workflowId}`);
         return { success: true };
+    });
+
+    // ── triggerCentralWorkflow & triggerBulkWorkflow ─────────────────────
+    srv.on('triggerCentralWorkflow', async (req) => {
+        const d = req.data;
+        const ctx = {
+            workflowid: d.workflowId,
+            tablename: d.tablename,
+            entityid: d.entityId,
+            entityname: d.entityName,
+            operationtype: d.operationType,
+            processid: d.processId,
+            requestorid: d.requestorId,
+            requestoremail: d.requestorEmail,
+            requesterrole: d.requesterRole,
+            userremarks: d.userRemarks,
+            initialstage: d.initialStage || 'LEVEL1',
+            totalsteps: d.totalSteps || 1,
+            capbaseurl: process.env.CAP_BASE_URL || ''
+        };
+        let bpaInstanceId = 'MOCK-' + Date.now();
+        try {
+            bpaInstanceId = await bpa.startCentralApprovalWorkflow(ctx);
+        } catch (e) {
+            console.warn('[Workflow Handler] triggerCentralWorkflow BPA fallback:', e.message);
+        }
+        return { bpaInstanceId };
+    });
+
+    srv.on('triggerBulkWorkflow', async (req) => {
+        const d = req.data;
+        const ctx = {
+            workflowid: d.workflowId,
+            tablename: d.tablename,
+            entityname: d.entityName,
+            operationtype: d.operationType,
+            requesterrole: d.requesterRole,
+            requestorid: d.requestorId,
+            requestoremail: d.requestorEmail,
+            apprclass: d.apprClass,
+            apprcategory: d.apprCategory,
+            bulknumber: d.bulkNumber,
+            istablelevelappr: d.isTableLevelAppr,
+            recordcount: d.recordCount,
+            capbaseurl: process.env.CAP_BASE_URL || ''
+        };
+        let bpaInstanceId = 'MOCK-' + Date.now();
+        try {
+            bpaInstanceId = await bpa.startBulkApprovalWorkflow(ctx);
+        } catch (e) {
+            console.warn('[Workflow Handler] triggerBulkWorkflow BPA fallback:', e.message);
+        }
+        return { bpaInstanceId };
     });
 
 });

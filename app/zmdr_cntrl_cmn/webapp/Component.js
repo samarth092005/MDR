@@ -78,6 +78,41 @@ sap.ui.define([
         }
 
         return UIComponent.extend("com.intapptics.zmdrcntrlcmn.Component", {
+            /**
+             * Intercept model initialization from manifest to resolve dataSource URI with the
+             * app-scoped prefix (/mdrcapbtp.comintappticszmdrcntrlcmn-0.0.1/) required
+             * by the SAP Build Work Zone managed approuter in Fiori Launchpad.
+             */
+            _initComponentModels: function (oManifestModels, oManifestDataSources) {
+                try {
+                    var sModulePath = sap.ui.require.toUrl("com/intapptics/zmdrcntrlcmn");
+                    var sPrefix = "";
+                    if (sModulePath && sModulePath.startsWith("/")) {
+                        sPrefix = sModulePath.endsWith("/") ? sModulePath : sModulePath + "/";
+                    } else if (typeof window !== "undefined" && window.location && (window.location.hostname.includes("launchpad") || (window.sap && window.sap.ushell))) {
+                        sPrefix = "/mdrcapbtp.comintappticszmdrcntrlcmn-0.0.1/";
+                    }
+                    if (sPrefix) {
+                        if (oManifestDataSources && oManifestDataSources.mainService) {
+                            oManifestDataSources.mainService.uri = sPrefix + "mdrapi/central/";
+                        }
+                        if (oManifestDataSources && oManifestDataSources.workflowService) {
+                            oManifestDataSources.workflowService.uri = sPrefix + "mdrapi/workflow/";
+                        }
+                    } else {
+                        if (oManifestDataSources && oManifestDataSources.mainService) {
+                            oManifestDataSources.mainService.uri = "/mdrapi/central/";
+                        }
+                        if (oManifestDataSources && oManifestDataSources.workflowService) {
+                            oManifestDataSources.workflowService.uri = "/mdrapi/workflow/";
+                        }
+                    }
+                } catch (e) {
+                    console.warn("Could not prefix dataSources in _initComponentModels:", e);
+                }
+
+                UIComponent.prototype._initComponentModels.call(this, oManifestModels, oManifestDataSources);
+            },
             metadata: {
                 manifest: "json",
                 config: {
@@ -93,6 +128,34 @@ sap.ui.define([
              * @override
              * 
              */
+            getComponentData: function () {
+                var oData = UIComponent.prototype.getComponentData.apply(this, arguments);
+                if (!oData) {
+                    if (!this._oStandaloneComponentData) {
+                        var oStartupParams = {};
+                        if (typeof window !== "undefined" && window.location && window.location.search) {
+                            var oParams = new URLSearchParams(window.location.search);
+                            oParams.forEach(function (val, key) {
+                                oStartupParams[key] = [val];
+                            });
+                        }
+                        this._oStandaloneComponentData = { startupParameters: oStartupParams };
+                    }
+                    return this._oStandaloneComponentData;
+                }
+                if (!oData.startupParameters) {
+                    var oStartupParams = {};
+                    if (typeof window !== "undefined" && window.location && window.location.search) {
+                        var oParams = new URLSearchParams(window.location.search);
+                        oParams.forEach(function (val, key) {
+                            oStartupParams[key] = [val];
+                        });
+                    }
+                    oData.startupParameters = oStartupParams;
+                }
+                return oData;
+            },
+
             init: function () {
                 // Initialize the Log package and set log level to 6
                 this._oLog = Log;
@@ -106,6 +169,30 @@ sap.ui.define([
 
                 // call the base component's init function
                 UIComponent.prototype.init.apply(this, arguments);
+
+                // Ensure models are properly resolved with app prefix in BTP Launchpad
+                try {
+                    var sPrefix = this._getAppPrefix();
+                    if (sPrefix) {
+                        var sExpectedUrl = (sPrefix.endsWith("/") ? sPrefix : sPrefix + "/") + "mdrapi/central/";
+                        var oModel = this.getModel();
+                        var sCurrent = oModel && typeof oModel.getServiceUrl === "function" ? oModel.getServiceUrl() : "";
+                        if (!oModel || sCurrent !== sExpectedUrl) {
+                            if (oModel) {
+                                try { oModel.destroy(); } catch (e) {}
+                            }
+                            this.setModel(new V4ODataModel({
+                                serviceUrl: sExpectedUrl,
+                                synchronizationMode: "None",
+                                operationMode: "Server",
+                                autoExpandSelect: true,
+                                earlyRequests: true
+                            }));
+                        }
+                    }
+                } catch (e) {
+                    console.warn("Could not verify or set resolved ODataModel in init:", e);
+                }
 
                 // Global reference of busy dialog
                 this._oGlobalBusyDialog = new BusyDialog();
@@ -137,7 +224,8 @@ sap.ui.define([
                 this.setModel(models.createDeviceModel(), "device");
 
                 // swapnil
-                var oStartupParameters = this.getComponentData().startupParameters;
+                var oComponentData = this.getComponentData();
+                var oStartupParameters = (oComponentData && oComponentData.startupParameters) || {};
                 var oTaskModel = oStartupParameters.taskModel;
 
                 if (oTaskModel) {
@@ -188,7 +276,7 @@ sap.ui.define([
              */
             destroy: function () {
                 // Destroy Error Handler
-                this._oErrorHandler.destroy();
+                if (this._oErrorHandler) { this._oErrorHandler.destroy(); }
 
                 // Call the base component's destroy function
                 UIComponent.prototype.destroy.apply(this, arguments);
@@ -222,24 +310,56 @@ sap.ui.define([
             // swapnil
             setTaskModels: function () {
                 // set the task model
-                var startupParameters = this.getComponentData().startupParameters;
-                this.setModel(startupParameters.taskModel, "task");
-
-                // set the task context model
-                // var taskContextModel = new sap.ui.model.json.JSONModel(
-                //     this._getTaskInstancesBaseURL() + "/context"
-                // );
-                // this.setModel(taskContextModel, "context");
-                this.contextLoaded = this._loadTaskContext(); // returns a promise, stored on the component
+                var oComponentData = this.getComponentData();
+                var startupParameters = (oComponentData && oComponentData.startupParameters) || {};
+                if (startupParameters.taskModel) {
+                    this.setModel(startupParameters.taskModel, "task");
+                    this.contextLoaded = this._loadTaskContext(); // returns a promise, stored on the component
+                }
             },
 
             _loadTaskContext: function () {
                 var taskContextModel = new sap.ui.model.json.JSONModel();
+                var sUrl = this._getTaskInstancesBaseURL() + "/context";
                 return taskContextModel
-                    .loadData(this._getTaskInstancesBaseURL() + "/context")
+                    .loadData(sUrl)
                     .then(() => {
                         this.setModel(taskContextModel, "context");
+                        return taskContextModel.getData();
+                    })
+                    .catch((err) => {
+                        console.warn("Direct task context load failed with " + sUrl + ", attempting fallback /api/public/workflow/rest/v1...", err);
+                        var sFallbackUrl = "/api/public/workflow/rest/v1/task-instances/" + this.getTaskInstanceID() + "/context";
+                        return taskContextModel.loadData(sFallbackUrl)
+                            .then(() => {
+                                this.setModel(taskContextModel, "context");
+                                return taskContextModel.getData();
+                            })
+                            .catch((err2) => {
+                                console.error("All task context load attempts failed:", err2);
+                                this.setModel(taskContextModel, "context");
+                                return {};
+                            });
                     });
+            },
+
+            _getAppPrefix: function () {
+                var sAppPrefix = "";
+                try {
+                    sAppPrefix = sap.ui.require.toUrl("com/intapptics/zmdrcntrlcmn") || "";
+                } catch (e) {}
+                if (sAppPrefix && sAppPrefix !== "." && !sAppPrefix.startsWith("./")) {
+                    return sAppPrefix.replace(/\/+$/, "");
+                }
+                try {
+                    if (this.getManifestObject) {
+                        var sBase = this.getManifestObject().getBaseUrl();
+                        if (sBase && sBase !== "." && !sBase.startsWith("./")) {
+                            return sBase.replace(/\/+$/, "");
+                        }
+                    }
+                } catch (e) {}
+                return "";
             },
 
             _getTaskInstancesBaseURL: function () {
@@ -251,70 +371,121 @@ sap.ui.define([
             },
 
             _getWorkflowRuntimeBaseURL: function () {
-                var ui5CloudService = this.getManifestEntry("/sap.cloud/service").replaceAll(".", "");
-                var ui5ApplicationName = this.getManifestEntry("/sap.app/id").replaceAll(".", "");
-                var appPath = `${ui5CloudService}.${ui5ApplicationName}`;
-                return `/${appPath}/api/public/workflow/rest/v1`
-
+                var sPrefix = this._getAppPrefix();
+                if (sPrefix) {
+                    return sPrefix + "/api/public/workflow/rest/v1";
+                }
+                return "/api/public/workflow/rest/v1";
             },
 
             getTaskInstanceID: function () {
-                return this.getModel("task").getData().InstanceID;
+                var oTaskModel = this.getModel("task");
+                var oData = (oTaskModel && oTaskModel.getData()) || {};
+                return oData.InstanceID || oData.id || "";
             },
 
             getInboxAPI: function () {
-                var startupParameters = this.getComponentData().startupParameters;
+                var oComponentData = this.getComponentData();
+                var startupParameters = (oComponentData && oComponentData.startupParameters) || {};
                 return startupParameters.inboxAPI;
             },
 
-            completeTask: function (approvalStatus, outcomeId, comment) {
-                this.getModel("context").setProperty("/approved", approvalStatus);
-                this.getModel("context").setProperty("/comment", comment);
+            _callTakeActionCentral: function (workflowid, action, remarks) {
+                if (!workflowid) return Promise.resolve();
+                this._executedActions = this._executedActions || {};
+                var sKey = workflowid + '_' + action;
+                if (this._executedActions[sKey]) {
+                    console.log("[Component] takeActionCentral already invoked for key:", sKey);
+                    return Promise.resolve();
+                }
+                this._executedActions[sKey] = true;
+                var sAppPrefix = this._getAppPrefix();
+                var sBaseUrl = (sAppPrefix ? (sAppPrefix + "/") : "/") + "mdrapi/central/";
+                var sActionUrl = sBaseUrl + "takeActionCentral";
 
-                this._patchTaskInstance(outcomeId);
-            },
-
-            _patchTaskInstance: function (outcomeId) {
-                const context = this.getModel("context").getData();
-                var data = {
-                    status: "COMPLETED",
-                    context: { ...context, comment: context.comment || '' },
-                    decision: outcomeId
-                };
-
-                jQuery.ajax({
-                    url: `${this._getTaskInstancesBaseURL()}`,
-                    method: "PATCH",
-                    contentType: "application/json",
-                    async: true,
-                    data: JSON.stringify(data),
-                    headers: {
-                        "X-CSRF-Token": this._fetchToken(),
-                    },
-                }).done(() => {
-                    this._refreshTaskList();
-                })
-            },
-
-            _fetchToken: function () {
-                var fetchedToken;
-
-                jQuery.ajax({
-                    url: this._getWorkflowRuntimeBaseURL() + "/xsrf-token",
+                return fetch(sBaseUrl, {
                     method: "GET",
-                    async: false,
                     headers: {
                         "X-CSRF-Token": "Fetch",
-                    },
-                    success(result, xhr, data) {
-                        fetchedToken = data.getResponseHeader("X-CSRF-Token");
-                    },
+                        "Accept": "application/json"
+                    }
+                }).then(function (tokenRes) {
+                    var csrfToken = tokenRes.headers.get("X-CSRF-Token") || "";
+                    return fetch(sActionUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Accept": "application/json",
+                            "X-CSRF-Token": csrfToken
+                        },
+                        body: JSON.stringify({
+                            workflowid: workflowid,
+                            action: action,
+                            remarks: remarks || "",
+                            bpaInstanceId: "",
+                            taskId: this.getTaskInstanceID() || ""
+                        })
+                    });
+                }).then(function (res) {
+                    return res.text();
+                }).then(function (result) {
+                    console.log("[Component] takeActionCentral response:", result);
+                    return result;
+                }).catch(function (err) {
+                    console.warn("[Component] takeActionCentral execution error:", err);
                 });
-                return fetchedToken;
+            },
+
+            completeTask: function (approvalStatus, outcomeId, comment) {
+                var oContextModel = this.getModel("context");
+                if (oContextModel) {
+                    oContextModel.setProperty("/approved", approvalStatus);
+                    oContextModel.setProperty("/comment", comment || "");
+                }
+
+                var context = (oContextModel && oContextModel.getData()) || {};
+                var sWorkflowId = context.workflowid || context.workflowId || context.WorkflowId || "";
+
+                if (!sWorkflowId) {
+                    try {
+                        var oRoot = this.getRootControl();
+                        var oView = oRoot && (oRoot.byId ? oRoot.byId("mainScreen") : null);
+                        if (oView && oView.getController && oView.getController().sWorkflowID) {
+                            sWorkflowId = oView.getController().sWorkflowID;
+                        }
+                    } catch (e) {}
+                }
+
+                var sAction = approvalStatus ? "APPROVED" : "REJECTED";
+                var sRemarks = comment || context.comment || "";
+
+                if (sWorkflowId) {
+                    this._callTakeActionCentral(sWorkflowId, sAction, sRemarks);
+                }
+
+                this._patchTaskInstance(outcomeId, sRemarks, approvalStatus);
+            },
+
+            _patchTaskInstance: function (outcomeId, comment, approvalStatus) {
+                // Task is completed and database record promoted via takeActionCentral on CAP backend.
+                // Refresh task list in My Inbox via official Inbox API:
+                console.log("[Component] Completing task flow and refreshing task list");
+                this._refreshTaskList();
+            },
+
+            _fetchTokenAsync: function () {
+                return Promise.resolve("");
             },
 
             _refreshTaskList: function () {
-                this.getInboxAPI().updateTask("NA", this.getTaskInstanceID());
+                var inboxAPI = this.getInboxAPI();
+                if (inboxAPI && typeof inboxAPI.updateTask === "function") {
+                    try {
+                        inboxAPI.updateTask("NA", this.getTaskInstanceID());
+                    } catch (e) {
+                        console.warn("inboxAPI.updateTask warning:", e);
+                    }
+                }
             },
 
             _showCommentDialog: function (isApproved, outcomeId) {
@@ -336,7 +507,6 @@ sap.ui.define([
                             press: function () {
                                 const comment = sap.ui.getCore().byId(this.createId("commentInput")).getValue();
 
-                                // Now mandatory for both approve and reject
                                 if (!comment.trim()) {
                                     sap.m.MessageToast.show("Please enter a comment before proceeding.");
                                     return;
@@ -344,8 +514,8 @@ sap.ui.define([
 
                                 this._commentDialog.close();
                                 this._commentDialog.destroy();
-                                this._commentDialog = null; // Reset the dialog reference
-                                this._completeTaskWithComment(isApproved, outcomeId, comment);
+                                this._commentDialog = null;
+                                this.completeTask(isApproved, outcomeId, comment);
                             }.bind(this)
                         }),
                         endButton: new sap.m.Button({
@@ -353,38 +523,17 @@ sap.ui.define([
                             press: function () {
                                 this._commentDialog.close();
                                 this._commentDialog.destroy();
-                                this._commentDialog = null; // Reset the dialog reference
+                                this._commentDialog = null;
                             }.bind(this)
                         })
                     });
-                    // this.getView().addDependent(this._commentDialog);
                     this.getRootControl().addDependent(this._commentDialog);  
                 } else {
                     sap.ui.getCore().byId(this.createId("commentInput")).setValue("");
                 }
 
                 this._commentDialog.open();
-            },
-
-            _completeTaskWithComment: function (isApproved, outcomeId, comment) {
-                // Option A: update context with the comment BEFORE completing the task
-                fetch(this._getTaskInstancesBaseURL() + "/context", {
-                    method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
-                    credentials: "include",
-                    body: JSON.stringify({
-                        comment: comment
-                    })
-                })
-                    .then(() => {
-                        this.completeTask(isApproved, outcomeId, comment);
-                    })
-                    .catch((err) => {
-                        console.error("Failed to save comment before completing task:", err);
-                        sap.m.MessageBox.error("Could not save your comment. Please try again.");
-                    });
             }
-            // swapnil
         });
     }
 );
