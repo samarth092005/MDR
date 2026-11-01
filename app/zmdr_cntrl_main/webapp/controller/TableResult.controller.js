@@ -570,8 +570,6 @@ sap.ui.define([
                     aFields = this.fn_getGlobalModel("oFieldsDataModel").getData(); // Field details of the user selected table
 
                 /** Method Implementation */
-                // Open busy dialog
-                this.fn_openBusyDialog();
 
                 // Set the default text in the message strip
                 this.byId("msgStripTableResult").setText("<strong>Information:</strong><em> Select entry to MODIFY or CREATE entry directly");
@@ -1862,9 +1860,9 @@ onPress_actionButtons: function (oEvent) {
 
                 var oListBinding;
                 try {
-                    // In OData V4, we use bindList with $count (not $$count)
+                    // In OData V4, binding parameters must use $$count: true
                     oListBinding = this.oTableModel.bindList(this.sEntitySet, null, null, aFilters, {
-                        $count: true
+                        $$count: true
                     });
                 } catch (e) {
                     this.fn_getLogReference().error("Table Result Controller: Error in bindList - " + e.message);

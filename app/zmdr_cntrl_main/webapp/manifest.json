@@ -204,8 +204,7 @@
     "rootView": {
       "viewName": "com.intapptics.zmdrcntrlmain.view.App",
       "type": "XML",
-      "async": true,
-      "id": "fcl"
+      "async": true
     }
   },
   "sap.cloud": {

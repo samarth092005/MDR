@@ -95,7 +95,13 @@ sap.ui.define([
              * 
              */
             fn_openBusyDialog: function () {
-                this.getOwnerComponent()._oGlobalBusyDialog.open();
+                var oComp = this.getOwnerComponent();
+                if (oComp && oComp._oGlobalBusyDialog) {
+                    if (!oComp._bBusyDialogOpen) {
+                        oComp._bBusyDialogOpen = true;
+                        oComp._oGlobalBusyDialog.open();
+                    }
+                }
             },
 
             /**
@@ -105,7 +111,11 @@ sap.ui.define([
              * 
              */
             fn_closeBusyDialog: function () {
-                this.getOwnerComponent()._oGlobalBusyDialog.close();
+                var oComp = this.getOwnerComponent();
+                if (oComp && oComp._oGlobalBusyDialog) {
+                    oComp._bBusyDialogOpen = false;
+                    oComp._oGlobalBusyDialog.close();
+                }
             },
 
             /**

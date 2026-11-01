@@ -81,45 +81,55 @@ sap.ui.define([
         
 
 
-        // Ensure ManagedObject registration is duplicate-safe in multi-app/iframe launchpad environments
+        // Ensure Element and ManagedObject registration is duplicate-safe in multi-app/iframe launchpad environments
         try {
-            var fnInstallDuplicateSafeHook = function (ManagedObject, Element) {
-                if (ManagedObject && ManagedObject.prototype && !ManagedObject.prototype._mdrDuplicateSafe) {
-                    ManagedObject.prototype._mdrDuplicateSafe = true;
-                    var fnOrigRegister = ManagedObject.prototype.register;
-                    ManagedObject.prototype.register = function () {
-                        var sId = this.sId || (typeof this.getId === "function" && this.getId());
-                        if (sId) {
-                            var oOld = (Element && Element.registry && typeof Element.registry.get === "function" && Element.registry.get(sId)) ||
-                                       (typeof sap !== "undefined" && sap.ui && sap.ui.getCore && sap.ui.getCore().byId && sap.ui.getCore().byId(sId));
-                            if (oOld && oOld !== this) {
-                                try {
-                                    if (typeof oOld.destroy === "function") {
-                                        oOld.destroy(true);
-                                    } else if (Element && Element.registry && typeof Element.registry.remove === "function") {
-                                        Element.registry.remove(sId);
+            var fnPatchClass = function (oClass) {
+                if (oClass && oClass.prototype && !oClass.prototype._mdrDuplicateSafe) {
+                    oClass.prototype._mdrDuplicateSafe = true;
+                    var fnOrigRegister = oClass.prototype.register;
+                    if (typeof fnOrigRegister === "function") {
+                        oClass.prototype.register = function () {
+                            var sId = (typeof this.getId === "function" && this.getId()) || this.sId;
+                            if (sId) {
+                                var oElementClass = (typeof sap !== "undefined" && sap.ui && sap.ui.core && sap.ui.core.Element) ||
+                                                    (typeof sap !== "undefined" && sap.ui && sap.ui.require && sap.ui.require("sap/ui/core/Element"));
+                                var oOld = (oElementClass && oElementClass.registry && typeof oElementClass.registry.get === "function" && oElementClass.registry.get(sId)) ||
+                                           (typeof sap !== "undefined" && sap.ui && sap.ui.getCore && sap.ui.getCore().byId && sap.ui.getCore().byId(sId));
+                                if (oOld && oOld !== this) {
+                                    try {
+                                        if (typeof oOld.destroy === "function") {
+                                            oOld.destroy(true);
+                                        } else if (oElementClass && oElementClass.registry && typeof oElementClass.registry.remove === "function") {
+                                            oElementClass.registry.remove(sId);
+                                        }
+                                    } catch (err) {
+                                        console.warn("MDR: Error destroying duplicate element " + sId + ":", err);
                                     }
-                                } catch (e) {
-                                    console.warn("MDR: Could not destroy duplicate element " + sId + ":", e);
                                 }
                             }
-                        }
-                        return fnOrigRegister.apply(this, arguments);
-                    };
+                            return fnOrigRegister.apply(this, arguments);
+                        };
+                    }
                 }
             };
 
-            if (typeof sap !== "undefined" && sap.ui) {
-                var ManagedObject = sap.ui.require("sap/ui/base/ManagedObject");
-                var Element = sap.ui.require("sap/ui/core/Element");
-                if (ManagedObject && Element) {
-                    fnInstallDuplicateSafeHook(ManagedObject, Element);
-                } else if (sap.ui.require) {
-                    sap.ui.require(["sap/ui/base/ManagedObject", "sap/ui/core/Element"], fnInstallDuplicateSafeHook);
-                }
+            var Element = (typeof sap !== "undefined" && sap.ui && sap.ui.core && sap.ui.core.Element) ||
+                          (typeof sap !== "undefined" && sap.ui && sap.ui.require && sap.ui.require("sap/ui/core/Element"));
+            if (Element) {
+                fnPatchClass(Element);
+            } else if (typeof sap !== "undefined" && sap.ui && sap.ui.require) {
+                sap.ui.require(["sap/ui/core/Element"], fnPatchClass);
+            }
+
+            var ManagedObject = (typeof sap !== "undefined" && sap.ui && sap.ui.base && sap.ui.base.ManagedObject) ||
+                                (typeof sap !== "undefined" && sap.ui && sap.ui.require && sap.ui.require("sap/ui/base/ManagedObject"));
+            if (ManagedObject) {
+                fnPatchClass(ManagedObject);
+            } else if (typeof sap !== "undefined" && sap.ui && sap.ui.require) {
+                sap.ui.require(["sap/ui/base/ManagedObject"], fnPatchClass);
             }
         } catch (e) {
-            console.warn("MDR: Could not install duplicate-safe hook:", e);
+            console.warn("MDR: Could not install Element duplicate-safe hook:", e);
         }
 
         // Sanitize cache-buster URLs for child applications (e.g. comintappticszmdrcntrlcmn)
