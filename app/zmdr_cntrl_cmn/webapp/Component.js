@@ -77,6 +77,20 @@ sap.ui.define([
             };
         }
 
+        // Shim Object.values for null/undefined to prevent ODataMetaModel.destroy TypeError in FLP
+        try {
+            if (typeof Object.values === "function" && !Object._mdrValuesPatched) {
+                Object._mdrValuesPatched = true;
+                var fnOrigObjectValues = Object.values;
+                Object.values = function (obj) {
+                    if (obj === undefined || obj === null) {
+                        return [];
+                    }
+                    return fnOrigObjectValues.apply(this, arguments);
+                };
+            }
+        } catch (e) {}
+
         // Ensure Element and ManagedObject registration is duplicate-safe in multi-app/iframe launchpad environments
         try {
             var fnPatchClass = function (oClass) {
@@ -86,7 +100,7 @@ sap.ui.define([
                     if (typeof fnOrigRegister === "function") {
                         oClass.prototype.register = function () {
                             var sId = (typeof this.getId === "function" && this.getId()) || this.sId;
-                            if (sId) {
+                            if (sId && (sId.startsWith("com.intapptics.") || sId.endsWith("-content"))) {
                                 var oElementClass = (typeof sap !== "undefined" && sap.ui && sap.ui.core && sap.ui.core.Element) ||
                                                     (typeof sap !== "undefined" && sap.ui && sap.ui.require && sap.ui.require("sap/ui/core/Element"));
                                 var oOld = (oElementClass && oElementClass.registry && typeof oElementClass.registry.get === "function" && oElementClass.registry.get(sId)) ||

@@ -1860,9 +1860,9 @@ onPress_actionButtons: function (oEvent) {
 
                 var oListBinding;
                 try {
-                    // In OData V4, binding parameters must use $$count: true
+                    // In OData V4, system query option $count: true is passed
                     oListBinding = this.oTableModel.bindList(this.sEntitySet, null, null, aFilters, {
-                        $$count: true
+                        $count: true
                     });
                 } catch (e) {
                     this.fn_getLogReference().error("Table Result Controller: Error in bindList - " + e.message);
