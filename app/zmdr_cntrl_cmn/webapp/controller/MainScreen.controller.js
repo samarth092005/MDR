@@ -149,9 +149,23 @@ sap.ui.define([
          * @memberof com.intapptics.zmdrcntrlcmn.view.MainScreen
          * @public
          */
-                onPress_btnNavBack: function () {
+        onPress_btnNavBack: function () {
             this.fn_getLogReference().info("Main Screen Controller: Navigating back to table");
-            if (window.history.length > 1) {
+            if (sap.ushell && sap.ushell.Container) {
+                sap.ushell.Container.getServiceAsync("CrossApplicationNavigation")
+                    .then(function (oCrossAppNav) {
+                        if (oCrossAppNav && typeof oCrossAppNav.backToPreviousApp === "function") {
+                            oCrossAppNav.backToPreviousApp();
+                        } else if (oCrossAppNav && typeof oCrossAppNav.historyBack === "function") {
+                            oCrossAppNav.historyBack(1);
+                        } else {
+                            window.history.back();
+                        }
+                    })
+                    .catch(function () {
+                        window.history.back();
+                    });
+            } else if (window.history.length > 1) {
                 window.history.back();
             } else {
                 window.location.href = "/com.intapptics.zmdrcntrlmain/index.html";

@@ -1154,6 +1154,12 @@ onPress_actionButtons: function (oEvent) {
 
     oButton.setEnabled(false);
 
+    setTimeout(function () {
+        if (oButton && typeof oButton.setEnabled === "function") {
+            oButton.setEnabled(true);
+        }
+    }, 1500);
+
     sap.ushell.Container.getServiceAsync("CrossApplicationNavigation")
         .then(function (oNavigationService) {
             return oNavigationService.createEmptyAppStateAsync(oComponent)
@@ -1366,6 +1372,11 @@ onPress_actionButtons: function (oEvent) {
                 this.byId("btnReopen").setVisible(false);
                 this.byId("btnClose").setVisible(false);
 
+                // Ensure Create button is enabled
+                if (this.byId("btnCreate")) {
+                    this.byId("btnCreate").setEnabled(true);
+                }
+
                 // Disable the item details container below result set
                 this.byId("sconForm").setVisible(false);
 
@@ -1399,6 +1410,46 @@ onPress_actionButtons: function (oEvent) {
                     // Set the flag to true of new table selection
                     this.bNewSelectedTable = true;
 
+                    // Internal navigation or browser refresh helper
+                    var fnProceedWithInternalNav = function () {
+                        this._fn_ensureUniqueTablesModel();
+                        var oTablesModel = this.fn_getGlobalModel("oUniqueTablesModel");
+                        var aUniqueTables = oTablesModel ? oTablesModel.getData() : [];
+                        oSelectedTableData = this._fn_findSelectedTable(aUniqueTables, this.sTableId);
+
+                        if (oSelectedTableData) {
+                            this._fn_loadTableConfiguration(oSelectedTableData, oViewTableResultModel, oCompleteFieldsModel);
+                        } else {
+                            this.fn_getLogReference().error("Table Result Controller: Selected table not found in configuration for key: " + this.sTableId);
+                            this.fn_closeBusyDialog();
+                            this.sTableId = undefined;
+                            this.fn_getRouter().navTo("category");
+                        }
+                    }.bind(this);
+
+                    var fnExecuteInternalNav = function () {
+                        if (this.fn_getGlobalModel("oCntrlUiConfigDataModel") && this.fn_getGlobalModel("oUniqueTablesModel")) {
+                            fnProceedWithInternalNav();
+                        } else {
+                            // Check if CntrlUIVis load is in flight (e.g. browser refresh directly on tableResult route)
+                            var oComp = this.getOwnerComponent();
+                            var pLoad = oComp ? oComp._pCntrlUiVisLoad : null;
+                            if (pLoad && typeof pLoad.then === "function") {
+                                pLoad.then(function () {
+                                    fnProceedWithInternalNav();
+                                }.bind(this)).catch(function () {
+                                    this.fn_closeBusyDialog();
+                                    this.sTableId = undefined;
+                                    this.fn_getRouter().navTo("category");
+                                }.bind(this));
+                            } else {
+                                this.fn_closeBusyDialog();
+                                this.sTableId = undefined;
+                                this.fn_getRouter().navTo("category");
+                            }
+                        }
+                    }.bind(this);
+
                     // Read the value of the app state key
                     aAppStateKeys = /(?:sap-iapp-state=)([^&=]+)/.exec(sHash);
 
@@ -1408,8 +1459,8 @@ onPress_actionButtons: function (oEvent) {
                         this.fn_getLogReference().info("Table Result Controller: App State Key - " + sAppStateKey);
 
                         sap.ushell.Container.getService("CrossApplicationNavigation").getAppState(this.getOwnerComponent(), sAppStateKey).done(function (oSavedAppState) {
-                            if (oSavedAppState.getData()) {
-                                this.aSearchParameters = oSavedAppState.getData().asearchParameters || [];
+                            if (oSavedAppState && oSavedAppState.getData && oSavedAppState.getData()) {
+                                this.aSearchParameters = oSavedAppState.getData().aSearchParameters || oSavedAppState.getData().asearchParameters || [];
                                 this.sPageNumber = oSavedAppState.getData().sPageNumber;
 
                                 if (this.byId("cbxPageSize")) {
@@ -1431,54 +1482,17 @@ onPress_actionButtons: function (oEvent) {
                                     }
                                 } else {
                                     this.fn_getLogReference().error("Table Result Controller: Unable to read selected table info from navigation for table: " + this.sTableId);
-                                    this.fn_closeBusyDialog();
-                                    this.sTableId = undefined;
-                                    this.fn_getRouter().navTo("category");
+                                    fnExecuteInternalNav();
                                 }
                             } else {
-                                this.fn_closeBusyDialog();
-                                this.sTableId = undefined;
-                                this.fn_getRouter().navTo("category");
+                                fnExecuteInternalNav();
                             }
+                        }.bind(this)).fail(function () {
+                            this.fn_getLogReference().warn("Table Result Controller: Failed to read AppState, falling back to internal nav");
+                            fnExecuteInternalNav();
                         }.bind(this));
                     } else {
-                        // Internal navigation or browser refresh
-                        var fnProceedWithInternalNav = function () {
-                            this._fn_ensureUniqueTablesModel();
-                            var oTablesModel = this.fn_getGlobalModel("oUniqueTablesModel");
-                            var aUniqueTables = oTablesModel ? oTablesModel.getData() : [];
-                            oSelectedTableData = this._fn_findSelectedTable(aUniqueTables, this.sTableId);
-
-                            if (oSelectedTableData) {
-                                this._fn_loadTableConfiguration(oSelectedTableData, oViewTableResultModel, oCompleteFieldsModel);
-                            } else {
-                                this.fn_getLogReference().error("Table Result Controller: Selected table not found in configuration for key: " + this.sTableId);
-                                this.fn_closeBusyDialog();
-                                this.sTableId = undefined;
-                                this.fn_getRouter().navTo("category");
-                            }
-                        }.bind(this);
-
-                        if (this.fn_getGlobalModel("oCntrlUiConfigDataModel") && this.fn_getGlobalModel("oUniqueTablesModel")) {
-                            fnProceedWithInternalNav();
-                        } else {
-                            // Check if CntrlUIVis load is in flight (e.g. browser refresh directly on tableResult route)
-                            var oComp = this.getOwnerComponent();
-                            var pLoad = oComp ? oComp._pCntrlUiVisLoad : null;
-                            if (pLoad && typeof pLoad.then === "function") {
-                                pLoad.then(function () {
-                                    fnProceedWithInternalNav();
-                                }.bind(this)).catch(function () {
-                                    this.fn_closeBusyDialog();
-                                    this.sTableId = undefined;
-                                    this.fn_getRouter().navTo("category");
-                                }.bind(this));
-                            } else {
-                                this.fn_closeBusyDialog();
-                                this.sTableId = undefined;
-                                this.fn_getRouter().navTo("category");
-                            }
-                        }
+                        fnExecuteInternalNav();
                     }
                 }
 
