@@ -81,6 +81,47 @@ sap.ui.define([
         
 
 
+        // Ensure ManagedObject registration is duplicate-safe in multi-app/iframe launchpad environments
+        try {
+            var fnInstallDuplicateSafeHook = function (ManagedObject, Element) {
+                if (ManagedObject && ManagedObject.prototype && !ManagedObject.prototype._mdrDuplicateSafe) {
+                    ManagedObject.prototype._mdrDuplicateSafe = true;
+                    var fnOrigRegister = ManagedObject.prototype.register;
+                    ManagedObject.prototype.register = function () {
+                        var sId = this.sId || (typeof this.getId === "function" && this.getId());
+                        if (sId) {
+                            var oOld = (Element && Element.registry && typeof Element.registry.get === "function" && Element.registry.get(sId)) ||
+                                       (typeof sap !== "undefined" && sap.ui && sap.ui.getCore && sap.ui.getCore().byId && sap.ui.getCore().byId(sId));
+                            if (oOld && oOld !== this) {
+                                try {
+                                    if (typeof oOld.destroy === "function") {
+                                        oOld.destroy(true);
+                                    } else if (Element && Element.registry && typeof Element.registry.remove === "function") {
+                                        Element.registry.remove(sId);
+                                    }
+                                } catch (e) {
+                                    console.warn("MDR: Could not destroy duplicate element " + sId + ":", e);
+                                }
+                            }
+                        }
+                        return fnOrigRegister.apply(this, arguments);
+                    };
+                }
+            };
+
+            if (typeof sap !== "undefined" && sap.ui) {
+                var ManagedObject = sap.ui.require("sap/ui/base/ManagedObject");
+                var Element = sap.ui.require("sap/ui/core/Element");
+                if (ManagedObject && Element) {
+                    fnInstallDuplicateSafeHook(ManagedObject, Element);
+                } else if (sap.ui.require) {
+                    sap.ui.require(["sap/ui/base/ManagedObject", "sap/ui/core/Element"], fnInstallDuplicateSafeHook);
+                }
+            }
+        } catch (e) {
+            console.warn("MDR: Could not install duplicate-safe hook:", e);
+        }
+
         // Sanitize cache-buster URLs for child applications (e.g. comintappticszmdrcntrlcmn)
         function sanitizeChildAppUrl(sUrl) {
             if (typeof sUrl !== "string") { return sUrl; }
@@ -306,7 +347,14 @@ sap.ui.define([
              */
             destroy: function () {
                 // Destroy Error Handler
-                this._oErrorHandler.destroy();
+                if (this._oErrorHandler && typeof this._oErrorHandler.destroy === "function") {
+                    this._oErrorHandler.destroy();
+                }
+
+                if (this._oGlobalBusyDialog && typeof this._oGlobalBusyDialog.destroy === "function") {
+                    this._oGlobalBusyDialog.destroy();
+                    this._oGlobalBusyDialog = null;
+                }
 
                 // Call the base component's destroy function
                 UIComponent.prototype.destroy.apply(this, arguments);
