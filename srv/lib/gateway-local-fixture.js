@@ -225,7 +225,7 @@ const SERVICES_REGISTRY = {
 };
 
 function persistServiceRecord(tableName, keyProp, record) {
-    getDbInstance().then(async db => {
+    return getDbInstance().then(async db => {
         if (!db) return;
         const dbRecord = { ...record };
         delete dbRecord.VersionActive;
@@ -233,6 +233,9 @@ function persistServiceRecord(tableName, keyProp, record) {
         try {
             return await db.run(UPSERT.into(targetEntity).entries(dbRecord));
         } catch (_) {
+            if (keyProp && dbRecord[keyProp]) {
+                await db.run(`DELETE FROM ${tableName} WHERE "${keyProp}" = ?`, [dbRecord[keyProp]]).catch(() => null);
+            }
             const keys = Object.keys(dbRecord);
             const cols = keys.map(k => '"' + k + '"').join(', ');
             const placeholders = keys.map(() => '?').join(', ');
@@ -249,7 +252,7 @@ function syncServicesFromDb() {
             const table = meta.table;
             const keyProp = meta.key;
             const store = meta.store;
-            db.run(`SELECT * FROM ${table} WHERE VERSION_ACTIVE = 'Y' OR VersionActive = 'Y' ORDER BY created_on DESC`).then(rows => {
+            db.run(`SELECT * FROM ${table} WHERE VERSION_ACTIVE IN ('Y', 'I') OR VersionActive IN ('Y', 'I') ORDER BY created_on DESC`).then(rows => {
                 if (rows && rows.length > 0) {
                     rows.forEach(row => {
                         row.VERSION_ACTIVE = row.VERSION_ACTIVE || 'Y';
@@ -735,8 +738,8 @@ function handleSubRequest(method, urlPath, headers, body, defaultService) {
             WORKFLOW_ID: payload.WORKFLOW_ID || ('WF' + Math.floor(100000 + Math.random() * 900000)),
             STATUS: payload.STATUS || '510',
             VERSION_END_DATE: '9999-12-31T23:59:59Z',
-            VERSION_ACTIVE: payload.VERSION_ACTIVE || payload.VersionActive || 'Y',
-            VersionActive: payload.VERSION_ACTIVE || payload.VersionActive || 'Y',
+            VERSION_ACTIVE: payload.VERSION_ACTIVE || payload.VersionActive || 'I',
+            VersionActive: payload.VERSION_ACTIVE || payload.VersionActive || 'I',
             created_on: now,
             created_by: 'LOCAL_DEVELOPER',
             updated_on: now,
@@ -869,7 +872,8 @@ function handleSubRequest(method, urlPath, headers, body, defaultService) {
             WORKFLOW_ID: payload.WORKFLOW_ID || ('WF' + Math.floor(100000 + Math.random() * 900000)),
             STATUS: payload.STATUS || '510',
             VERSION_END_DATE: '9999-12-31T23:59:59Z',
-            VERSION_ACTIVE: 'Y',
+            VERSION_ACTIVE: payload.VERSION_ACTIVE || payload.VersionActive || 'I',
+            VersionActive: payload.VERSION_ACTIVE || payload.VersionActive || 'I',
             created_on: now,
             created_by: 'LOCAL_DEVELOPER',
             updated_on: now,
@@ -1053,8 +1057,8 @@ function handleSubRequest(method, urlPath, headers, body, defaultService) {
             Status: payload.STATUS || payload.Status || '510',
             VERSION_END_DATE: payload.VERSION_END_DATE || payload.VersionEndDate || '9999-12-31T23:59:59Z',
             VersionEndDate: payload.VERSION_END_DATE || payload.VersionEndDate || '9999-12-31T23:59:59Z',
-            VERSION_ACTIVE: payload.VERSION_ACTIVE || payload.VersionActive || 'Y',
-            VersionActive: payload.VERSION_ACTIVE || payload.VersionActive || 'Y',
+            VERSION_ACTIVE: payload.VERSION_ACTIVE || payload.VersionActive || 'I',
+            VersionActive: payload.VERSION_ACTIVE || payload.VersionActive || 'I',
             created_on: now,
             created_by: 'LOCAL_DEVELOPER',
             updated_on: now,
@@ -1186,8 +1190,8 @@ function handleSubRequest(method, urlPath, headers, body, defaultService) {
                 WORKFLOW_ID: payload.WORKFLOW_ID || ('WF' + Math.floor(100000 + Math.random() * 900000)),
                 STATUS: payload.STATUS || '510',
                 VERSION_END_DATE: '9999-12-31T23:59:59Z',
-                VERSION_ACTIVE: payload.VERSION_ACTIVE || payload.VersionActive || 'Y',
-                VersionActive: payload.VERSION_ACTIVE || payload.VersionActive || 'Y',
+                VERSION_ACTIVE: payload.VERSION_ACTIVE || payload.VersionActive || 'I',
+                VersionActive: payload.VERSION_ACTIVE || payload.VersionActive || 'I',
                 created_on: now,
                 created_by: 'LOCAL_DEVELOPER',
                 updated_on: now,

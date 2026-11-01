@@ -1329,11 +1329,29 @@ sap.ui.define([
                 return "VERSION_ACTIVE";
             }
             if (this.aFieldDetails && this.aFieldDetails.some(function (f) {
-                return (f.ColumnName || f.columnName || "").toUpperCase() === "VERSION_ACTIVE";
+                return f.ColumnName === "VERSION_ACTIVE" || f.columnName === "VERSION_ACTIVE";
             })) {
                 return "VERSION_ACTIVE";
             }
             return "VersionActive";
+        },
+
+        _fn_getWorkflowIdField: function () {
+            var sTable = (this.sSelectedTableName || this.sTableLabel || this.sTableEntitySet || "").trim().toUpperCase();
+            if (sTable.indexOf("MATERIAL") !== -1 || sTable.indexOf("SERV") !== -1 || sTable.indexOf("CONTRACT") !== -1 ||
+                sTable.indexOf("LOCATION") !== -1 || sTable.indexOf("PRICE") !== -1 || sTable.indexOf("TARRF") !== -1 ||
+                sTable.indexOf("SLA") !== -1 || sTable.indexOf("CUST_SG") !== -1) {
+                return "WORKFLOW_ID";
+            }
+            if (this.oSelectedTableData && typeof this.oSelectedTableData.WORKFLOW_ID !== "undefined") {
+                return "WORKFLOW_ID";
+            }
+            if (this.aFieldDetails && this.aFieldDetails.some(function (f) {
+                return f.ColumnName === "WORKFLOW_ID" || f.columnName === "WORKFLOW_ID";
+            })) {
+                return "WORKFLOW_ID";
+            }
+            return "WorkflowId";
         },
 
         onPress_btnSeeChanges: function (oEvent) {
@@ -4024,9 +4042,38 @@ sap.ui.define([
                 }
             });
 
-            // Set new VersionStartDate if amending or creating
-            if (!oPayload.VersionStartDate || this.sActionType === "Amend") {
-                oPayload.VersionStartDate = new Date().toISOString();
+            // [MDR GOVERNANCE FIX] Schema-aware field casing (PascalCase for BPMaster/GLAccount, UPPERCASE for Services/Materials)
+            var sVerField = this._fn_getVersionActiveField ? this._fn_getVersionActiveField() : "VERSION_ACTIVE";
+            var bIsUppercase = (sVerField === "VERSION_ACTIVE");
+            var sGeneratedWfId = oTableData.WorkflowId || oTableData.WORKFLOW_ID || ("WF" + Math.floor(100000 + Math.random() * 900000));
+
+            if (bIsUppercase) {
+                oPayload.WORKFLOW_ID = sGeneratedWfId;
+                oPayload.VERSION_ACTIVE = "I";
+                oPayload.STATUS = oPayload.STATUS || "510";
+                if (!oPayload.VERSION_START_DATE || this.sActionType === "Amend") {
+                    oPayload.VERSION_START_DATE = new Date().toISOString();
+                }
+                // Strip out any PascalCase equivalents that trigger 400 Bad Request in strict OData V4 schemas
+                delete oPayload.WorkflowId;
+                delete oPayload.VersionActive;
+                delete oPayload.Status;
+                delete oPayload.VersionStartDate;
+            } else {
+                oPayload.WorkflowId = sGeneratedWfId;
+                oPayload.VersionActive = "I";
+                oPayload.Status = oPayload.Status || "510";
+                if (!oPayload.VersionStartDate || this.sActionType === "Amend") {
+                    oPayload.VersionStartDate = new Date().toISOString();
+                }
+                if (!oPayload.BpId && (this.sSelectedTableName || "").toUpperCase().indexOf("BP") !== -1) {
+                    oPayload.BpId = "BP" + Date.now().toString().slice(-8);
+                }
+                // Strip out any UPPERCASE equivalents that trigger 400 Bad Request in strict OData V4 schemas
+                delete oPayload.WORKFLOW_ID;
+                delete oPayload.VERSION_ACTIVE;
+                delete oPayload.STATUS;
+                delete oPayload.VERSION_START_DATE;
             }
 
             try {
@@ -4058,9 +4105,9 @@ sap.ui.define([
                     oMessage.message = "Data pushed to backend";
                 }
 
-                // Fallback if backend does not return WORKFLOW_ID (e.g. CAP generic handler)
+                var sTriggerWfId = oData.WorkflowId || oData.WORKFLOW_ID || sGeneratedWfId;
                 if (!oData.WorkflowId) {
-                    oData.WorkflowId = "WF" + Math.floor(Math.random() * 10000);
+                    oData.WorkflowId = sTriggerWfId;
                 }
 
                 // Update the value of the table data post data creation at backend with additional data received
@@ -4070,8 +4117,8 @@ sap.ui.define([
                     }
                 });
 
-                // Trigger workflow
-                this._fn_triggerWorkflow(oData.WorkflowId);
+                // Trigger workflow with exact linked workflow reference
+                this._fn_triggerWorkflow(sTriggerWfId);
             }.bind(this)).catch(function (oError) {
                 // Set error in message strip
                 this.byId("msgStripMainScreen").setText("<strong>Error: </strong><em>Error while processing. For more info </em>");
@@ -4403,13 +4450,7 @@ sap.ui.define([
             var aFilters = [],
                 oMessage;
 
-            var sWfField = "WorkflowId";
-            if (this.aFieldDetails && this.aFieldDetails.some(function (f) {
-                return (f.ColumnName || "").toUpperCase() === "WORKFLOW_ID";
-            })) {
-                sWfField = "WORKFLOW_ID";
-            }
-
+            var sWfField = this._fn_getWorkflowIdField ? this._fn_getWorkflowIdField() : "WorkflowId";
             var sVerField = this._fn_getVersionActiveField ? this._fn_getVersionActiveField() : "VERSION_ACTIVE";
 
             // Add filters

@@ -274,8 +274,8 @@ async function runTests() {
             const postJson = JSON.parse(postRes.body);
             assert.strictEqual(postJson[item.key], item.id);
             assert(postJson.WORKFLOW_ID, `Must return WORKFLOW_ID for ${item.set}`);
-            assert.strictEqual(postJson.VERSION_ACTIVE, 'Y');
-            assert.strictEqual(postJson.VersionActive, 'Y');
+            assert.strictEqual(postJson.VERSION_ACTIVE, 'I');
+            assert.strictEqual(postJson.VersionActive, 'I');
 
             // 3. GET Single
             const singleRes = await httpGet(`/sap/opu/odata/sap/ZMDR_CNTRL_SERVICES_SRV/${item.set}('${item.id}')`);

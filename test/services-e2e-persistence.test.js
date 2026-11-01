@@ -260,6 +260,7 @@ async function runTests() {
 
         // 2. Loop through all 10 entities and verify full lifecycle + DB persistence
         for (const ent of testEntities) {
+            await db.run(`DELETE FROM ${ent.table} WHERE "${ent.key}" = ?`, [ent.id]).catch(() => null);
             await test(`[${ent.name}] Collection Read (GET) returns 200 and value array`, async () => {
                 const res = await httpGet(`/sap/opu/odata/sap/ZMDR_CNTRL_SERVICES_SRV/${ent.set}`);
                 assert.strictEqual(res.status, 200, `GET ${ent.set} must return 200`);
@@ -274,7 +275,7 @@ async function runTests() {
                 assert.strictEqual(json[ent.key], ent.id, 'Key must match created ID');
                 assert(json.WORKFLOW_ID, 'Must generate WORKFLOW_ID');
                 assert.strictEqual(json.STATUS, '510', 'Default status must be 510');
-                assert.strictEqual(json.VERSION_ACTIVE, 'Y');
+                assert.strictEqual(json.VERSION_ACTIVE, 'I');
             });
 
             await test(`[${ent.name}] Read Single Entity returns persisted object`, async () => {
@@ -287,11 +288,11 @@ async function runTests() {
             await test(`[${ent.name}] Direct SQLite DB Query confirms record is written to ${ent.table}`, async () => {
                 // Wait briefly for asynchronous SQLite write
                 await new Promise(r => setTimeout(r, 1000));
-                const rows = await db.run(`SELECT * FROM ${ent.table} WHERE "${ent.key}" = ?`, [ent.id]);
+                const rows = await db.run(`SELECT * FROM ${ent.table} WHERE "${ent.key}" = ? ORDER BY created_on DESC`, [ent.id]);
                 assert(rows.length >= 1, `Must find exactly 1 record in SQLite table ${ent.table}`);
                 assert.strictEqual(rows[0][ent.key], ent.id, 'SQLite key column must match');
                 assert.strictEqual(rows[0].STATUS, '510', 'SQLite STATUS must be 510');
-                assert.strictEqual(rows[0].VERSION_ACTIVE, 'Y', 'SQLite VERSION_ACTIVE must be Y');
+                assert.strictEqual(rows[0].VERSION_ACTIVE, 'I', 'SQLite VERSION_ACTIVE must be I');
             });
         }
 

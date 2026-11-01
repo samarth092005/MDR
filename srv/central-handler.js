@@ -48,6 +48,9 @@ module.exports = cds.service.impl(async function (srv) {
             await dynDb.insertRow(db, tablename, rowToInsert);
 
             // Complete task on BPA if taskId is provided
+            const taskId = req.data.taskId;
+            const action = req.data.action || 'APPROVE';
+            const remarks = req.data.remarks || '';
             if (taskId) {
                 try {
                     const bpaClient = require('./lib/bpa-client');
@@ -205,7 +208,13 @@ module.exports = cds.service.impl(async function (srv) {
             
             let tablename = link?.TableName || link?.tablename;
             if (!tablename) {
-                for (const candidate of ['ZMDR_MATERIAL', 'SERVICES_REGISTRY', 'ZMDR_SERVCATALOG', 'ZMDR_BPMASTER', 'BPMaster', 'ZMDR_CONTRACT', 'ZMDR_GLACCOUNT', 'GLAccount']) {
+                for (const candidate of [
+                    'ZMDR_MATERIAL', 'SERVICES_REGISTRY',
+                    'ZMDR_SERVCATALOG', 'ZMDR_SERVCATEGRY', 'ZMDR_CONTRACT', 'ZMDR_CUST_SG_ELG',
+                    'ZMDR_LOCATION', 'ZMDR_PRICE_TARRF', 'ZMDR_SLA', 'ZMDR_SERVOFFRING',
+                    'ZMDR_SERVPKGBNDL', 'ZMDR_SERV_PROV',
+                    'ZMDR_BPMASTER', 'BPMaster', 'ZMDR_GLACCOUNT', 'GLAccount'
+                ]) {
                     let exists = await dynDb.checkExists(db, candidate, '"WORKFLOW_ID" = ?', [workflowid]).catch(() => false);
                     if (!exists) {
                         exists = await dynDb.checkExists(db, candidate, '"WorkflowId" = ?', [workflowid]).catch(() => false);
@@ -229,6 +238,10 @@ module.exports = cds.service.impl(async function (srv) {
                 await dynDb.updateRow(db, tablename, updateActive, '"WORKFLOW_ID" = ?', [workflowid]).catch(() => null);
                 await dynDb.updateRow(db, tablename, updateActive, '"WorkflowId" = ?', [workflowid]).catch(() => null);
                 await dynDb.updateRow(db, tablename, updateActive, '"WORKFLOWID" = ?', [workflowid]).catch(() => null);
+                if (tablename === 'ZMDR_BPMASTER' || tablename === 'BPMaster') {
+                    await dynDb.updateRow(db, 'BPMaster', updateActive, '"WorkflowId" = ?', [workflowid]).catch(() => null);
+                    await dynDb.updateRow(db, 'ZMDR_BPMASTER', updateActive, '"WorkflowId" = ?', [workflowid]).catch(() => null);
+                }
                 try {
                     const gwFixture = require('./lib/gateway-local-fixture');
                     if (gwFixture && typeof gwFixture.approveRecordInStore === 'function') {

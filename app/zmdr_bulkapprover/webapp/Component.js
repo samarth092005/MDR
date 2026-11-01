@@ -115,8 +115,72 @@ sap.ui.define([
             return "/api/public/workflow/rest/v1";
         },
 
-        getTaskInstanceID: function () {
-            return this.getModel("task").getData().InstanceID;
+                getTaskInstanceID: function () {
+            var oTaskModel = this.getModel("task");
+            if (oTaskModel) {
+                if (typeof oTaskModel.getProperty === "function") {
+                    var pId = oTaskModel.getProperty("/InstanceID") || oTaskModel.getProperty("/id");
+                    if (pId) return pId;
+                }
+                if (typeof oTaskModel.getData === "function") {
+                    var oData = oTaskModel.getData() || {};
+                    if (oData.InstanceID || oData.id) return oData.InstanceID || oData.id;
+                }
+            }
+            var startupParameters = (this.getComponentData() && this.getComponentData().startupParameters) || {};
+            if (startupParameters.taskModel) {
+                if (typeof startupParameters.taskModel.getProperty === "function") {
+                    var spId = startupParameters.taskModel.getProperty("/InstanceID") || startupParameters.taskModel.getProperty("/id");
+                    if (spId) return spId;
+                }
+                if (typeof startupParameters.taskModel.getData === "function") {
+                    var td = startupParameters.taskModel.getData() || {};
+                    if (td.InstanceID || td.id) return td.InstanceID || td.id;
+                }
+            }
+            if (startupParameters.taskInstanceId) {
+                return Array.isArray(startupParameters.taskInstanceId) ? startupParameters.taskInstanceId[0] : startupParameters.taskInstanceId;
+            }
+            if (startupParameters.InstanceID) {
+                return Array.isArray(startupParameters.InstanceID) ? startupParameters.InstanceID[0] : startupParameters.InstanceID;
+            }
+            return "";
+        },
+
+        getTaskOrigin: function () {
+            var oTaskModel = this.getModel("task");
+            if (oTaskModel) {
+                if (typeof oTaskModel.getProperty === "function") {
+                    var pOrigin = oTaskModel.getProperty("/SAP__Origin");
+                    if (pOrigin) return pOrigin;
+                }
+                if (typeof oTaskModel.getData === "function") {
+                    var oData = oTaskModel.getData() || {};
+                    if (oData.SAP__Origin) return oData.SAP__Origin;
+                }
+            }
+            var startupParameters = (this.getComponentData() && this.getComponentData().startupParameters) || {};
+            if (startupParameters.taskModel) {
+                if (typeof startupParameters.taskModel.getProperty === "function") {
+                    var spOrigin = startupParameters.taskModel.getProperty("/SAP__Origin");
+                    if (spOrigin) return spOrigin;
+                }
+                if (typeof startupParameters.taskModel.getData === "function") {
+                    var td = startupParameters.taskModel.getData() || {};
+                    if (td.SAP__Origin) return td.SAP__Origin;
+                }
+            }
+            if (startupParameters.SAP__Origin) {
+                return Array.isArray(startupParameters.SAP__Origin) ? startupParameters.SAP__Origin[0] : startupParameters.SAP__Origin;
+            }
+            if (typeof window !== "undefined" && window.location && window.location.search) {
+                try {
+                    var urlParams = new URLSearchParams(window.location.search);
+                    var urlOrigin = urlParams.get("SAP__Origin") || urlParams.get("origin");
+                    if (urlOrigin) return urlOrigin;
+                } catch (_) {}
+            }
+            return "NA";
         },
 
         getInboxAPI: function () {
@@ -176,7 +240,20 @@ sap.ui.define([
         },
 
         _refreshTaskList: function () {
-            this.getInboxAPI().updateTask("NA", this.getTaskInstanceID());
+            var inboxAPI = this.getInboxAPI();
+            if (inboxAPI) {
+                try {
+                    if (typeof inboxAPI.setShowFooter === "function") {
+                        inboxAPI.setShowFooter(false);
+                    }
+                    if (typeof inboxAPI.removeAction === "function") {
+                        inboxAPI.removeAction("approve");
+                        inboxAPI.removeAction("reject");
+                    }
+                } catch (e) {
+                    console.warn("[Bulk Component] Notice updating inbox footer:", e);
+                }
+            }
         },
 
         _showCommentDialog: function (isApproved, outcomeId) {

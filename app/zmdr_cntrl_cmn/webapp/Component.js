@@ -450,17 +450,29 @@ sap.ui.define([
                 return "/api/public/workflow/rest/v1";
             },
 
-            getTaskInstanceID: function () {
+                        getTaskInstanceID: function () {
                 var oTaskModel = this.getModel("task");
-                var oData = (oTaskModel && oTaskModel.getData()) || {};
-                if (oData.InstanceID || oData.id) {
-                    return oData.InstanceID || oData.id;
+                if (oTaskModel) {
+                    if (typeof oTaskModel.getProperty === "function") {
+                        var pId = oTaskModel.getProperty("/InstanceID") || oTaskModel.getProperty("/id");
+                        if (pId) return pId;
+                    }
+                    if (typeof oTaskModel.getData === "function") {
+                        var oData = oTaskModel.getData() || {};
+                        if (oData.InstanceID || oData.id) return oData.InstanceID || oData.id;
+                    }
                 }
                 var oComponentData = this.getComponentData();
                 var startupParameters = (oComponentData && oComponentData.startupParameters) || {};
-                if (startupParameters.taskModel && typeof startupParameters.taskModel.getData === "function") {
-                    var td = startupParameters.taskModel.getData() || {};
-                    if (td.InstanceID || td.id) return td.InstanceID || td.id;
+                if (startupParameters.taskModel) {
+                    if (typeof startupParameters.taskModel.getProperty === "function") {
+                        var spId = startupParameters.taskModel.getProperty("/InstanceID") || startupParameters.taskModel.getProperty("/id");
+                        if (spId) return spId;
+                    }
+                    if (typeof startupParameters.taskModel.getData === "function") {
+                        var td = startupParameters.taskModel.getData() || {};
+                        if (td.InstanceID || td.id) return td.InstanceID || td.id;
+                    }
                 }
                 if (startupParameters.taskInstanceId) {
                     return Array.isArray(startupParameters.taskInstanceId) ? startupParameters.taskInstanceId[0] : startupParameters.taskInstanceId;
@@ -469,6 +481,43 @@ sap.ui.define([
                     return Array.isArray(startupParameters.InstanceID) ? startupParameters.InstanceID[0] : startupParameters.InstanceID;
                 }
                 return "";
+            },
+
+            getTaskOrigin: function () {
+                var oTaskModel = this.getModel("task");
+                if (oTaskModel) {
+                    if (typeof oTaskModel.getProperty === "function") {
+                        var pOrigin = oTaskModel.getProperty("/SAP__Origin");
+                        if (pOrigin) return pOrigin;
+                    }
+                    if (typeof oTaskModel.getData === "function") {
+                        var oData = oTaskModel.getData() || {};
+                        if (oData.SAP__Origin) return oData.SAP__Origin;
+                    }
+                }
+                var oComponentData = this.getComponentData();
+                var startupParameters = (oComponentData && oComponentData.startupParameters) || {};
+                if (startupParameters.taskModel) {
+                    if (typeof startupParameters.taskModel.getProperty === "function") {
+                        var spOrigin = startupParameters.taskModel.getProperty("/SAP__Origin");
+                        if (spOrigin) return spOrigin;
+                    }
+                    if (typeof startupParameters.taskModel.getData === "function") {
+                        var td = startupParameters.taskModel.getData() || {};
+                        if (td.SAP__Origin) return td.SAP__Origin;
+                    }
+                }
+                if (startupParameters.SAP__Origin) {
+                    return Array.isArray(startupParameters.SAP__Origin) ? startupParameters.SAP__Origin[0] : startupParameters.SAP__Origin;
+                }
+                if (typeof window !== "undefined" && window.location && window.location.search) {
+                    try {
+                        var urlParams = new URLSearchParams(window.location.search);
+                        var urlOrigin = urlParams.get("SAP__Origin") || urlParams.get("origin");
+                        if (urlOrigin) return urlOrigin;
+                    } catch (_) {}
+                }
+                return "NA";
             },
 
             getInboxAPI: function () {
@@ -592,36 +641,54 @@ sap.ui.define([
 
                 return pAction.then(function (res) {
                     that._patchTaskInstance(outcomeId, sRemarks, approvalStatus);
+                    var sStatusText = approvalStatus ? "approved" : "rejected";
+                    var sMsg = "Workflow request " + (sWorkflowId || "") + " has been " + sStatusText + " successfully.";
+                    sap.m.MessageBox.success(sMsg, {
+                        title: approvalStatus ? "Request Approved" : "Request Rejected",
+                        onClose: function () {
+                            try {
+                                if (window.history && window.history.length > 1) {
+                                    window.history.back();
+                                }
+                            } catch (_) {}
+                        }
+                    });
                     return res;
                 }).catch(function (err) {
-                    console.warn("[Component] Error in completeTask workflow action:", err);
-                    that._patchTaskInstance(outcomeId, sRemarks, approvalStatus);
+                    console.error("[Component] Error in completeTask workflow action:", err);
+                    sap.m.MessageBox.error("Action could not be completed: " + (err.message || err));
                     throw err;
                 });
             },
 
             _patchTaskInstance: function (outcomeId, comment, approvalStatus) {
                 var sTaskId = this.getTaskInstanceID();
-                console.log("[Component] Completing task flow and refreshing task list for task:", sTaskId);
-                this._refreshTaskList();
+                console.log("[Component] Completing task flow cleanly without 404 for task:", sTaskId);
+                this._refreshTaskList(approvalStatus);
             },
 
             _fetchTokenAsync: function () {
                 return Promise.resolve("");
             },
 
-            _refreshTaskList: function () {
+            _refreshTaskList: function (approvalStatus) {
+                // In SAP Build Process Automation / Work Zone My Inbox, the task is completed directly
+                // via BPA REST API inside takeActionCentral on CAP backend.
+                // Do NOT call inboxAPI.updateTask() here because querying the completed task instance
+                // returns 404 Not Found from TCM, triggering the generic 'Session expired' modal popup.
+                // Instead, disable/hide the footer action buttons cleanly:
                 var inboxAPI = this.getInboxAPI();
-                var sTaskId = this.getTaskInstanceID();
                 if (inboxAPI) {
                     try {
-                        if (typeof inboxAPI.completeTask === "function" && sTaskId) {
-                            inboxAPI.completeTask("NA", sTaskId);
-                        } else if (typeof inboxAPI.updateTask === "function" && sTaskId) {
-                            inboxAPI.updateTask("NA", sTaskId);
+                        if (typeof inboxAPI.setShowFooter === "function") {
+                            inboxAPI.setShowFooter(false);
+                        }
+                        if (typeof inboxAPI.removeAction === "function") {
+                            inboxAPI.removeAction("approve");
+                            inboxAPI.removeAction("reject");
                         }
                     } catch (e) {
-                        console.warn("inboxAPI.updateTask warning:", e);
+                        console.warn("[Component] Notice updating inbox footer:", e);
                     }
                 }
             },

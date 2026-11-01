@@ -15,7 +15,7 @@ function getBPAConfig() {
             if (spaService && spaService[0] && spaService[0].credentials) {
                 const creds = spaService[0].credentials;
                 const endpoints = creds.endpoints || {};
-                const apiUrl = endpoints.api_gateway || creds.api_url || creds.url;
+                const apiUrl = endpoints.api || endpoints.api_gateway || creds.api_url || creds.url;
                 const uaa = creds.uaa || {};
                 const tokenUrl = uaa.url ? `${uaa.url}/oauth/token` : creds.token_url;
                 const clientId = uaa.clientid || creds.clientid;
@@ -105,13 +105,25 @@ async function completeBPATask(taskId, decision, approverremarks) {
         await fetch(`${cfg.apiUrl}/workflow/rest/v1/task-instances/${taskId}/claims`, {
             method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         });
+        const normalizedDecision = (decision && String(decision).toUpperCase().includes('REJ')) ? 'reject' : 'approve';
         const r = await fetch(`${cfg.apiUrl}/workflow/rest/v1/task-instances/${taskId}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({ status: 'COMPLETED', context: { decision, approverremarks } }),
+            body: JSON.stringify({
+                status: 'COMPLETED',
+                decision: normalizedDecision,
+                context: {
+                    decision: normalizedDecision,
+                    comment: approverremarks || '',
+                    approverremarks: approverremarks || ''
+                }
+            }),
         });
         if (!r.ok) {
-            console.warn(`[BPA] Task ${taskId} completion returned status: ${r.status}`);
+            const errTxt = await r.text().catch(() => '');
+            console.warn(`[BPA] Task ${taskId} completion returned status: ${r.status} - ${errTxt}`);
+        } else {
+            console.log(`[BPA] Successfully completed task ${taskId} with decision ${normalizedDecision}`);
         }
     } catch (err) {
         console.warn(`[BPA] completeBPATask exception: ${err.message}`);
