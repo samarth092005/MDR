@@ -1,6 +1,6 @@
 <mvc:View controllerName="com.intapptics.zmdrcntrlmain.controller.TableResult" displayBlock="true" xmlns:mvc="sap.ui.core.mvc"
     xmlns="sap.m" xmlns:f="sap.f" xmlns:form="sap.ui.layout.form" xmlns:core="sap.ui.core" xmlns:table="sap.ui.table">
-    <f:DynamicPage id="dpTableResult" stickySubheaderProvider="fbxTableResult" showFooter="true" toggleHeaderOnTitleClick="false">
+    <f:DynamicPage id="dpTableResult" showFooter="true" toggleHeaderOnTitleClick="false">
         <!-- Dynamic Page Title -->
         <f:title>
             <f:DynamicPageTitle id="dptTableResult">
@@ -27,7 +27,7 @@
         
         <!-- Dynamic Page Content -->
         <f:content>
-            <FlexBox id="fbxTableResult" height="36rem" direction="Column" alignItems="Stretch" justifyContent="Start">
+            <FlexBox id="fbxTableResult" width="100%" fitContainer="true" direction="Column" alignItems="Stretch" justifyContent="Start">
                 <MessageStrip id="msgStripTableResult" showIcon="true" showCloseButton="false" class="sapUiMediumMarginTopBottom" enableFormattedText="true" tooltip="{i18n>msgStripTableResult}">
                     <link>
                         <Link id="lnkWorkflowId" text="{i18n>lnkWorkflowId}" emphasized="true" press="onPress_lnkWorkflowId" visible="false"></Link>
@@ -49,7 +49,7 @@
                     <Button id="btnSort" press="onPress_btnSort" tooltip="{i18n>sortBtn}" icon="sap-icon://sort"></Button>
                     <Button id="btnExport" press="onPress_btnExport" tooltip="{i18n>exportBtn}" icon="sap-icon://excel-attachment"></Button>
                 </OverflowToolbar>
-                <ScrollContainer id="sconTable" height="30rem" width="100%" vertical="true" focusable="true">
+                <ScrollContainer id="sconTable" width="100%" vertical="true" focusable="true">
                     <Table id="tblResultSet" selectionChange="onSelectionchange_tblResultSet" sticky="ColumnHeaders,HeaderToolbar,InfoToolbar" noDataText="{tableResultViewModel>/noDataText}" updateFinished="onUpdateFinished_tblResultSet" contextualWidth="Auto" tooltip="{tableResultViewModel>/tableTooltip}" mode="SingleSelectMaster" fixedLayout="false" visible="false">
                         <headerToolbar></headerToolbar>
                     </Table>

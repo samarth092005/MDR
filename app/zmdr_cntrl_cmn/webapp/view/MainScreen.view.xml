@@ -1,5 +1,5 @@
 <mvc:View controllerName="com.intapptics.zmdrcntrlcmn.controller.MainScreen" xmlns:f="sap.f" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:form="sap.ui.layout.form" xmlns:core="sap.ui.core" xmlns:uxap="sap.uxap" displayBlock="true" height="100%">
-    <f:DynamicPage id="dpMainScreen" showFooter="true" fitContent="true" headerExpanded="true">
+    <f:DynamicPage id="dpMainScreen" showFooter="true" headerExpanded="true">
         <!-- Dynamic Page Title -->
         <f:title>
             <f:DynamicPageTitle id="dptMainScreen">

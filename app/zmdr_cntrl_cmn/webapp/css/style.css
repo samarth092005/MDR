@@ -3,35 +3,8 @@
     background-color: #00AFE9;
 }
 
-/* Ensure Central Common fills the viewport cleanly from top to bottom */
-html, body, #app, .sapMApp, .sapMNav, .sapUiView {
-    margin: 0 !important;
-    padding: 0 !important;
-    height: 100% !important;
-}
-
-/* DynamicPage and Title styling - remove unwanted top gap */
-.sapFDynamicPage {
-    margin-top: 0 !important;
-    padding-top: 0 !important;
-    top: 0 !important;
-}
-
-.sapFDynamicPageTitleWrapper {
-    margin-top: 0 !important;
-    padding-top: 0 !important;
-}
-
-.sapFDynamicPageTitle {
-    padding-top: 0.25rem !important;
-    padding-bottom: 0.25rem !important;
-}
-
-.sapFDynamicPageContent {
-    padding-top: 0.25rem !important;
-}
-
 #flxbxMainScreen {
-    margin-top: 0 !important;
-    padding-top: 0 !important;
+    margin-top: 0;
+    padding-top: 0;
 }
+
