@@ -52,7 +52,7 @@ sap.ui.define([
             var iSkip = (mParameters.urlParameters && mParameters.urlParameters.$skip) || 0;
             var iTop = (mParameters.urlParameters && mParameters.urlParameters.$top) || 1000;
             
-            var oListBinding = this._oNativeV4Model.bindList(sEntityPath, null, null, mParameters.filters, bCount ? { $$count: true } : undefined);
+            var oListBinding = this._oNativeV4Model.bindList(sEntityPath, null, null, mParameters.filters, bCount ? { $count: true } : undefined);
             
             oListBinding.requestContexts(iSkip, iTop).then(function (aContexts) {
                 if (bCount) {

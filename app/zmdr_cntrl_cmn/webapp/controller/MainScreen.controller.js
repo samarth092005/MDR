@@ -2852,7 +2852,7 @@ sap.ui.define([
 
             // Read count
             var aFilters = oFilter ? [oFilter] : [];
-            var oListBinding = oLookupModel.bindList(sEntitySet, null, null, aFilters, { $$count: true });
+            var oListBinding = oLookupModel.bindList(sEntitySet, null, null, aFilters, { $count: true });
             oListBinding.requestContexts(0, 0).then(function () {
                 this.iRecordCount = oListBinding.getLength();
 
