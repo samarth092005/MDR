@@ -4752,41 +4752,41 @@ sap.ui.define([
             if (this.byId("dlgComment")) {
                 this.byId("dlgComment").close();
             }
-            // 1. Complete workflow and promote record via owner component (prevents duplicate fetches)
-            var oOwnerComponent = this.getOwnerComponent();
-            if (oOwnerComponent && typeof oOwnerComponent._callTakeActionCentral === "function") {
-                oOwnerComponent._callTakeActionCentral(this.sWorkflowID || "", sAction, this.sUserRemarks || "");
-            }
 
-            // 2. Complete task in My Inbox
             var oOwnerComponent = this.getOwnerComponent();
+            var that = this;
+            this.fn_openBusyDialog();
+
+            var pComplete;
             if (oOwnerComponent && typeof oOwnerComponent.completeTask === "function") {
-                try {
-                    oOwnerComponent.completeTask(bIsApprove, sOutcomeId, this.sUserRemarks || "");
-                } catch (taskErr) {
-                    console.warn("completeTask execution notice:", taskErr);
+                pComplete = oOwnerComponent.completeTask(bIsApprove, sOutcomeId, this.sUserRemarks || "");
+            } else if (oOwnerComponent && typeof oOwnerComponent._callTakeActionCentral === "function") {
+                pComplete = oOwnerComponent._callTakeActionCentral(this.sWorkflowID || "", sAction, this.sUserRemarks || "");
+            } else {
+                pComplete = Promise.resolve();
+            }
+
+            Promise.resolve(pComplete).then(function () {
+                that.fn_closeBusyDialog();
+                var oMsgStrip = that.byId("msgStripMainScreen");
+                if (oMsgStrip) {
+                    oMsgStrip.setText("Workflow " + (that.sWorkflowID || "") + " has been " + sMsgText + " successfully.");
+                    oMsgStrip.setType("Success");
+                    oMsgStrip.setVisible(true);
                 }
-            }
 
-            // 3. Update UI
-            this.fn_closeBusyDialog();
+                if (that.byId("btnApprove")) that.byId("btnApprove").setVisible(false);
+                if (that.byId("btnReject")) that.byId("btnReject").setVisible(false);
+                if (that.byId("btnRelease")) that.byId("btnRelease").setVisible(false);
+                if (that.byId("btnSeeChanges")) that.byId("btnSeeChanges").setVisible(false);
 
-            var oMsgStrip = this.byId("msgStripMainScreen");
-            if (oMsgStrip) {
-                oMsgStrip.setText("Workflow " + (this.sWorkflowID || "") + " has been " + sMsgText + " successfully.");
-                oMsgStrip.setType("Success");
-                oMsgStrip.setVisible(true);
-            }
+                sap.m.MessageBox.success("Workflow request " + (that.sWorkflowID || "") + " has been " + sMsgText + " successfully.");
+            }).catch(function (err) {
+                that.fn_closeBusyDialog();
+                console.error("Workflow completion error:", err);
+                sap.m.MessageBox.error("Failed to complete workflow decision: " + (err.message || err));
+            });
 
-            // Disable action buttons
-            if (this.byId("btnApprove")) this.byId("btnApprove").setVisible(false);
-            if (this.byId("btnReject")) this.byId("btnReject").setVisible(false);
-            if (this.byId("btnRelease")) this.byId("btnRelease").setVisible(false);
-            if (this.byId("btnSeeChanges")) this.byId("btnSeeChanges").setVisible(false);
-
-            sap.m.MessageBox.success("Workflow request " + (this.sWorkflowID || "") + " has been " + sMsgText + " successfully.");
-
-            // Log info
             this.fn_getLogReference().info("Main Screen Controller: Exiting _fn_completeWorkflowTask method");
         }
     });

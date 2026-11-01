@@ -453,7 +453,22 @@ sap.ui.define([
             getTaskInstanceID: function () {
                 var oTaskModel = this.getModel("task");
                 var oData = (oTaskModel && oTaskModel.getData()) || {};
-                return oData.InstanceID || oData.id || "";
+                if (oData.InstanceID || oData.id) {
+                    return oData.InstanceID || oData.id;
+                }
+                var oComponentData = this.getComponentData();
+                var startupParameters = (oComponentData && oComponentData.startupParameters) || {};
+                if (startupParameters.taskModel && typeof startupParameters.taskModel.getData === "function") {
+                    var td = startupParameters.taskModel.getData() || {};
+                    if (td.InstanceID || td.id) return td.InstanceID || td.id;
+                }
+                if (startupParameters.taskInstanceId) {
+                    return Array.isArray(startupParameters.taskInstanceId) ? startupParameters.taskInstanceId[0] : startupParameters.taskInstanceId;
+                }
+                if (startupParameters.InstanceID) {
+                    return Array.isArray(startupParameters.InstanceID) ? startupParameters.InstanceID[0] : startupParameters.InstanceID;
+                }
+                return "";
             },
 
             getInboxAPI: function () {
@@ -464,6 +479,7 @@ sap.ui.define([
 
             _callTakeActionCentral: function (workflowid, action, remarks) {
                 if (!workflowid) return Promise.resolve();
+                var that = this;
                 this._executedActions = this._executedActions || {};
                 var sKey = workflowid + '_' + action;
                 if (this._executedActions[sKey]) {
@@ -471,40 +487,59 @@ sap.ui.define([
                     return Promise.resolve();
                 }
                 this._executedActions[sKey] = true;
-                var sAppPrefix = this._getAppPrefix();
+
+                var sTaskId = that.getTaskInstanceID() || "";
+                var sAppPrefix = that._getAppPrefix();
                 var sBaseUrl = (sAppPrefix ? (sAppPrefix + "/") : "/") + "mdrapi/central/";
                 var sActionUrl = sBaseUrl + "takeActionCentral";
 
-                return fetch(sBaseUrl, {
+                var oPayload = {
+                    workflowid: workflowid,
+                    action: action,
+                    remarks: remarks || "",
+                    bpaInstanceId: "",
+                    taskId: sTaskId
+                };
+
+                var fnDoPost = function (sToken) {
+                    var oHeaders = {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    };
+                    if (sToken) {
+                        oHeaders["X-CSRF-Token"] = sToken;
+                    }
+                    return fetch(sActionUrl, {
+                        method: "POST",
+                        headers: oHeaders,
+                        body: JSON.stringify(oPayload)
+                    }).then(function (res) {
+                        if (!res.ok) {
+                            return res.text().then(function (txt) {
+                                throw new Error("Server returned HTTP " + res.status + ": " + txt);
+                            });
+                        }
+                        return res.json().catch(function () { return res.text(); });
+                    });
+                };
+
+                return fetch(sBaseUrl + "$metadata", {
                     method: "GET",
                     headers: {
-                        "X-CSRF-Token": "Fetch",
-                        "Accept": "application/json"
+                        "X-CSRF-Token": "Fetch"
                     }
                 }).then(function (tokenRes) {
                     var csrfToken = tokenRes.headers.get("X-CSRF-Token") || "";
-                    return fetch(sActionUrl, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Accept": "application/json",
-                            "X-CSRF-Token": csrfToken
-                        },
-                        body: JSON.stringify({
-                            workflowid: workflowid,
-                            action: action,
-                            remarks: remarks || "",
-                            bpaInstanceId: "",
-                            taskId: this.getTaskInstanceID() || ""
-                        })
-                    });
-                }).then(function (res) {
-                    return res.text();
+                    return fnDoPost(csrfToken);
+                }).catch(function () {
+                    return fnDoPost("");
                 }).then(function (result) {
                     console.log("[Component] takeActionCentral response:", result);
                     return result;
                 }).catch(function (err) {
-                    console.warn("[Component] takeActionCentral execution error:", err);
+                    console.error("[Component] takeActionCentral execution error:", err);
+                    delete that._executedActions[sKey];
+                    throw err;
                 });
             },
 
@@ -528,20 +563,33 @@ sap.ui.define([
                     } catch (e) {}
                 }
 
-                var sAction = approvalStatus ? "APPROVED" : "REJECTED";
-                var sRemarks = comment || context.comment || "";
-
-                if (sWorkflowId) {
-                    this._callTakeActionCentral(sWorkflowId, sAction, sRemarks);
+                if (!sWorkflowId) {
+                    var oCompData = this.getComponentData();
+                    var sp = (oCompData && oCompData.startupParameters) || {};
+                    sWorkflowId = (sp.sWorkflowID && sp.sWorkflowID[0]) || 
+                                  (sp.WorkflowId && sp.WorkflowId[0]) || 
+                                  (sp.workflow_id && sp.workflow_id[0]) || "";
                 }
 
-                this._patchTaskInstance(outcomeId, sRemarks, approvalStatus);
+                var sAction = approvalStatus ? "APPROVED" : "REJECTED";
+                var sRemarks = comment || context.comment || "";
+                var that = this;
+
+                var pAction = sWorkflowId ? this._callTakeActionCentral(sWorkflowId, sAction, sRemarks) : Promise.resolve();
+
+                return pAction.then(function (res) {
+                    that._patchTaskInstance(outcomeId, sRemarks, approvalStatus);
+                    return res;
+                }).catch(function (err) {
+                    console.warn("[Component] Error in completeTask workflow action:", err);
+                    that._patchTaskInstance(outcomeId, sRemarks, approvalStatus);
+                    throw err;
+                });
             },
 
             _patchTaskInstance: function (outcomeId, comment, approvalStatus) {
-                // Task is completed and database record promoted via takeActionCentral on CAP backend.
-                // Refresh task list in My Inbox via official Inbox API:
-                console.log("[Component] Completing task flow and refreshing task list");
+                var sTaskId = this.getTaskInstanceID();
+                console.log("[Component] Completing task flow and refreshing task list for task:", sTaskId);
                 this._refreshTaskList();
             },
 
@@ -551,9 +599,14 @@ sap.ui.define([
 
             _refreshTaskList: function () {
                 var inboxAPI = this.getInboxAPI();
-                if (inboxAPI && typeof inboxAPI.updateTask === "function") {
+                var sTaskId = this.getTaskInstanceID();
+                if (inboxAPI) {
                     try {
-                        inboxAPI.updateTask("NA", this.getTaskInstanceID());
+                        if (typeof inboxAPI.completeTask === "function" && sTaskId) {
+                            inboxAPI.completeTask("NA", sTaskId);
+                        } else if (typeof inboxAPI.updateTask === "function" && sTaskId) {
+                            inboxAPI.updateTask("NA", sTaskId);
+                        }
                     } catch (e) {
                         console.warn("inboxAPI.updateTask warning:", e);
                     }
@@ -561,47 +614,48 @@ sap.ui.define([
             },
 
             _showCommentDialog: function (isApproved, outcomeId) {
+                var that = this;
+                var oCommentInput = new sap.m.TextArea(this.createId("commentInput"), {
+                    width: "100%",
+                    rows: 4,
+                    placeholder: "Enter your comments (required)..."
+                });
+
                 if (!this._commentDialog) {
                     this._commentDialog = new sap.m.Dialog({
                         title: isApproved ? "Approve Request" : "Reject Request",
                         contentWidth: "400px",
                         content: [
                             new sap.m.Label({ text: "Comments", labelFor: "commentInput", required: true }),
-                            new sap.m.TextArea(this.createId("commentInput"), {
-                                width: "100%",
-                                rows: 4,
-                                placeholder: "Enter your comments (required)..."
-                            })
+                            oCommentInput
                         ],
                         beginButton: new sap.m.Button({
                             text: isApproved ? "Approve" : "Reject",
                             type: isApproved ? "Accept" : "Reject",
                             press: function () {
-                                const comment = sap.ui.getCore().byId(this.createId("commentInput")).getValue();
+                                var sComment = oCommentInput.getValue();
 
-                                if (!comment.trim()) {
+                                if (!sComment.trim()) {
                                     sap.m.MessageToast.show("Please enter a comment before proceeding.");
                                     return;
                                 }
 
-                                this._commentDialog.close();
-                                this._commentDialog.destroy();
-                                this._commentDialog = null;
-                                this.completeTask(isApproved, outcomeId, comment);
-                            }.bind(this)
+                                that._commentDialog.close();
+                                that._commentDialog.destroy();
+                                that._commentDialog = null;
+                                that.completeTask(isApproved, outcomeId, sComment);
+                            }
                         }),
                         endButton: new sap.m.Button({
                             text: "Cancel",
                             press: function () {
-                                this._commentDialog.close();
-                                this._commentDialog.destroy();
-                                this._commentDialog = null;
-                            }.bind(this)
+                                that._commentDialog.close();
+                                that._commentDialog.destroy();
+                                that._commentDialog = null;
+                            }
                         })
                     });
                     this.getRootControl().addDependent(this._commentDialog);  
-                } else {
-                    sap.ui.getCore().byId(this.createId("commentInput")).setValue("");
                 }
 
                 this._commentDialog.open();
