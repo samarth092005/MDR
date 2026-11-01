@@ -11,7 +11,7 @@ function getBPAConfig() {
             const vcap = typeof process.env.VCAP_SERVICES === 'string'
                 ? JSON.parse(process.env.VCAP_SERVICES)
                 : process.env.VCAP_SERVICES;
-            const spaService = vcap['spa-api'] || vcap['process-automation'] || vcap['workflow'];
+            const spaService = vcap['process-automation-service'] || vcap['spa-api'] || vcap['process-automation'] || vcap['workflow'];
             if (spaService && spaService[0] && spaService[0].credentials) {
                 const creds = spaService[0].credentials;
                 const endpoints = creds.endpoints || {};
@@ -141,7 +141,37 @@ async function cancelBPAWorkflow(instanceId) {
 const startBulkApprovalWorkflow = ctx => startBPAWorkflow('eu30.sap-btp-ais-d0a7p7v8.mdrprocessautomation.mdrbulkapproval', ctx);
 const startCentralApprovalWorkflow = ctx => startBPAWorkflow('eu30.sap-btp-ais-d0a7p7v8.mdrprocessautomation.mdrcentralapproval', ctx);
 
+
+async function getBPATask(taskId) {
+    if (!taskId || String(taskId).startsWith('MOCK-') || String(taskId).startsWith('BPA-WF-')) return null;
+    const cfg = getBPAConfig();
+    if (!cfg) return null;
+    try {
+        const token = await getBPAToken(cfg);
+        const r = await fetch(`${cfg.apiUrl}/workflow/rest/v1/task-instances/${taskId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (r.ok) return await r.json();
+    } catch (_) {}
+    return null;
+}
+
+async function getBPATaskContext(taskId) {
+    if (!taskId || String(taskId).startsWith('MOCK-') || String(taskId).startsWith('BPA-WF-')) return null;
+    const cfg = getBPAConfig();
+    if (!cfg) return null;
+    try {
+        const token = await getBPAToken(cfg);
+        const r = await fetch(`${cfg.apiUrl}/workflow/rest/v1/task-instances/${taskId}/context`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (r.ok) return await r.json();
+    } catch (_) {}
+    return null;
+}
+
 module.exports = {
+    getBPATask, getBPATaskContext,
     startBulkApprovalWorkflow, startCentralApprovalWorkflow,
     completeBPATask, cancelBPAWorkflow,
     getBPAConfig, getBPAToken

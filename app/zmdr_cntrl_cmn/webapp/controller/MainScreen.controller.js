@@ -1778,6 +1778,17 @@ sap.ui.define([
 
                     // Get workflow id and workitem id
                     this.sWorkflowID = oContextData.sWorkflowID || oContextData.workflowid || oContextData.workflowId || oContextData.WorkflowId || (oComponentData.startupParameters.sWorkflowID ? oComponentData.startupParameters.sWorkflowID[0] : "");
+                    var oOwnerComp = this.getOwnerComponent();
+                    if (oOwnerComp) {
+                        oOwnerComp.sWorkflowID = this.sWorkflowID;
+                        oOwnerComp._oMainController = this;
+                    }
+                    try {
+                        if (this.sWorkflowID && typeof window !== "undefined") {
+                            window._MDR_CURRENT_WORKFLOW_ID = this.sWorkflowID;
+                            sessionStorage.setItem("MDR_CURRENT_WORKFLOW_ID", this.sWorkflowID);
+                        }
+                    } catch (_) {}
 
                     if (this.sSelectedTableName) {
                         // Clear any previous filters

@@ -142,7 +142,34 @@ module.exports = cds.service.impl(async function (srv) {
 
     srv.on('takeActionCentral', async req => {
         console.log("---- takeActionCentral called ----");
-        const { workflowid, action, remarks, bpaInstanceId, taskId } = req.data;
+        let { workflowid, action, remarks, bpaInstanceId, taskId } = req.data;
+        
+        // Resolve missing workflowid using taskId if possible
+        if (!workflowid && taskId) {
+            try {
+                const bpaClient = require('./lib/bpa-client');
+                const ctx = await bpaClient.getBPATaskContext(taskId);
+                if (ctx) {
+                    workflowid = ctx.workflowid || ctx.workflowId || ctx.WorkflowId || ctx.sWorkflowID || '';
+                }
+                if (!workflowid) {
+                    const taskInfo = await bpaClient.getBPATask(taskId);
+                    if (taskInfo && taskInfo.workflowInstanceId) {
+                        bpaInstanceId = bpaInstanceId || taskInfo.workflowInstanceId;
+                        const db = await cds.connect.to('db');
+                        const entities = cds.entities('zmdr') || cds.entities;
+                        const MDRWorkflowLink = entities.MDRWorkflowLink || entities['zmdr.MDRWorkflowLink'] || db.entities?.MDRWorkflowLink;
+                        if (MDRWorkflowLink) {
+                            const link = await db.run(SELECT.one.from(MDRWorkflowLink).where({ BpaInstanceId: bpaInstanceId }));
+                            if (link) workflowid = link.MdrWorkflowId || link.mdrworkflowid;
+                        }
+                    }
+                }
+                console.log(`[Central] Resolved workflowid: ${workflowid} for taskId: ${taskId}`);
+            } catch (resErr) {
+                console.warn(`[Central] Failed to resolve workflowid from taskId ${taskId}:`, resErr.message);
+            }
+        }
         
         try {
             // 1. Log Audit

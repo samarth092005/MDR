@@ -478,7 +478,11 @@ sap.ui.define([
             },
 
             _callTakeActionCentral: function (workflowid, action, remarks) {
-                if (!workflowid) return Promise.resolve();
+                var sTaskId = this.getTaskInstanceID() || (typeof window !== "undefined" && window._MDR_CURRENT_TASK_ID) || "";
+                if (!workflowid && !sTaskId) {
+                    console.error("[Component] Cannot take action: both workflowid and taskId are missing!");
+                    return Promise.resolve();
+                }
                 var that = this;
                 this._executedActions = this._executedActions || {};
                 var sKey = workflowid + '_' + action;
@@ -551,7 +555,16 @@ sap.ui.define([
                 }
 
                 var context = (oContextModel && oContextModel.getData()) || {};
-                var sWorkflowId = context.workflowid || context.workflowId || context.WorkflowId || "";
+                var sTaskId = this.getTaskInstanceID() || (typeof window !== "undefined" && window._MDR_CURRENT_TASK_ID) || "";
+                var sWorkflowId = this.sWorkflowID || 
+                                  (this._oMainController && this._oMainController.sWorkflowID) ||
+                                  context.workflowid || context.workflowId || context.WorkflowId || context.sWorkflowID || "";
+
+                if (!sWorkflowId && typeof window !== "undefined") {
+                    try {
+                        sWorkflowId = window._MDR_CURRENT_WORKFLOW_ID || sessionStorage.getItem("MDR_CURRENT_WORKFLOW_ID") || "";
+                    } catch (_) {}
+                }
 
                 if (!sWorkflowId) {
                     try {
@@ -575,7 +588,7 @@ sap.ui.define([
                 var sRemarks = comment || context.comment || "";
                 var that = this;
 
-                var pAction = sWorkflowId ? this._callTakeActionCentral(sWorkflowId, sAction, sRemarks) : Promise.resolve();
+                var pAction = (sWorkflowId || sTaskId) ? this._callTakeActionCentral(sWorkflowId, sAction, sRemarks) : Promise.resolve();
 
                 return pAction.then(function (res) {
                     that._patchTaskInstance(outcomeId, sRemarks, approvalStatus);
